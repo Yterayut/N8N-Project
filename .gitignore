@@ -1,0 +1,14 @@
+# Secrets and credentials
+.env*
+.n8n
+backups/
+logs/
+.env.facebook_tokens
+
+# OS and editor files
+.DS_Store
+.vscode/
+
+# ngrok/cache/tmp
+.cache/
+*.log
