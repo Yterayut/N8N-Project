@@ -254,3 +254,5 @@ with request.urlopen(request.Request(url, data=body, method="POST"), context=con
   - เส้นทาง `fb_complaint`, `fb_encouragement`, `fb_negative`, `fb_sticker` ทำงานครบ (ตอบ Facebook, แจ้ง LINE, บันทึกชีต)
   - เส้นทาง `log` จะไม่แจ้ง LINE / ไม่เขียนชีต (เหมือน execution #263)
   - หากพบ 403 อีกครั้ง ให้ตรวจ scope ของ page token และ restart n8n หลังแก้ `.env`
+- เพิ่ม dedupe ใน Code node ใช้ workflow static data `processedComments` ป้องกันตอบซ้ำภายในค่าเริ่มต้น 6 ชั่วโมง (กำหนดเองได้ด้วย `FB_REPLY_DEDUPE_WINDOW_MS`)
+- Postprocess โหนด Facebook เก็บ log ข้อผิดพลาดล่าสุด (สูงสุด 100 รายการ) ไว้ใน `facebookErrorLog` เพื่อตรวจจับรหัส 613 ได้ง่ายขึ้น
