@@ -1,0 +1,1008 @@
+[
+  {
+    "createdAt": "2025-10-20T10:47:24.156Z",
+    "updatedAt": "2025-10-26T22:32:40.000Z",
+    "id": "Ga5bDLZW6uUaY2KI",
+    "name": "My workflow 3",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "multipleMethods": true,
+          "path": "yterayut",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -2048,
+          560
+        ],
+        "id": "95cea3c9-5b75-43fb-bf9d-493a4d17cfe3",
+        "name": "Webhook",
+        "webhookId": "e7b43b0c-3e62-4ed7-993c-20469ac93b05",
+        "notesInFlow": false
+      },
+      {
+        "parameters": {
+          "jsCode": "// Process incoming webhook events from LINE and Facebook Pages and fan out actions\nconst items = $input.all();\nconst results = [];\n\nconst THAI_TONE_MARKS = /[\\u0E31\\u0E34-\\u0E3A\\u0E47-\\u0E4E]/g;\nconst LINE_ID_REGEX = /^U[0-9a-fA-F]{32}$/;\n\nfunction stripAccents(text) {\n  return (text || '')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(THAI_TONE_MARKS, '');\n}\n\nfunction sanitizeKeyword(value) {\n  if (!value) return '';\n  return stripAccents(value.toString())\n    .replace(/\\s+/g, ' ')\n    .toLowerCase()\n    .trim();\n}\n\nfunction normaliseText(text) {\n  return stripAccents(text)\n    .replace(/\\s+/g, ' ')\n    .toLowerCase()\n    .trim();\n}\n\nfunction includesKeyword(text, keywords) {\n  if (!text) return false;\n  const normalised = normaliseText(text);\n  return keywords.some((keyword) => keyword && normalised.includes(keyword));\n}\n\n\nconst DEFAULT_COMPLAINT_URL = $env.FB_COMPLAINT_FORM_URL || 'https://docs.google.com/forms';\nconst DEFAULT_STICKER_ID = $env.FB_POSITIVE_STICKER_ID || '369239343222814';\n\nconst DEFAULT_COMPLAINT_KEYWORDS = parseKeywordList($env.FB_COMPLAINT_KEYWORDS, [\n  'ร้องทุกข์',\n  'ร้องเรียน',\n  'เดือดร้อน',\n  'แจ้งปัญหา',\n  'ช่วยด้วย'\n]);\n\nconst DEFAULT_ENCOURAGEMENT_KEYWORDS = parseKeywordList($env.FB_ENCOURAGEMENT_KEYWORDS, [\n  'กำลังใจ',\n  'เป็นกำลังใจ',\n  'ส่งกำลังใจ',\n  'สู้ๆ',\n  'สู้ ๆ',\n  'สู้นะ',\n  'สู้นะคะ',\n  'ฮึบ',\n  'ฮึบๆ',\n  'เชียร์',\n  'cheer',\n  'cheering',\n  'keep going',\n  'fighting',\n  'you can do it',\n  'great job',\n  'สุดยอด',\n  'เยี่ยมมาก'\n]);\n\nconst DEFAULT_NEGATIVE_KEYWORDS = parseKeywordList($env.FB_NEGATIVE_KEYWORDS, [\n  'ด่า',\n  'โจมตี',\n  'เหยียด',\n  'ดูถูก',\n  'เลว',\n  'เหี้ย',\n  'สถุน',\n  'โง่',\n  'บ้า',\n  'เกลียด',\n  'สาบาน',\n  'แย่มาก',\n  'แย่สุดๆ',\n  'fuck',\n  'shit',\n  'idiot',\n  'stupid',\n  'trash'\n]);\n\nconst pageConfigs = {\n  '889083480945134': createPageConfig({\n    pageId: '889083480945134',\n    pageName: 'จ๊ะศรีกล้วยทอด',\n    pageAccessToken: $env.FB_PAGE_ACCESS_TOKEN || '',\n    complaintUrl: DEFAULT_COMPLAINT_URL,\n    stickerId: DEFAULT_STICKER_ID,\n    lineChannelAccessToken: $env.LINE_CHANNEL_ACCESS_TOKEN || '',\n    lineTargetUserIds: parseIdList($env.LINE_ALERT_USER_IDS)\n  })\n};\n\nfunction createPageConfig({ pageId, pageName, pageAccessToken, complaintUrl, stickerId, lineChannelAccessToken, lineTargetUserIds }) {\n  const envSuffix = pageId ? pageId.trim().replace(/[^0-9A-Z]+/gi, '_').toUpperCase() : '';\n  if (!pageAccessToken && envSuffix) {\n    const envKey = `FB_PAGE_ACCESS_TOKEN_${envSuffix}`;\n    pageAccessToken = $env[envKey] || pageAccessToken;\n  }\n  if ((!lineTargetUserIds || lineTargetUserIds.length === 0) && envSuffix) {\n    const envKey = `LINE_ALERT_USER_IDS_${envSuffix}`;\n    lineTargetUserIds = parseIdList($env[envKey]);\n  }\n  if (!lineChannelAccessToken && envSuffix) {\n    const envKey = `LINE_CHANNEL_ACCESS_TOKEN_${envSuffix}`;\n    lineChannelAccessToken = $env[envKey] || lineChannelAccessToken;\n  }\n  if (!complaintUrl && envSuffix) {\n    const envKey = `FB_COMPLAINT_FORM_URL_${envSuffix}`;\n    complaintUrl = $env[envKey] || complaintUrl;\n  }\n\n  return {\n    pageId,\n    pageName: pageName || pageId,\n    pageAccessToken: pageAccessToken || '',\n    complaintUrl: complaintUrl || DEFAULT_COMPLAINT_URL,\n    stickerId: stickerId || DEFAULT_STICKER_ID,\n    lineChannelAccessToken: lineChannelAccessToken || '',\nlineTargetUserIds: Array.isArray(lineTargetUserIds)\n  ? lineTargetUserIds\n      .map((id) => (typeof id === 'string' ? id.trim() : ''))\n      .filter((id) => LINE_ID_REGEX.test(id))\n  : [],\n    keywords: {\n      complaint: DEFAULT_COMPLAINT_KEYWORDS,\n      encouragement: DEFAULT_ENCOURAGEMENT_KEYWORDS,\n      negative: DEFAULT_NEGATIVE_KEYWORDS,\n    }\n  };\n}\n\nfunction parseKeywordList(rawValue, fallback) {\n  if (!rawValue) {\n    return Array.isArray(fallback)\n      ? fallback.map((entry) => sanitizeKeyword(entry)).filter(Boolean)\n      : [];\n  }\n  if (Array.isArray(rawValue)) {\n    return rawValue.map((entry) => sanitizeKeyword(entry)).filter(Boolean);\n  }\n  return rawValue\n    .split(/[\\n,]/)\n    .map((entry) => sanitizeKeyword(entry))\n    .filter(Boolean);\n}\n\nfunction parseIdList(rawValue) {\n  if (!rawValue) return [];\n  if (Array.isArray(rawValue)) return rawValue.map((entry) => entry.toString().trim()).filter(Boolean);\n  return rawValue\n    .split(/[\\n,]/)\n    .map((entry) => entry.toString().trim())\n    .filter(Boolean);\n}\n\nfunction buildCommentUrl(pageId, postId, commentId) {\n  if (!pageId || !commentId) return '';\n  const postSuffix = (postId || '').split('_')[1] || postId || '';\n  const commentSuffix = commentId.split('_')[1] || commentId;\n  if (!postSuffix || !commentSuffix) return '';\n  return `https://www.facebook.com/${pageId}/posts/${postSuffix}?comment_id=${commentSuffix}`;\n}\n\nfunction formatTimestamp(timestamp) {\n  try {\n    const date = timestamp ? new Date(timestamp) : new Date();\n    return date.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });\n  } catch (error) {\n    return new Date().toISOString();\n  }\n}\n\nfunction toSheetDefaults(base = {}) {\n  return {\n    sheetTimestamp: base.sheetTimestamp || '',\n    sheetPostId: base.sheetPostId || '',\n    sheetCommentId: base.sheetCommentId || '',\n    sheetUserName: base.sheetUserName || '',\n    sheetUserId: base.sheetUserId || '',\n    sheetType: base.sheetType || '',\n    sheetOriginalComment: base.sheetOriginalComment || '',\n    sheetReplyMessage: base.sheetReplyMessage || '',\n    sheetNotifiedChannel: base.sheetNotifiedChannel || '',\n    sheetStatus: base.sheetStatus || '',\n  };\n}\n\nfor (const item of items) {\n  const webhookUrl = (item.json.webhookUrl || '').replace(/\\/webhook.*$/, '');\n  const fallbackBase = ($env.WEBHOOK_URL || $env.N8N_ENDPOINT_URL || 'http://127.0.0.1:5678').replace(/\\/$/, '');\n  const baseUrl = (webhookUrl || fallbackBase).replace(/\\/$/, '');\n  const body = item.json.body ?? item.json;\n\n  if (body && Array.isArray(body.events)) {\n    // LINE webhook events\n    for (const event of body.events) {\n      if (!event || event.type !== 'message' || !event.message) {\n        continue;\n      }\n      const text = event.message.text || '';\n      const trimmed = text.trim();\n      const routeMatch = trimmed.match(/^wf:([a-z0-9_\\/-]+)\\s*(.*)$/i);\n      const timestamp = formatTimestamp(event.timestamp);\n\n      const output = {\n        source: 'line',\n        route: 'log',\n        timestamp,\n        message: text,\n        messageType: event.message.type,\n        sheetTimestamp: timestamp,\n        sheetPostId: '',\n        sheetCommentId: '',\n        sheetUserName: '',\n        sheetUserId: event.source?.userId ?? '',\n        sheetType: 'LINE_MESSAGE',\n        sheetOriginalComment: text,\n        sheetReplyMessage: '',\n        sheetNotifiedChannel: '',\n        sheetStatus: 'LINE_LOG',\n        line: {\n          enabled: false,\n          targets: []\n        }\n      };\n\n      if (routeMatch) {\n        const targetPath = routeMatch[1];\n        const remainder = routeMatch[2] || '';\n        const productionUrl = `${baseUrl}/webhook/${targetPath}`;\n        const testUrl = `${baseUrl}/webhook-test/${targetPath}`;\n\n        output.route = 'subWorkflow';\n        output.command = `wf:${targetPath}`;\n        output.sheetStatus = `LINE_ROUTE:${targetPath}`;\n        output.subWorkflow = {\n          path: targetPath,\n          productionUrl,\n          testUrl,\n          payload: {\n            routedFromWorkflow: $workflow.id,\n            originalEvent: event,\n            userId: output.sheetUserId || 'unknown',\n            timestamp: event.timestamp,\n            message: text,\n            content: remainder || text\n          }\n        };\n      }\n\n      results.push({ json: output });\n    }\n    continue;\n  }\n\n  if (body && Array.isArray(body.entry)) {\n    for (const entry of body.entry) {\n      const pageId = entry.id || body.id || '';\n      const pageConfig = pageConfigs[pageId] || createPageConfig({ pageId });\n      const changes = entry.changes || [];\n\n      for (const change of changes) {\n        if (!change || change.field !== 'feed') {\n          continue;\n        }\n        const value = change.value || {};\n        if (value.verb && value.verb !== 'add') {\n          continue;\n        }\n        if (!value.comment_id || (value.item && value.item !== 'comment')) {\n          continue;\n        }\n\n        const message = value.message || '';\n        const attachments = (value.attachments?.data) || (value.attachment ? [value.attachment] : []);\n        const hasSticker = attachments.some((att) => att?.type === 'sticker' || att?.media?.sticker_id) || Boolean(value.sticker_id);\n\n        const sheetTimestamp = formatTimestamp((value.created_time || value.timestamp) ? (Number(value.created_time || value.timestamp) * 1000) : Date.now());\n        const sheetRow = {\n          sheetTimestamp,\n          sheetPostId: value.post_id || '',\n          sheetCommentId: value.comment_id,\n          sheetUserName: value.sender_name || value.from?.name || '',\n          sheetUserId: value.sender_id || value.from?.id || '',\n          sheetOriginalComment: message || (hasSticker ? '[sticker]' : ''),\n        };\n\n        const commentUrl = buildCommentUrl(pageId, value.post_id, value.comment_id);\n\n        let route = 'log';\n        let sheetType = 'FB_OTHER';\n        let sheetReplyMessage = '';\n        let sheetStatus = 'FB_LOG';\n        let notifiedChannel = '';\n\n        const normalized = normaliseText(message);\n        const keywords = pageConfig.keywords;\n\n        let replyMessage = '';\n        let lineMessage = '';\n        let stickerId = pageConfig.stickerId;\n\n        const canAct = Boolean(pageConfig.pageAccessToken);\n        const lineTargets = Array.isArray(pageConfig.lineTargetUserIds) ? pageConfig.lineTargetUserIds.filter((id) => LINE_ID_REGEX.test(id)) : [];\n        const lineToken = pageConfig.lineChannelAccessToken;\n        const lineEnabled = Boolean(lineToken) && lineTargets.length > 0;\n\n        if (!canAct) {\n          route = 'log';\n          sheetStatus = 'SKIPPED: NO_PAGE_TOKEN';\n        } else if (hasSticker) {\n          route = 'fb_sticker';\n          sheetType = 'FB_STICKER';\n          sheetReplyMessage = stickerId ? `Sticker ID ${stickerId}` : '';\n          sheetStatus = 'FB_STICKER_REPLY';\n          lineMessage = [\n            `[Facebook] มีคอมเมนต์สติกเกอร์บนเพจ ${pageConfig.pageName}`,\n            sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',\n            commentUrl ? `ลิงก์: ${commentUrl}` : ''\n          ].filter(Boolean).join('\\n');\n        } else if (includesKeyword(normalized, keywords.negative)) {\n          route = 'fb_negative';\n          sheetType = 'FB_NEGATIVE';\n          sheetReplyMessage = '[delete comment]';\n          sheetStatus = 'FB_NEGATIVE_DELETE';\n          lineMessage = [\n            `[Facebook] ลบคอมเมนต์ไม่เหมาะสมบนเพจ ${pageConfig.pageName}`,\n            sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',\n            message ? `ข้อความ: ${message}` : '',\n            commentUrl ? `ลิงก์: ${commentUrl}` : ''\n          ].filter(Boolean).join('\\n');\n        } else if (includesKeyword(normalized, keywords.complaint)) {\n          route = 'fb_complaint';\n          sheetType = 'FB_COMPLAINT';\n          replyMessage = `ขอบคุณที่แจ้งเรื่องกับ ${pageConfig.pageName} ค่ะ หากต้องการแจ้งรายละเอียดเพิ่มเติมสามารถกรอกข้อมูลได้ที่ ${pageConfig.complaintUrl}`;\n          sheetReplyMessage = replyMessage;\n          sheetStatus = 'FB_COMPLAINT_REPLY';\n          lineMessage = [\n            `[Facebook] มีการร้องทุกข์บนเพจ ${pageConfig.pageName}`,\n            sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',\n            message ? `ข้อความ: ${message}` : '',\n            `ฟอร์มร้องทุกข์: ${pageConfig.complaintUrl}`,\n            commentUrl ? `ลิงก์คอมเมนต์: ${commentUrl}` : ''\n          ].filter(Boolean).join('\\n');\n        } else if (includesKeyword(normalized, keywords.encouragement)) {\n          route = 'fb_encouragement';\n          sheetType = 'FB_ENCOURAGEMENT';\n          replyMessage = 'ขอบคุณสำหรับกำลังใจที่มอบให้กันนะคะ ❤️';\n          sheetReplyMessage = replyMessage;\n          sheetStatus = 'FB_ENCOURAGEMENT_REPLY';\n          lineMessage = [\n            `[Facebook] มีคอมเมนต์ให้กำลังใจบนเพจ ${pageConfig.pageName}`,\n            sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',\n            message ? `ข้อความ: ${message}` : '',\n            commentUrl ? `ลิงก์คอมเมนต์: ${commentUrl}` : ''\n          ].filter(Boolean).join('\\n');\n        } else {\n          sheetStatus = 'FB_LOG';\n          sheetReplyMessage = '';\n        }\n\n        notifiedChannel = lineEnabled && lineMessage ? (lineTargets.length > 1 ? 'LINE(multicast)' : 'LINE(push)') : '';\n\n        const output = {\n          source: 'facebook',\n          route,\n          sheetTimestamp,\n          sheetPostId: sheetRow.sheetPostId,\n          sheetCommentId: sheetRow.sheetCommentId,\n          sheetUserName: sheetRow.sheetUserName,\n          sheetUserId: sheetRow.sheetUserId,\n          sheetType,\n          sheetOriginalComment: sheetRow.sheetOriginalComment,\n          sheetReplyMessage,\n          sheetNotifiedChannel: notifiedChannel,\n          sheetStatus,\n          message: message,\n          messageType: hasSticker ? 'sticker' : 'text',\n          facebook: {\n            pageId,\n            pageName: pageConfig.pageName,\n            postId: value.post_id || '',\n            commentId: value.comment_id,\n            parentId: value.parent_id || '',\n            commentUrl,\n            pageAccessToken: pageConfig.pageAccessToken,\n            reply: replyMessage\n              ? {\n                  type: 'text',\n                  message: replyMessage\n                }\n              : (route === 'fb_sticker' && stickerId\n                ? {\n                    type: 'sticker',\n                    stickerId\n                  }\n                : null),\n            delete: route === 'fb_negative'\n          },\n          line: {\n            enabled: Boolean(lineEnabled && lineMessage),\n            endpoint: lineTargets.length > 1\n              ? 'https://api.line.me/v2/bot/message/multicast'\n              : 'https://api.line.me/v2/bot/message/push',\n            channelAccessToken: lineToken,\n            targets: lineTargets,\n            message: lineMessage,\n            commentUrl\n          }\n        };\n\n        results.push({ json: output });\n      }\n    }\n    continue;\n  }\n\n  // Unsupported payload -> log only\n  results.push({\n    json: toSheetDefaults({\n      sheetTimestamp: formatTimestamp(Date.now()),\n      sheetStatus: 'SKIPPED: UNKNOWN_PAYLOAD'\n    })\n  });\n}\n\nreturn results;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1600,
+          592
+        ],
+        "id": "7ed53ed1-a8b4-43ba-8c66-f59d5c348a6b",
+        "name": "Code",
+        "alwaysOutputData": true,
+        "notesInFlow": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+            "mode": "list",
+            "cachedResultName": " LINE Messages Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 501571293,
+            "mode": "list",
+            "cachedResultName": "FB Comment Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=501571293"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.sheetTimestamp || $json.timestamp || '' }}",
+              "PostID": "={{ $json.sheetPostId || '' }}",
+              "CommentID": "={{ $json.sheetCommentId || '' }}",
+              "UserName": "={{ $json.sheetUserName || '' }}",
+              "UserID": "={{ $json.sheetUserId || '' }}",
+              "Type": "={{ $json.sheetType || $json.messageType || '' }}",
+              "OriginalComment": "={{ $json.sheetOriginalComment || $json.message || '' }}",
+              "ReplyMessage": "={{ $json.sheetReplyMessage || '' }}",
+              "NotifiedChannel": "={{ $json.sheetNotifiedChannel || '' }}",
+              "Status": "={{ $json.sheetStatus || '' }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "PostID",
+                "displayName": "PostID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "CommentID",
+                "displayName": "CommentID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "UserName",
+                "displayName": "UserName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "UserID",
+                "displayName": "UserID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Type",
+                "displayName": "Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "OriginalComment",
+                "displayName": "OriginalComment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "ReplyMessage",
+                "displayName": "ReplyMessage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "NotifiedChannel",
+                "displayName": "NotifiedChannel",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Status",
+                "displayName": "Status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "useAppend": false
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          -496,
+          992
+        ],
+        "id": "e62117de-a73e-4e73-bfe6-ac18932d5f8f",
+        "name": "Google Sheets",
+        "alwaysOutputData": true,
+        "retryOnFail": true,
+        "maxTries": 3,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "T9nKtoEokIT1Gd2W",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.route || 'log' }}",
+                "value2": "subWorkflow"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -528,
+          320
+        ],
+        "id": "159d6732-9019-4ad8-b2c9-4a1df9782cd1",
+        "name": "Is Sub Workflow"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $json.subWorkflow.productionUrl }}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {}
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [
+          -224,
+          960
+        ],
+        "id": "bb56c90a-8079-4b8e-a0b5-5978be79d0ab",
+        "name": "Call Sub Workflow",
+        "retryOnFail": true,
+        "maxTries": 3
+      },
+      {
+        "parameters": {
+          "value1": "={{ $json.route || 'log' }}",
+          "rules": {
+            "rules": [
+              {
+                "operation": "equal",
+                "value2": "fb_complaint"
+              },
+              {
+                "operation": "equal",
+                "value2": "fb_encouragement"
+              },
+              {
+                "operation": "equal",
+                "value2": "fb_sticker"
+              },
+              {
+                "operation": "equal",
+                "value2": "fb_negative"
+              }
+            ]
+          },
+          "dataType": "string",
+          "mode": "rules"
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 2,
+        "position": [
+          -256,
+          48
+        ],
+        "id": "cf12f038-5a78-4773-a666-8ee96c0d766b",
+        "name": "FB Action Switch"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (let index = 0; index < items.length; index++) {\n  const graph = items[index].json || {};\n  const base = JSON.parse(JSON.stringify($item(index).$node[\"FB Action Switch\"].json || {}));\n  const route = base.route || '';\n  const isError = Boolean(graph.error || (typeof graph.statusCode === 'number' && graph.statusCode >= 400));\n\n  let errorMessage = '';\n  if (isError) {\n    errorMessage = graph.error?.message || graph.message || graph.error_description || '';\n    if (!errorMessage) {\n      try {\n        errorMessage = JSON.stringify(graph);\n      } catch (error) {\n        errorMessage = String(graph);\n      }\n    }\n  }\n\n  if (route === 'fb_complaint') {\n    base.sheetStatus = isError ? 'FB_COMPLAINT_ERROR' : 'FB_COMPLAINT_REPLY';\n    base.actionResult = isError ? 'facebook_reply_error' : 'facebook_reply_success';\n  } else if (route === 'fb_encouragement') {\n    base.sheetStatus = isError ? 'FB_ENCOURAGEMENT_ERROR' : 'FB_ENCOURAGEMENT_REPLY';\n    base.actionResult = isError ? 'facebook_reply_error' : 'facebook_reply_success';\n  }\n\n  base.actionError = isError ? errorMessage : '';\n  base.facebook = base.facebook || {};\n  base.facebook.graphResponse = graph;\n  delete base.facebook.pageAccessToken;\n\n  results.push({ json: base });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          0
+        ],
+        "id": "3848037e-8e43-42b0-b49c-0144ec12ded9",
+        "name": "FB Reply Text Postprocess",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (let index = 0; index < items.length; index++) {\n  const graph = items[index].json || {};\n  const base = JSON.parse(JSON.stringify($item(index).$node[\"FB Action Switch\"].json || {}));\n  const isError = Boolean(graph.error || (typeof graph.statusCode === 'number' && graph.statusCode >= 400));\n\n  let errorMessage = '';\n  if (isError) {\n    errorMessage = graph.error?.message || graph.message || graph.error_description || '';\n    if (!errorMessage) {\n      try {\n        errorMessage = JSON.stringify(graph);\n      } catch (error) {\n        errorMessage = String(graph);\n      }\n    }\n  }\n\n  base.sheetStatus = isError ? 'FB_STICKER_ERROR' : 'FB_STICKER_REPLY';\n  base.actionResult = isError ? 'facebook_sticker_error' : 'facebook_sticker_success';\n  base.actionError = isError ? errorMessage : '';\n\n  base.facebook = base.facebook || {};\n  base.facebook.graphResponse = graph;\n  delete base.facebook.pageAccessToken;\n\n  results.push({ json: base });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          368
+        ],
+        "id": "75a2db3d-8fa8-4e0b-95cd-2bc8893301be",
+        "name": "FB Reply Sticker Postprocess",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (let index = 0; index < items.length; index++) {\n  const graph = items[index].json || {};\n  const base = JSON.parse(JSON.stringify($item(index).$node[\"FB Action Switch\"].json || {}));\n  const isError = Boolean(graph.error || (typeof graph.statusCode === 'number' && graph.statusCode >= 400));\n\n  let errorMessage = '';\n  if (isError) {\n    errorMessage = graph.error?.message || graph.message || graph.error_description || '';\n    if (!errorMessage) {\n      try {\n        errorMessage = JSON.stringify(graph);\n      } catch (error) {\n        errorMessage = String(graph);\n      }\n    }\n  }\n\n  base.sheetStatus = isError ? 'FB_NEGATIVE_DELETE_ERROR' : 'FB_NEGATIVE_DELETED';\n  base.actionResult = isError ? 'facebook_delete_error' : 'facebook_delete_success';\n  base.actionError = isError ? errorMessage : '';\n\n  base.facebook = base.facebook || {};\n  base.facebook.graphResponse = graph;\n  delete base.facebook.pageAccessToken;\n\n  results.push({ json: base });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          768
+        ],
+        "id": "ddae83d1-d2f6-4e38-b8d2-d775f280ac89",
+        "name": "FB Delete Comment Postprocess",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = JSON.parse(JSON.stringify(item.json || {}));\n  const line = data.line || {};\n  const targets = Array.isArray(line.targets) ? line.targets.filter(Boolean) : [];\n  const token = (line.channelAccessToken || '').trim();\n  const message = line.message;\n\n  if (line.enabled && token && targets.length > 0 && message) {\n    const endpoint = line.endpoint || (targets.length > 1\n      ? 'https://api.line.me/v2/bot/message/multicast'\n      : 'https://api.line.me/v2/bot/message/push');\n\n    const payload = targets.length > 1\n      ? { to: targets, messages: [{ type: 'text', text: message }], notificationDisabled: false }\n      : { to: targets[0], messages: [{ type: 'text', text: message }], notificationDisabled: false };\n\n    try {\n      await this.helpers.httpRequest({\n        method: 'POST',\n        url: endpoint,\n        headers: {\n          Authorization: `Bearer ${token}`,\n          'Content-Type': 'application/json'\n        },\n        body: payload,\n        json: true\n      });\n      data.actionResult = data.actionResult || 'line_notify_success';\n      data.sheetNotifiedChannel = targets.length > 1 ? 'LINE(multicast)' : 'LINE(push)';\n    } catch (error) {\n      const errorData = error && error.response && error.response.data ? JSON.stringify(error.response.data) : (error.message || JSON.stringify(error));\n      data.actionError = errorData;\n      data.sheetStatus = `${data.sheetStatus || ''}|LINE_ERROR`;\n    }\n  }\n\n  if (data.line) {\n    delete data.line.channelAccessToken;\n  }\n\n  results.push({ json: data });\n}\n\nreturn results;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          864,
+          208
+        ],
+        "id": "d2bcaeb4-caa4-42a5-8c1c-b9fbdfa43b1c",
+        "name": "LINE Notify",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.source }}",
+                "value2": "facebook"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -1056,
+          592
+        ],
+        "id": "163f1c14-b8ec-4864-94bd-f51d45111f8f",
+        "name": "Is Facebook"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+            "mode": "list",
+            "cachedResultName": " LINE Messages Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 0,
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.sheetTimestamp || $json.timestamp || '' }}",
+              "User ID": "={{ $json.sheetUserId || '' }}",
+              "Message": "={{ $json.sheetOriginalComment || $json.message || '' }}",
+              "Type": "={{ $json.sheetType || $json.messageType || '' }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "User ID",
+                "displayName": "User ID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Message",
+                "displayName": "Message",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Type",
+                "displayName": "Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "useAppend": false
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          -304,
+          832
+        ],
+        "id": "c2d6eab2-f119-4013-be6d-8636a65920ee",
+        "name": "Google Sheets (LINE)",
+        "alwaysOutputData": true,
+        "retryOnFail": true,
+        "maxTries": 3,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "T9nKtoEokIT1Gd2W",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+            "mode": "list",
+            "cachedResultName": " LINE Messages Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 501571293,
+            "mode": "list",
+            "cachedResultName": "FB Comment Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=501571293"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.sheetTimestamp || $json.timestamp || '' }}",
+              "PostID": "={{ $json.sheetPostId || '' }}",
+              "CommentID": "={{ $json.sheetCommentId || '' }}",
+              "UserName": "={{ $json.sheetUserName || '' }}",
+              "UserID": "={{ $json.sheetUserId || '' }}",
+              "Type": "={{ $json.sheetType || $json.messageType || '' }}",
+              "OriginalComment": "={{ $json.sheetOriginalComment || $json.message || '' }}",
+              "ReplyMessage": "={{ $json.sheetReplyMessage || '' }}",
+              "NotifiedChannel": "={{ $json.sheetNotifiedChannel || '' }}",
+              "Status": "={{ $json.sheetStatus || '' }}",
+              "ActionError": "={{ $json.actionError || '' }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "PostID",
+                "displayName": "PostID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "CommentID",
+                "displayName": "CommentID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "UserName",
+                "displayName": "UserName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "UserID",
+                "displayName": "UserID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Type",
+                "displayName": "Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "OriginalComment",
+                "displayName": "OriginalComment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "ReplyMessage",
+                "displayName": "ReplyMessage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "NotifiedChannel",
+                "displayName": "NotifiedChannel",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Status",
+                "displayName": "Status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "canBeUsedToMatch": true,
+                "defaultMatch": false,
+                "display": true,
+                "displayName": "ActionError",
+                "id": "ActionError",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "useAppend": false
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          544,
+          224
+        ],
+        "id": "4051e7fc-6565-4f8f-ac84-e023b846be58",
+        "name": "Google Sheets (FB Action Result)",
+        "alwaysOutputData": true,
+        "retryOnFail": true,
+        "maxTries": 3,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "T9nKtoEokIT1Gd2W",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json[\"query\"][\"hub.mode\"] || '' }}",
+                "value2": "subscribe"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -1808,
+          304
+        ],
+        "id": "aeadd7ff-56cd-4fd8-b78e-b8729e0de6a1",
+        "name": "Is Handshake"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3,
+        "position": [
+          -1328,
+          368
+        ],
+        "id": "4dd4fac6-117a-4bb4-8019-48d7a7e9f90f",
+        "name": "Return Challenge"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v24.0",
+          "node": "={{ $json.facebook.commentId }}",
+          "edge": "comments",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "message",
+                  "value": "={{ $json.facebook.reply.message }}"
+                }
+              ]
+            }
+          }
+        },
+        "name": "FB Graph Reply Text",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "3a44de32-50aa-438f-bc72-290bc6d6f390",
+        "alwaysOutputData": true,
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "FGB0rOEP6wN7EDGt",
+            "name": "facebook-เพจจ๊ะศรีกล้วยทอด"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v24.0",
+          "node": "={{ $json.facebook.commentId }}",
+          "edge": "comments",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "sticker_id",
+                  "value": "={{ $json.facebook.reply.stickerId }}"
+                }
+              ]
+            }
+          }
+        },
+        "name": "FB Graph Reply Sticker",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          0,
+          368
+        ],
+        "id": "0554ef66-59cf-460b-9670-e7d88e3e6d50",
+        "alwaysOutputData": true,
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "FGB0rOEP6wN7EDGt",
+            "name": "facebook-เพจจ๊ะศรีกล้วยทอด"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "DELETE",
+          "graphApiVersion": "v24.0",
+          "node": "={{ $json.facebook.commentId }}",
+          "options": {}
+        },
+        "name": "FB Graph Delete Comment",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          0,
+          768
+        ],
+        "id": "159a7455-86c5-4547-b807-816a1edb1bea",
+        "alwaysOutputData": true,
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "FGB0rOEP6wN7EDGt",
+            "name": "facebook-เพจจ๊ะศรีกล้วยทอด"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $json[\"query\"][\"hub.challenge\"] }}",
+          "options": {
+            "responseCode": 200,
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/plain"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          -1088,
+          368
+        ],
+        "id": "b90e0fe2-6b4a-4a0b-8bbb-987d486e3493",
+        "name": "Respond to Webhook1"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Is Handshake",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code": {
+        "main": [
+          [
+            {
+              "node": "Is Facebook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Handshake": {
+        "main": [
+          [
+            {
+              "node": "Return Challenge",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Return Challenge": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Facebook": {
+        "main": [
+          [
+            {
+              "node": "FB Action Switch",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Is Sub Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Sub Workflow": {
+        "main": [
+          [
+            {
+              "node": "Call Sub Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Google Sheets (LINE)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Sub Workflow": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets (LINE)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Action Switch": {
+        "main": [
+          [
+            {
+              "node": "FB Graph Reply Text",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FB Graph Reply Text",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FB Graph Reply Sticker",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FB Graph Delete Comment",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "LINE Notify",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Google Sheets (FB Action Result)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Graph Reply Text": {
+        "main": [
+          [
+            {
+              "node": "FB Reply Text Postprocess",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Graph Reply Sticker": {
+        "main": [
+          [
+            {
+              "node": "FB Reply Sticker Postprocess",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Graph Delete Comment": {
+        "main": [
+          [
+            {
+              "node": "FB Delete Comment Postprocess",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Reply Text Postprocess": {
+        "main": [
+          [
+            {
+              "node": "LINE Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Reply Sticker Postprocess": {
+        "main": [
+          [
+            {
+              "node": "LINE Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Delete Comment Postprocess": {
+        "main": [
+          [
+            {
+              "node": "LINE Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LINE Notify": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets (FB Action Result)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "pinData": {},
+    "versionId": "0cd76447-a1d8-4fc2-b050-3590883aa4e4",
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "createdAt": "2025-10-20T10:47:24.171Z",
+        "updatedAt": "2025-10-20T10:47:24.171Z",
+        "role": "workflow:owner",
+        "workflowId": "Ga5bDLZW6uUaY2KI",
+        "projectId": "jeD6fV4Q5Q6oH8GK",
+        "project": {
+          "createdAt": "2025-10-14T15:42:22.954Z",
+          "updatedAt": "2025-10-14T15:44:01.658Z",
+          "id": "jeD6fV4Q5Q6oH8GK",
+          "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

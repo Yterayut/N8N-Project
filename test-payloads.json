@@ -1,0 +1,394 @@
+{
+  "test_cases": [
+    {
+      "name": "Test 1: Sticker Only (Thumbs Up)",
+      "description": "User comments with sticker only (no text)",
+      "expected": {
+        "contentType": "sticker",
+        "intent": "unknown",
+        "route": "fb_sticker",
+        "action": "Reply with sticker"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761545561,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "25617669544483307",
+                    "name": "Kiriyah Rz"
+                  },
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_1354207589618104",
+                  "created_time": 1761545557,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 2: Encouragement Text",
+      "description": "User comments with encouragement text 'สู้ๆๆๆ'",
+      "expected": {
+        "contentType": "text",
+        "intent": "encouragement",
+        "route": "fb_encouragement",
+        "action": "Reply with thank you message"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546669,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "25617669544483307",
+                    "name": "Kiriyah Rz"
+                  },
+                  "message": "สู้ๆๆๆ",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_1490822195371767",
+                  "created_time": 1761546667,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 3: Complaint Text",
+      "description": "User complains with text 'ร้องเรียน สินค้าไม่ดี'",
+      "expected": {
+        "contentType": "text",
+        "intent": "complaint",
+        "route": "fb_complaint",
+        "action": "Reply with complaint form link"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546700,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "25617669544483307",
+                    "name": "Test User"
+                  },
+                  "message": "ร้องเรียน สินค้าไม่ดี ต้องการแจ้งปัญหา",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_1234567890",
+                  "created_time": 1761546698,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 4: Negative Text",
+      "description": "User posts negative comment with inappropriate words",
+      "expected": {
+        "contentType": "text",
+        "intent": "negative",
+        "route": "fb_negative",
+        "action": "Delete comment immediately"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546750,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "99999999999",
+                    "name": "Spam User"
+                  },
+                  "message": "เหี้ย ร้านนี้โกงลูกค้า แย่สุดๆ",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_9999999999",
+                  "created_time": 1761546748,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 5: Question Text",
+      "description": "User asks a question 'ราคาเท่าไหร่ครับ'",
+      "expected": {
+        "contentType": "text",
+        "intent": "question",
+        "route": "fb_question",
+        "action": "Reply or log (based on FB_REPLY_TO_QUESTION)"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546800,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "12345678901",
+                    "name": "Curious Customer"
+                  },
+                  "message": "ราคาเท่าไหร่ครับ สั่งได้ไหม",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_1111111111",
+                  "created_time": 1761546798,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 6: Photo Only",
+      "description": "User posts photo without text",
+      "expected": {
+        "contentType": "photo",
+        "intent": "unknown",
+        "route": "log",
+        "action": "Log only (FB_REPLY_TO_PHOTO=false by default)"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546850,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "11111111111",
+                    "name": "Photo User"
+                  },
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_2222222222",
+                  "created_time": 1761546848,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add",
+                  "attachments": {
+                    "data": [
+                      {
+                        "type": "photo",
+                        "url": "https://example.com/photo.jpg"
+                      }
+                    ]
+                  }
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 7: Mixed (Text + Photo with Encouragement)",
+      "description": "User posts encouragement text with photo",
+      "expected": {
+        "contentType": "mixed",
+        "intent": "encouragement",
+        "route": "fb_encouragement",
+        "action": "Reply with thank you (intent takes priority)"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546900,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "33333333333",
+                    "name": "Mixed User"
+                  },
+                  "message": "สู้ๆนะคะ ส่งกำลังใจให้",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_3333333333",
+                  "created_time": 1761546898,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add",
+                  "attachments": {
+                    "data": [
+                      {
+                        "type": "photo",
+                        "url": "https://example.com/support.jpg"
+                      }
+                    ]
+                  }
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 8: Normal Text",
+      "description": "User posts normal comment without special keywords",
+      "expected": {
+        "contentType": "text",
+        "intent": "normal",
+        "route": "log",
+        "action": "Log only (FB_REPLY_TO_NORMAL=false by default)"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761546950,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "44444444444",
+                    "name": "Normal User"
+                  },
+                  "message": "อร่อยมาก ถูกใจเลยครับ",
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_4444444444",
+                  "created_time": 1761546948,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 9: Empty Comment",
+      "description": "Edge case: comment with no message and no attachments",
+      "expected": {
+        "contentType": "empty",
+        "intent": "unknown",
+        "route": "log",
+        "action": "Log only"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761547000,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "55555555555",
+                    "name": "Edge Case User"
+                  },
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_5555555555",
+                  "created_time": 1761546998,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    },
+    {
+      "name": "Test 10: Video Only",
+      "description": "User posts video without text",
+      "expected": {
+        "contentType": "video",
+        "intent": "unknown",
+        "route": "log",
+        "action": "Log only (FB_REPLY_TO_VIDEO=false by default)"
+      },
+      "payload": {
+        "entry": [
+          {
+            "id": "889083480945134",
+            "time": 1761547050,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "66666666666",
+                    "name": "Video User"
+                  },
+                  "post_id": "889083480945134_122103846645077607",
+                  "comment_id": "122103846645077607_6666666666",
+                  "created_time": 1761547048,
+                  "item": "comment",
+                  "parent_id": "889083480945134_122103846645077607",
+                  "verb": "add",
+                  "attachments": {
+                    "data": [
+                      {
+                        "type": "video",
+                        "url": "https://example.com/video.mp4"
+                      }
+                    ]
+                  }
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+    }
+  ]
+}

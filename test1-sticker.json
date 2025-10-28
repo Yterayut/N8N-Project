@@ -1,0 +1,26 @@
+{
+  "entry": [
+    {
+      "id": "889083480945134",
+      "time": 1761545561,
+      "changes": [
+        {
+          "value": {
+            "from": {
+              "id": "25617669544483307",
+              "name": "Test Sticker User"
+            },
+            "post_id": "889083480945134_122103846645077607",
+            "comment_id": "122103846645077607_TEST_STICKER_001",
+            "created_time": 1761545557,
+            "item": "comment",
+            "parent_id": "889083480945134_122103846645077607",
+            "verb": "add"
+          },
+          "field": "feed"
+        }
+      ]
+    }
+  ],
+  "object": "page"
+}
