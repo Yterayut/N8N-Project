@@ -1,26 +1,44 @@
 // Enhanced Code Node for n8n Workflow 3
-// Supports: text, sticker, photo, video, gif, mixed, empty comments
-// Version: 2.0 (27 Oct 2025)
+// Supports: text, sticker, photo, video, gif, mixed, dedupe, multi-page
+// Version: 3.0 (31 Oct 2025)
 
 // ========== Configuration ==========
 const items = $input.all();
 const results = [];
 
-const DEFAULT_COMPLAINT_URL = $env.FB_COMPLAINT_FORM_URL || 'https://docs.google.com/forms';
-const DEFAULT_STICKER_ID = $env.FB_POSITIVE_STICKER_ID || '369239343222814';
+const staticData = $getWorkflowStaticData('global');
+if (!staticData.processedComments) staticData.processedComments = {};
+
+const dedupeWindowMs = Number($env.FB_REPLY_DEDUPE_WINDOW_MS || 6 * 60 * 60 * 1000);
+const now = Date.now();
+if (!staticData.processedCommentsCleanup || now - staticData.processedCommentsCleanup > dedupeWindowMs) {
+  for (const key of Object.keys(staticData.processedComments)) {
+    if (now - staticData.processedComments[key] > dedupeWindowMs) {
+      delete staticData.processedComments[key];
+    }
+  }
+  staticData.processedCommentsCleanup = now;
+}
+
+const DEFAULT_COMPLAINT_URL = ($env.FB_COMPLAINT_FORM_URL || 'https://docs.google.com/forms').trim();
+const DEFAULT_STICKER_ID = ($env.FB_POSITIVE_STICKER_ID || '369239343222814').trim();
+
+const BASE_APP_ID = ($env.FB_APP_ID || '').trim();
+const BASE_APP_SECRET = ($env.FB_APP_SECRET || '').trim();
+const BASE_VERIFY_TOKEN = ($env.FB_VERIFY_TOKEN || '').trim();
 
 // Response Policies
-const REPLY_TO_STICKER = ($env.FB_REPLY_TO_STICKER || 'true') === 'true';
-const REPLY_TO_PHOTO = ($env.FB_REPLY_TO_PHOTO || 'false') === 'true';
-const REPLY_TO_VIDEO = ($env.FB_REPLY_TO_VIDEO || 'false') === 'true';
-const REPLY_TO_QUESTION = ($env.FB_REPLY_TO_QUESTION || 'false') === 'true';
-const REPLY_TO_NORMAL = ($env.FB_REPLY_TO_NORMAL || 'false') === 'true';
+const REPLY_TO_STICKER = parseBoolean($env.FB_REPLY_TO_STICKER, true);
+const REPLY_TO_PHOTO = parseBoolean($env.FB_REPLY_TO_PHOTO, false);
+const REPLY_TO_VIDEO = parseBoolean($env.FB_REPLY_TO_VIDEO, false);
+const REPLY_TO_QUESTION = parseBoolean($env.FB_REPLY_TO_QUESTION, false);
+const REPLY_TO_NORMAL = parseBoolean($env.FB_REPLY_TO_NORMAL, false);
 
 // Notification Policies
-const NOTIFY_ALL = ($env.FB_NOTIFY_ALL || 'false') === 'true';
-const NOTIFY_COMPLAINT = ($env.FB_NOTIFY_COMPLAINT || 'true') === 'true';
-const NOTIFY_QUESTION = ($env.FB_NOTIFY_QUESTION || 'true') === 'true';
-const NOTIFY_NEGATIVE = ($env.FB_NOTIFY_NEGATIVE || 'true') === 'true';
+const NOTIFY_ALL = parseBoolean($env.FB_NOTIFY_ALL, false);
+const NOTIFY_COMPLAINT = parseBoolean($env.FB_NOTIFY_COMPLAINT, true);
+const NOTIFY_QUESTION = parseBoolean($env.FB_NOTIFY_QUESTION, true);
+const NOTIFY_NEGATIVE = parseBoolean($env.FB_NOTIFY_NEGATIVE, true);
 
 // Keywords
 const DEFAULT_COMPLAINT_KEYWORDS = parseKeywordList($env.FB_COMPLAINT_KEYWORDS, [
@@ -43,48 +61,174 @@ const DEFAULT_QUESTION_KEYWORDS = parseKeywordList($env.FB_QUESTION_KEYWORDS, [
   'ที่อยู่', 'อยู่ไหน', 'เปิดกี่โมง', 'ส่ง', 'เดลิเวอรี่'
 ]);
 
-// Page configs
-const pageConfigs = {
-  '889083480945134': createPageConfig({
+const LINE_ID_REGEX = /^U[0-9a-fA-F]{32}$/;
+
+const BASE_PAGE_DEFINITIONS = [
+  {
     pageId: '889083480945134',
-    pageName: 'จ๊ะศรีกล้วยทอด',
-    pageAccessToken: $env.FB_PAGE_ACCESS_TOKEN || '',
-    complaintUrl: DEFAULT_COMPLAINT_URL,
-    stickerId: DEFAULT_STICKER_ID,
-    lineChannelAccessToken: $env.LINE_CHANNEL_ACCESS_TOKEN || '',
-    lineTargetUserIds: parseIdList($env.LINE_ALERT_USER_IDS)
-  })
-};
+    pageName: 'จ๊ะศรีกล้วยทอด'
+  },
+  {
+    pageId: '840212645843493',
+    pageName: 'ความสุขนักวิ่ง'
+  },
+  {
+    pageId: '102450935821483',
+    pageName: 'พชร จันทรรวงทอง'
+  }
+];
+
+const pageConfigs = {};
+for (const definition of BASE_PAGE_DEFINITIONS) {
+  const cfg = createPageConfig(definition);
+  pageConfigs[cfg.pageId] = cfg;
+}
 
 // ========== Helper Functions ==========
 
-function createPageConfig({ pageId, pageName, pageAccessToken, complaintUrl, stickerId, lineChannelAccessToken, lineTargetUserIds }) {
+function parseBoolean(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalised = value.toString().trim().toLowerCase();
+  if (['true', '1', 'yes', 'y', 'on'].includes(normalised)) return true;
+  if (['false', '0', 'no', 'n', 'off'].includes(normalised)) return false;
+  return fallback;
+}
+
+function createPageConfig({
+  pageId,
+  pageName,
+  pageAccessToken,
+  complaintUrl,
+  stickerId,
+  lineChannelAccessToken,
+  lineTargetUserIds,
+  appId,
+  appSecret,
+  verifyToken,
+  active
+}) {
   const envSuffix = pageId ? pageId.trim().replace(/[^0-9A-Z]+/gi, '_').toUpperCase() : '';
-  if (!pageAccessToken && envSuffix) {
+
+  let resolvedActive = active === undefined ? true : Boolean(active);
+  if (envSuffix) {
+    const envActiveKey = `FB_PAGE_ACTIVE_${envSuffix}`;
+    if ($env[envActiveKey] !== undefined) {
+      resolvedActive = parseBoolean($env[envActiveKey], resolvedActive);
+    }
+  }
+
+  const basePageToken = ($env.FB_PAGE_ACCESS_TOKEN || '').trim();
+
+  let resolvedPageAccessToken = (pageAccessToken || '').trim();
+  if (envSuffix) {
     const envKey = `FB_PAGE_ACCESS_TOKEN_${envSuffix}`;
-    pageAccessToken = $env[envKey] || pageAccessToken;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedPageAccessToken = envValue;
+    }
   }
-  if ((!lineTargetUserIds || lineTargetUserIds.length === 0) && envSuffix) {
+  if (!resolvedPageAccessToken) {
+    resolvedPageAccessToken = basePageToken;
+  }
+
+  let resolvedLineTargets = Array.isArray(lineTargetUserIds) ? lineTargetUserIds : parseIdList(lineTargetUserIds);
+  if (envSuffix) {
     const envKey = `LINE_ALERT_USER_IDS_${envSuffix}`;
-    lineTargetUserIds = parseIdList($env[envKey]);
+    const envValue = $env[envKey];
+    if (envValue) {
+      resolvedLineTargets = parseIdList(envValue);
+    }
   }
-  if (!lineChannelAccessToken && envSuffix) {
+  if (!resolvedLineTargets || resolvedLineTargets.length === 0) {
+    resolvedLineTargets = parseIdList($env.LINE_ALERT_USER_IDS);
+  }
+  resolvedLineTargets = resolvedLineTargets
+    .map((id) => (typeof id === 'string' ? id.trim() : ''))
+    .filter((id) => LINE_ID_REGEX.test(id));
+
+  let resolvedLineToken = (lineChannelAccessToken || '').trim();
+  if (envSuffix) {
     const envKey = `LINE_CHANNEL_ACCESS_TOKEN_${envSuffix}`;
-    lineChannelAccessToken = $env[envKey] || lineChannelAccessToken;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedLineToken = envValue;
+    }
   }
-  if (!complaintUrl && envSuffix) {
+  if (!resolvedLineToken) {
+    resolvedLineToken = ($env.LINE_CHANNEL_ACCESS_TOKEN || '').trim();
+  }
+
+  let resolvedComplaintUrl = (complaintUrl || '').trim();
+  if (envSuffix) {
     const envKey = `FB_COMPLAINT_FORM_URL_${envSuffix}`;
-    complaintUrl = $env[envKey] || complaintUrl;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedComplaintUrl = envValue;
+    }
   }
+  if (!resolvedComplaintUrl) {
+    resolvedComplaintUrl = DEFAULT_COMPLAINT_URL;
+  }
+
+  let resolvedStickerId = (stickerId || '').trim() || DEFAULT_STICKER_ID;
+  if (envSuffix) {
+    const envKey = `FB_POSITIVE_STICKER_ID_${envSuffix}`;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedStickerId = envValue;
+    }
+  }
+
+  let resolvedAppId = (appId || '').trim();
+  if (envSuffix) {
+    const envKey = `FB_APP_ID_${envSuffix}`;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedAppId = envValue;
+    }
+  }
+  if (!resolvedAppId) {
+    resolvedAppId = BASE_APP_ID;
+  }
+
+  let resolvedAppSecret = (appSecret || '').trim();
+  if (envSuffix) {
+    const envKey = `FB_APP_SECRET_${envSuffix}`;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedAppSecret = envValue;
+    }
+  }
+  if (!resolvedAppSecret) {
+    resolvedAppSecret = BASE_APP_SECRET;
+  }
+
+  let resolvedVerifyToken = (verifyToken || '').trim();
+  if (envSuffix) {
+    const envKey = `FB_VERIFY_TOKEN_${envSuffix}`;
+    const envValue = ($env[envKey] || '').trim();
+    if (envValue) {
+      resolvedVerifyToken = envValue;
+    }
+  }
+  if (!resolvedVerifyToken) {
+    resolvedVerifyToken = BASE_VERIFY_TOKEN;
+  }
+
+  const resolvedPageName = (pageName || '').trim() || pageId;
 
   return {
     pageId,
-    pageName: pageName || pageId,
-    pageAccessToken: pageAccessToken || '',
-    complaintUrl: complaintUrl || DEFAULT_COMPLAINT_URL,
-    stickerId: stickerId || DEFAULT_STICKER_ID,
-    lineChannelAccessToken: lineChannelAccessToken || '',
-    lineTargetUserIds: Array.isArray(lineTargetUserIds) ? lineTargetUserIds.filter(Boolean) : [],
+    pageName: resolvedPageName,
+    pageAccessToken: resolvedPageAccessToken,
+    complaintUrl: resolvedComplaintUrl,
+    stickerId: resolvedStickerId,
+    lineChannelAccessToken: resolvedLineToken,
+    lineTargetUserIds: resolvedLineTargets,
+    appId: resolvedAppId,
+    appSecret: resolvedAppSecret,
+    verifyToken: resolvedVerifyToken,
+    active: resolvedActive,
     keywords: {
       complaint: DEFAULT_COMPLAINT_KEYWORDS,
       encouragement: DEFAULT_ENCOURAGEMENT_KEYWORDS,
@@ -96,12 +240,13 @@ function createPageConfig({ pageId, pageName, pageAccessToken, complaintUrl, sti
 
 function parseKeywordList(rawValue, fallback) {
   if (!rawValue) {
-    return Array.isArray(fallback) ? fallback : [];
+    return Array.isArray(fallback) ? fallback.map((entry) => sanitizeKeyword(entry)).filter(Boolean) : [];
   }
   if (Array.isArray(rawValue)) {
     return rawValue.map((entry) => sanitizeKeyword(entry)).filter(Boolean);
   }
   return rawValue
+    .toString()
     .split(/[\n,]/)
     .map((entry) => sanitizeKeyword(entry))
     .filter(Boolean);
@@ -111,6 +256,7 @@ function parseIdList(rawValue) {
   if (!rawValue) return [];
   if (Array.isArray(rawValue)) return rawValue.map((entry) => entry.toString().trim()).filter(Boolean);
   return rawValue
+    .toString()
     .split(/[\n,]/)
     .map((entry) => entry.toString().trim())
     .filter(Boolean);
@@ -119,6 +265,7 @@ function parseIdList(rawValue) {
 function sanitizeKeyword(value) {
   if (!value) return '';
   return stripAccents(value.toString())
+    .replace(/^["']+|["']+$/g, '')
     .replace(/\s+/g, ' ')
     .toLowerCase()
     .trim();
@@ -166,6 +313,7 @@ function formatTimestamp(timestamp) {
 function toSheetDefaults(base = {}) {
   return {
     sheetTimestamp: base.sheetTimestamp || '',
+    sheetPageId: base.sheetPageId || '',
     sheetPostId: base.sheetPostId || '',
     sheetCommentId: base.sheetCommentId || '',
     sheetUserName: base.sheetUserName || '',
@@ -183,30 +331,26 @@ function isQuestion(message) {
   return message.includes('?') || message.includes('ไหม') || message.includes('หรือ');
 }
 
-// ========== NEW: Content Type Detection ==========
+// ========== Content & Intent Detection ==========
 
 function detectContentType(value) {
   const message = value.message || '';
   const attachments = value.attachments?.data || [];
 
-  // Empty check
   if (!message && attachments.length === 0 && !value.sticker_id) {
     return 'empty';
   }
 
-  // Check for sticker (Facebook doesn't send attachments for stickers, only absence of message)
   const hasSticker = value.sticker_id || (!message && attachments.length === 0);
-  const hasPhoto = attachments.some(a => a.type === 'photo');
-  const hasVideo = attachments.some(a => a.type === 'video');
-  const hasGif = attachments.some(a => a.type === 'animated_image_share');
-  const hasLink = attachments.some(a => a.type === 'share');
+  const hasPhoto = attachments.some((a) => a.type === 'photo');
+  const hasVideo = attachments.some((a) => a.type === 'video');
+  const hasGif = attachments.some((a) => a.type === 'animated_image_share');
+  const hasLink = attachments.some((a) => a.type === 'share');
 
-  // Mixed content (text + media)
   if (message && (hasSticker || hasPhoto || hasVideo || hasGif || hasLink)) {
     return 'mixed';
   }
 
-  // Media only (no text)
   if (!message) {
     if (hasSticker) return 'sticker';
     if (hasPhoto) return 'photo';
@@ -216,23 +360,18 @@ function detectContentType(value) {
     return 'unknown_media';
   }
 
-  // Text only
   return 'text';
 }
 
-// ========== NEW: Intent Detection ==========
-
 function detectIntent(contentType, message, keywords) {
-  // No text = unknown intent
   if (!message || ['sticker', 'photo', 'video', 'gif', 'link'].includes(contentType)) {
     return 'unknown';
   }
 
   const normalized = normaliseText(message);
 
-  // Priority order (highest to lowest)
   if (includesKeyword(normalized, keywords.negative)) {
-    return 'negative';  // Must delete
+    return 'negative';
   }
   if (includesKeyword(normalized, keywords.complaint)) {
     return 'complaint';
@@ -247,45 +386,34 @@ function detectIntent(contentType, message, keywords) {
   return 'normal';
 }
 
-// ========== NEW: Route Decision ==========
-
-function decideRoute(contentType, intent, config) {
-  // Policy 1: Negative must be deleted
+function decideRoute(contentType, intent, policy) {
   if (intent === 'negative') {
     return 'fb_negative';
   }
-
-  // Policy 2: Reply based on intent
   if (intent === 'complaint') return 'fb_complaint';
   if (intent === 'encouragement') return 'fb_encouragement';
 
-  // Policy 3: Media-only comments
   if (contentType === 'sticker') {
-    return config.replyToSticker ? 'fb_sticker' : 'log';
+    return policy.replyToSticker ? 'fb_sticker' : 'log';
   }
   if (contentType === 'photo') {
-    return config.replyToPhoto ? 'fb_photo' : 'log';
+    return policy.replyToPhoto ? 'fb_photo' : 'log';
   }
   if (contentType === 'video') {
-    return config.replyToVideo ? 'fb_video' : 'log';
+    return policy.replyToVideo ? 'fb_video' : 'log';
   }
-
-  // Policy 4: Questions
   if (intent === 'question') {
-    return config.replyToQuestion ? 'fb_question' : 'log';
+    return policy.replyToQuestion ? 'fb_question' : 'log';
   }
 
-  // Policy 5: Mixed content - intent takes priority
   if (contentType === 'mixed' && intent !== 'normal' && intent !== 'unknown') {
     return `fb_${intent}`;
   }
 
-  // Policy 6: Normal text
   if (contentType === 'text' && intent === 'normal') {
-    return config.replyToNormal ? 'fb_normal' : 'log';
+    return policy.replyToNormal ? 'fb_normal' : 'log';
   }
 
-  // Default: log only
   return 'log';
 }
 
@@ -297,7 +425,6 @@ for (const item of items) {
   const baseUrl = (webhookUrl || fallbackBase).replace(/\/$/, '');
   const body = item.json.body ?? item.json;
 
-  // ========== LINE Events Processing ==========
   if (body && Array.isArray(body.events)) {
     for (const event of body.events) {
       if (!event || event.type !== 'message' || !event.message) {
@@ -317,6 +444,7 @@ for (const item of items) {
         contentType: 'text',
         intent: 'unknown',
         sheetTimestamp: timestamp,
+        sheetPageId: '',
         sheetPostId: '',
         sheetCommentId: '',
         sheetUserName: '',
@@ -361,11 +489,16 @@ for (const item of items) {
     continue;
   }
 
-  // ========== Facebook Events Processing ==========
   if (body && Array.isArray(body.entry)) {
     for (const entry of body.entry) {
       const pageId = entry.id || body.id || '';
+      if (!pageId) {
+        continue;
+      }
+
       const pageConfig = pageConfigs[pageId] || createPageConfig({ pageId });
+      pageConfigs[pageId] = pageConfig;
+
       const changes = entry.changes || [];
 
       for (const change of changes) {
@@ -380,12 +513,11 @@ for (const item of items) {
           continue;
         }
 
-        // ========== NEW: Content & Intent Detection ==========
         const message = value.message || '';
         const contentType = detectContentType(value);
         const intent = detectIntent(contentType, message, pageConfig.keywords);
 
-        const config = {
+        const policy = {
           replyToSticker: REPLY_TO_STICKER,
           replyToPhoto: REPLY_TO_PHOTO,
           replyToVideo: REPLY_TO_VIDEO,
@@ -393,36 +525,60 @@ for (const item of items) {
           replyToNormal: REPLY_TO_NORMAL
         };
 
-        const route = decideRoute(contentType, intent, config);
+        let route = decideRoute(contentType, intent, policy);
 
-        // Sheet row data
         const sheetTimestamp = formatTimestamp((value.created_time || value.timestamp) ? (Number(value.created_time || value.timestamp) * 1000) : Date.now());
         const sheetRow = {
           sheetTimestamp,
+          sheetPageId: pageId,
           sheetPostId: value.post_id || '',
           sheetCommentId: value.comment_id,
           sheetUserName: value.sender_name || value.from?.name || '',
           sheetUserId: value.sender_id || value.from?.id || '',
-          sheetOriginalComment: message || (contentType === 'sticker' ? '[sticker]' : contentType === 'photo' ? '[photo]' : contentType === 'video' ? '[video]' : '[media]'),
+          sheetOriginalComment: message || (contentType === 'sticker' ? '[sticker]' : contentType === 'photo' ? '[photo]' : contentType === 'video' ? '[video]' : '[media]')
         };
 
         const commentUrl = buildCommentUrl(pageId, value.post_id, value.comment_id);
 
-        // Determine reply message and status based on route
+        const dedupeKey = value.comment_id ? `${pageId}_${value.comment_id}` : `${pageId}_${value.comment_id || ''}`;
+        const lastProcessedAt = staticData.processedComments[dedupeKey];
+        const isDuplicate = Boolean(lastProcessedAt && (now - lastProcessedAt) < dedupeWindowMs);
+        if (!isDuplicate) {
+          staticData.processedComments[dedupeKey] = now;
+        }
+
+        const isSelfComment = Boolean(
+          (value.sender_id && value.sender_id === pageId) ||
+          (value.from?.id && value.from.id === pageId)
+        );
+
         let sheetType = `FB_${contentType.toUpperCase()}`;
         let sheetReplyMessage = '';
         let sheetStatus = 'FB_LOG';
         let replyMessage = '';
         let lineMessage = '';
-        let stickerId = pageConfig.stickerId;
+        const stickerId = pageConfig.stickerId;
 
-        const canAct = Boolean(pageConfig.pageAccessToken);
-        const lineTargets = Array.isArray(pageConfig.lineTargetUserIds) ? pageConfig.lineTargetUserIds.filter(Boolean) : [];
+        const hasPageToken = Boolean(pageConfig.pageAccessToken);
+        const lineTargets = Array.isArray(pageConfig.lineTargetUserIds) ? pageConfig.lineTargetUserIds : [];
         const lineToken = pageConfig.lineChannelAccessToken;
-        const lineEnabled = Boolean(lineToken) && lineTargets.length > 0;
+        const lineEnabled = Boolean(lineToken) && lineTargets.length > 0 && !isSelfComment && !isDuplicate;
 
-        // Build response based on route
-        if (!canAct) {
+        if (!pageConfig.active) {
+          route = 'log';
+          sheetType = 'FB_DISABLED';
+          sheetStatus = 'SKIPPED: PAGE_DISABLED';
+        } else if (isSelfComment) {
+          route = 'log';
+          sheetType = 'FB_SELF_COMMENT';
+          sheetStatus = 'SKIPPED: SELF_COMMENT';
+        } else if (isDuplicate) {
+          route = 'log';
+          sheetType = 'FB_DUPLICATE';
+          sheetStatus = 'SKIPPED: DUPLICATE_COMMENT';
+        } else if (!hasPageToken) {
+          route = 'log';
+          sheetType = `FB_${contentType.toUpperCase()}`;
           sheetStatus = 'SKIPPED: NO_PAGE_TOKEN';
         } else if (route === 'fb_negative') {
           sheetType = 'FB_NEGATIVE';
@@ -451,7 +607,7 @@ for (const item of items) {
           replyMessage = 'ขอบคุณสำหรับกำลังใจที่มอบให้กันนะคะ ❤️';
           sheetReplyMessage = replyMessage;
           sheetStatus = 'FB_ENCOURAGEMENT_REPLY';
-          lineMessage = NOTIFY_ALL ? [
+          lineMessage = (NOTIFY_ALL || parseBoolean($env.FB_NOTIFY_ENCOURAGEMENT, false)) ? [
             `[Facebook] มีคอมเมนต์ให้กำลังใจบนเพจ ${pageConfig.pageName}`,
             sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',
             message ? `ข้อความ: ${message}` : '',
@@ -477,7 +633,19 @@ for (const item of items) {
             message ? `คำถาม: ${message}` : '',
             commentUrl ? `ลิงก์: ${commentUrl}` : ''
           ].filter(Boolean).join('\n') : '';
+        } else if (route === 'fb_normal') {
+          sheetType = 'FB_NORMAL';
+          replyMessage = 'ขอบคุณสำหรับข้อความจากคุณนะคะ หากต้องการข้อมูลเพิ่มเติมแจ้งเราได้เลยค่ะ 🙏';
+          sheetReplyMessage = replyMessage;
+          sheetStatus = 'FB_NORMAL_REPLY';
+          lineMessage = NOTIFY_ALL ? [
+            `[Facebook] คอมเมนต์ใหม่บนเพจ ${pageConfig.pageName}`,
+            sheetRow.sheetUserName ? `ผู้ใช้: ${sheetRow.sheetUserName}` : '',
+            message ? `ข้อความ: ${message}` : '',
+            commentUrl ? `ลิงก์คอมเมนต์: ${commentUrl}` : ''
+          ].filter(Boolean).join('\n') : '';
         } else {
+          sheetType = `FB_${contentType.toUpperCase()}`;
           sheetStatus = 'FB_LOG';
           sheetReplyMessage = '';
           lineMessage = NOTIFY_ALL ? [
@@ -497,6 +665,7 @@ for (const item of items) {
           contentType,
           intent,
           sheetTimestamp,
+          sheetPageId: sheetRow.sheetPageId,
           sheetPostId: sheetRow.sheetPostId,
           sheetCommentId: sheetRow.sheetCommentId,
           sheetUserName: sheetRow.sheetUserName,
@@ -506,7 +675,7 @@ for (const item of items) {
           sheetReplyMessage,
           sheetNotifiedChannel: notifiedChannel,
           sheetStatus,
-          message: message,
+          message,
           messageType: contentType === 'sticker' ? 'sticker' : contentType === 'photo' ? 'photo' : contentType === 'video' ? 'video' : 'text',
           facebook: {
             pageId,
@@ -516,6 +685,9 @@ for (const item of items) {
             parentId: value.parent_id || '',
             commentUrl,
             pageAccessToken: pageConfig.pageAccessToken,
+            appId: pageConfig.appId || BASE_APP_ID,
+            appSecret: pageConfig.appSecret || BASE_APP_SECRET,
+            verifyToken: pageConfig.verifyToken || BASE_VERIFY_TOKEN,
             reply: replyMessage
               ? {
                   type: 'text',
@@ -547,7 +719,6 @@ for (const item of items) {
     continue;
   }
 
-  // Unsupported payload -> log only
   results.push({
     json: toSheetDefaults({
       sheetTimestamp: formatTimestamp(Date.now()),
