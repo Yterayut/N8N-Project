@@ -1,0 +1,158 @@
+{
+  "exported_at": "2026-02-22T14:31:16.719Z",
+  "source_workflow_id": "sSrKcFxY1Wxk5HGH",
+  "source_workflow_name": "OCR Daily Summary (Telegram)",
+  "note": "Sanitized export for sharing. Credentials and sensitive values are redacted.",
+  "workflow": {
+    "id": "sSrKcFxY1Wxk5HGH",
+    "name": "OCR Daily Summary (Telegram)",
+    "active": false,
+    "versionId": "3972c61e-b593-42a8-a1a0-7a86de9b3057",
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": {},
+    "pinData": {},
+    "meta": {},
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "id": "exec-trigger-ocr-daily",
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -200
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "days",
+                "triggerAtHour": 20,
+                "triggerAtMinute": 30
+              }
+            ]
+          }
+        },
+        "id": "schedule-trigger-ocr-daily",
+        "name": "Daily OCR Summary Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0",
+            "mode": "list",
+            "cachedResultName": "OCM-INFRA",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/{{REDACTED_SHEET_ID}}/edit"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1923516144,
+            "mode": "list",
+            "cachedResultName": "OCR_RAW",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/{{REDACTED_SHEET_ID}}/edit#gid=1923516144"
+          },
+          "options": {}
+        },
+        "id": "google-sheets-ocr-raw-read",
+        "name": "Google Sheets (OCR_RAW)",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          260,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function toNum(v){ if(v===null||v===undefined||v==='') return 0; const n=Number(String(v).replace(/,/g,'').trim()); return Number.isFinite(n)?n:0; }\nfunction pick(o, keys){ for(const k of keys){ if(o && o[k] !== undefined && o[k] !== null && String(o[k]).trim() !== '') return o[k]; } return ''; }\nfunction parseThaiDateTime(value){ if(!value) return null; const parts=String(value).match(/\\d+/g); if(!parts||parts.length<3) return null; let [d,m,y,h='0',mi='0',s='0']=parts.map(Number); if(y>2500) y-=543; if(!d||!m||!y) return null; return Date.UTC(y,m-1,d,h,mi,s); }\nfunction getTs(row){ const iso = pick(row,['created_at_iso','createdAtIso','ISO_Timestamp']); if(iso){ const t = Date.parse(String(iso)); if(!Number.isNaN(t)) return t; } const th = pick(row,['created_at','Timestamp','timestamp']); if(th){ const t = Date.parse(String(th)); if(!Number.isNaN(t)) return t; const t2 = parseThaiDateTime(th); if(t2) return t2; } return null; }\nfunction bkkRange(nowMs=Date.now()){ const bkkMs = nowMs + 7*3600*1000; const d = new Date(bkkMs); const y=d.getUTCFullYear(), m=d.getUTCMonth(), da=d.getUTCDate(); return { start: Date.UTC(y,m,da,0,0,0,0), end: Date.UTC(y,m,da,23,59,59,999), label: new Intl.DateTimeFormat('th-TH',{timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date(nowMs))}; }\nconst rows = $input.all().map(i=>i.json||{});\nconst {start,end,label} = bkkRange();\nlet totalRows=0, successRows=0, errorRows=0, parseErrorRows=0, needsReview=0, autoPass=0;\nlet prompt=0, output=0, tokens=0, cost=0, bills=0, warningRows=0;\nconst docTypeCounts={};\nfor(const r of rows){ const ts=getTs(r); if(!ts || ts<start || ts>end) continue; totalRows++; const status=String(pick(r,['status'])||'').toLowerCase(); const decision=String(pick(r,['decision'])||'').toLowerCase(); if(status==='success') successRows++; else if(status==='parse_error') parseErrorRows++; else errorRows++; if(decision==='needs_review') needsReview++; if(decision==='auto_pass') autoPass++; prompt += toNum(pick(r,['prompt_tokens'])); output += toNum(pick(r,['candidates_tokens','output_tokens'])); tokens += toNum(pick(r,['total_tokens'])); cost += toNum(pick(r,['est_cost_thb'])); bills += toNum(pick(r,['bills_count'])); const dt = String(pick(r,['doc_type'])||'unknown').toLowerCase(); docTypeCounts[dt]=(docTypeCounts[dt]||0)+1; const ve = String(pick(r,['validation_errors'])||'').trim(); if(ve && ve !== '[]') warningRows++; }\nconst docTop = Object.entries(docTypeCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);\nconst lines=[]; lines.push(`<b>[OCR Daily Summary]</b> ${label} (Asia/Bangkok)`); lines.push(`รวมงาน OCR วันนี้: ${totalRows}`); lines.push(`- success: ${successRows}`); if(parseErrorRows) lines.push(`- parse_error: ${parseErrorRows}`); if(errorRows) lines.push(`- error: ${errorRows}`); lines.push(`- auto_pass: ${autoPass}`); lines.push(`- needs_review: ${needsReview}`); lines.push(`- rows with warnings: ${warningRows}`); lines.push(`- bills extracted: ${bills}`); lines.push(''); lines.push('<b>Token</b>'); lines.push(`- prompt: ${prompt}`); lines.push(`- output: ${output}`); lines.push(`- total: ${tokens}`); lines.push(`ค่าใช้จ่ายรวมโดยประมาณ: ${cost.toFixed(4)} บาท`); if(docTop.length){ lines.push(''); lines.push('<b>Doc Type (top)</b>'); for(const [k,v] of docTop){ lines.push(`- ${k}: ${v}`); } } const notes=[]; if(errorRows>0) notes.push('มี error ควรเช็ก Log OCR'); if(warningRows>0) notes.push('มี validation warning ควรสุ่มตรวจ'); if(notes.length){ lines.push(''); lines.push('<b>ข้อควรรู้</b>'); for(const n of notes) lines.push(`- ${n}`);} return [{ json: { summary_date: label, totalRows, successRows, errorRows, parseErrorRows, needsReview, autoPass, warningRows, billsExtracted: bills, prompt_tokens: prompt, output_tokens: output, total_tokens: tokens, est_cost_thb: Number(cost.toFixed(4)), doc_type_counts: docTypeCounts, telegram_text: lines.join('\\n') } }];"
+        },
+        "id": "build-ocr-daily-summary",
+        "name": "Build OCR Daily Summary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          520,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "chatId": "={{$env.TELEGRAM_OCR_CHAT_ID || '1776637578'}}",
+          "text": "={{ $json.telegram_text }}",
+          "additionalFields": {
+            "parse_mode": "HTML"
+          }
+        },
+        "id": "telegram-ocr-daily-summary",
+        "name": "Telegram (OCR Daily Summary)",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          800,
+          0
+        ],
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Daily OCR Summary Trigger": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets (OCR_RAW)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets (OCR_RAW)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Sheets (OCR_RAW)": {
+        "main": [
+          [
+            {
+              "node": "Build OCR Daily Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build OCR Daily Summary": {
+        "main": [
+          [
+            {
+              "node": "Telegram (OCR Daily Summary)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}
