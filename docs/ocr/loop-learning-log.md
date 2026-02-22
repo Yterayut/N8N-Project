@@ -25,3 +25,25 @@
   - top doc_type summary
 - Activated workflow and restarted n8n to ensure cron registration is loaded.
 - Hardened `start-n8n.sh` `.env` loading to ignore invalid shell variable names (e.g. keys containing `-`) so restart does not fail after adding helper GitHub env entries.
+
+## 2026-02-23: Electricity loop (round 1) — multi-meter invoice + notice template
+
+- Tested `บิลค่าไฟ.pdf` (`doc_type=electricity`, 5 bills) and `ใบแจ้งค่าไฟ.pdf` (`doc_type=electricity`, 1 bill).
+- `บิลค่าไฟ.pdf` root cause: false warnings `line_amount_missing` on `ค่า FT` rows for zero-usage meters (unit price present, quantity=0, amount=0 is valid).
+- Implemented electricity-specific validator exception in `Code (Normalize + Validate)` to suppress `line_amount_missing` for FT / power-factor style rows with zero amount.
+- Retest `บิลค่าไฟ.pdf` passed with `validation_errors=[]` and no extraction regression.
+- `ใบแจ้งค่าไฟ.pdf` remains **partial**: invoice number extraction is variable/missing across runs; captured as template profile learning and deferred risky patch pending more samples.
+- Logged round-1 electricity loop to Google Sheets:
+  - `OCR_TRAIN_CASES` (2 rows: one `correct`, one `partial`)
+  - `OCR_KM_LESSONS` (rule change + pattern learning)
+  - `OCR_KM_RUNTIME_RULES` (electricity FT zero-amount exception)
+  - `OCR_RULE_CHANGELOG` (validator tuning entry)
+
+## 2026-02-23: OCR_RAW `bad.pdf` error row (expected negative test)
+
+- `bad.pdf` entry in `OCR_RAW` showing `The document has no pages.` is an expected negative test result (manual failure-path verification).
+- This row is useful evidence for:
+  - API error handling (`OCR_FAILED`)
+  - Telegram failed notification formatting
+  - OCR_RAW logging of error path
+- It is **not** a production OCR regression. Exclude from training datasets and accuracy KPI calculations.
