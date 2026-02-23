@@ -4,10 +4,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Phase** | Phase 3 - Cleanup & Maintainability (COMPLETE) |
+| **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (T020 completed) |
-| **Last Sync** | 2026-02-23 19:05 |
+| **Codex Status** | Idle — please read "Decisions 2026-02-24" below |
+| **Last Sync** | 2026-02-24 |
 | **Base Commit** | 960293a |
 
 ---
@@ -60,6 +60,33 @@ _(none)_
 | T018 | Electricity ref regex widen to /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN | Claude Code | 2026-02-23 | severity downgraded to warning; pattern overridable |
 | T019 | MIME: add TIFF (LE/BE) + HEIC extension detection | Claude Code | 2026-02-23 | sniffMimeFromBase64 + ext handler for heic/heif/tif/tiff |
 | T020 | Phase 3 docs + regression matrix update | Codex | 2026-02-23 | Added `phase3-summary.md`, regression matrix Section 7, updated HANDOFF phase status |
+| T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
+| T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
+
+---
+
+## Decisions 2026-02-24
+
+### improve-by-claude-23-02-2026.md — สรุปสถานะล่าสุด
+
+**COMPLETE ทั้งหมดแล้ว ยกเว้น 1 item ที่ defer:**
+
+| Priority | รายการ | สถานะ |
+|----------|--------|-------|
+| P0 (1 item) | round3 fix | ✅ Done |
+| P1 (7 items) | re-ask, allHeaders, MIME, file limit, queue classifier, retry, URL | ✅ Done |
+| P2 (6/7 items) | pricing env, file size guard, sanitize error, remove disabled nodes, few-shot, HTTP re-ask | ✅ Done |
+| P2 | Google Sheets → DB migration | ⏸ **DEFERRED** — ใช้ Google Sheets ต่อไปก่อน ยังไม่ทำตอนนี้ |
+| P3 (9 items) | queue batch env, SLA env, Telegram dynamic, file_id fix, reask conf, elec regex, TIFF/HEIC, workflow rename, nowThai consolidation | ✅ Done |
+
+### Workflow Rename
+- `test-workflow` (ID: `up1n75qEhbsXswii`) → **`ocr-invoice-processor`**
+- มีผลทั้งใน n8n live และ JSON exports
+
+### nowThai() Policy
+- ทุก Code node ที่ใช้ nowThai() ต้องมี `// [SHARED]` canonical block เหมือนกัน
+- ห้ามแก้เฉพาะ node เดียว — ต้องอัปเดตพร้อมกันทุก node ที่ระบุใน comment
+- ตรวจสอบได้ด้วย: `./scripts/verify_nowThai_sync.sh`
 
 ---
 
@@ -97,6 +124,7 @@ _(none)_
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 | sync | claude | T021+T022 complete; improve plan 100% done (1 deferred); please read Decisions 2026-02-24 |
 | 2026-02-23 19:05 | sync | codex | T020 docs updates after Phase 3 completions |
 | 2026-02-23 18:10 | sync | codex | T014 docs updates after Phase 2 completions |
 | 2026-02-23 10:40 | sync | codex | auto-sync |

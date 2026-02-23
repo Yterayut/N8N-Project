@@ -177,7 +177,7 @@ Google Sheets มีข้อจำกัด:
 - [x] **P1:** เพิ่ม Document Classifier ใน queue path *(FIXED 2026-02-23, T003)*
 - [x] **P1:** แก้ queue worker ให้ retry failed items *(FIXED 2026-02-23, T005)*
 - [x] **P1:** ลบ trailing `\n\n` จาก URL *(FIXED 2026-02-23, T003)*
-- [ ] **P2:** วางแผนย้ายจาก Google Sheets เป็น DB
+- [⏸] **P2:** วางแผนย้ายจาก Google Sheets เป็น DB — *DEFERRED: ยังใช้ Google Sheets ต่อไปก่อน จะกลับมาทำในอนาคต*
 - [x] **P2:** ย้าย hardcoded pricing ไป env var *(FIXED 2026-02-23, T012 — OCR_PRICE_THB_PER_1K_INPUT/OUTPUT)*
 - [x] **P2:** เพิ่ม file size validation *(FIXED 2026-02-23, T007 — max 20MB, configurable via OCR_MAX_FILE_BYTES)*
 - [x] **P2:** sanitize Gemini error ก่อนส่งกลับ client *(FIXED 2026-02-23, T008)*
@@ -191,5 +191,5 @@ Google Sheets มีข้อจำกัด:
 - [x] **P3:** Re-ask confidence floor conditional + OCR_REASK_CONF_BOOST *(FIXED 2026-02-23, T017)*
 - [x] **P3:** Electricity ref regex → /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN, severity=warning *(FIXED 2026-02-23, T018)*
 - [x] **P3:** MIME: TIFF + HEIC detection added *(FIXED 2026-02-23, T019)*
-- [ ] **P3:** nowThai() helper consolidation (copy-paste across nodes)
-- [ ] **P3:** เปลี่ยนชื่อ workflow
+- [x] **P3:** nowThai() helper consolidation — standardized canonical block + `[SHARED]` comment ใน 5 nodes *(FIXED 2026-02-24, verify: scripts/verify_nowThai_sync.sh)*
+- [x] **P3:** เปลี่ยนชื่อ workflow → `ocr-invoice-processor` *(FIXED 2026-02-24)*
