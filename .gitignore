@@ -1,5 +1,9 @@
 # Secrets and credentials
-.env*
+.env
+.env.dev
+.env.local
+.env.test
+!.env.example
 .n8n
 backups/
 logs/
@@ -12,3 +16,6 @@ logs/
 # ngrok/cache/tmp
 .cache/
 *.log
+
+# Agent worktrees
+agents/
