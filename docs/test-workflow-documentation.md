@@ -4,6 +4,7 @@
 **Status:** Inactive (manually triggered via webhooks)
 **Execution Timeout:** 300 seconds
 **Last Export:** 2026-02-23
+**Documentation Sync:** 2026-02-23 (updated after P0/P1 fixes T003/T004/T005)
 
 ---
 
@@ -36,6 +37,7 @@ Client POST /ocr-dev (multipart/form-data with file)
   |
   v
 MIME Type Normalizer --> ตรวจสอบ magic bytes (PDF, JPEG, PNG) แก้ไข MIME ที่ผิด
+  (P1: optimized MIME sniffing to inspect base64 prefix only)
   |
   v
 Extract API Key + Normalize bill_type
@@ -55,6 +57,10 @@ Allowed? --NO--> 429 "Too Many Requests" + Retry-After header
   v
 Continue to Document Classification
 ```
+
+**P1 fixes reflected in Request Validation**
+- `Code in JavaScript5` now propagates `allHeaders` so downstream logging can extract caller IP (`x-forwarded-for`).
+- File-count guard is enforced in queue upload splitting path to prevent excessive fan-out (protects Google Drive/Sheets rate limits).
 
 ### 2. Document Classification & SLA Assignment
 
@@ -90,11 +96,12 @@ Build final Gemini request with file URI + assembled prompt
 
 1. Upload ไฟล์ไปยัง Gemini Files API
 2. เรียก `gemini-2.5-flash:generateContent` (temperature=0.1, JSON response mode)
-3. ถ้า Gemini error --> ตอบ 500 + log error ลง OCR_RAW + ส่ง Telegram notification
+3. ถ้า Gemini error --> ตอบ structured error response + log error ลง OCR_RAW + ส่ง Telegram notification
 
 ### 5. Normalize + Validate (Node หลักของระบบ, ~500 lines)
 
 - **Normalize field names**: เช่น `invoice_no` --> `invoice_number`, `grand_total` --> `total`
+- **P0 helper fix**: `round3()` is available for fleet-card quantity derivation (prevents `ReferenceError`)
 - **Fuel heuristics**: ตรวจจับ LPG manual form (tax ID `0135553012766`), แก้ไข column สลับกัน
 - **Fleet card heuristics**: คำนวณ quantity จาก `amount/unit_price`
 - **Deduplicate within response**: ใช้ tax_id + date + total + invoice number
@@ -117,11 +124,16 @@ Build repair prompt (ระบุ critical errors + current JSON)
 Gemini re-ask call (same model, temp=0.1)
   |
   v
-Merge corrected fields, mark used_reask=true
+Apply Re-ask Result
+  |
+  v
+Normalize + Validate (re-run on repaired payload)
   |
   v
 Finalize Decision
 ```
+
+**P1 fix (T004):** Re-ask results are revalidated before final decision/storage, preventing invalid repaired JSON from bypassing normalization/validation.
 
 ### 7. Final Decision
 
@@ -159,11 +171,15 @@ Append to OCR_QUEUE sheet (status=pending)
 Return 200 "file received"
 ```
 
-**Queue Worker (Disabled)**:
+**Queue Worker (Disabled / rollout-dependent)**:
 - Poll OCR_QUEUE ทุก 1 นาที
 - ดึงงาน pending สูงสุด 10 items
 - ประมวลผลทีละ 1 item (wait 6s ระหว่าง item)
-- Download จาก Google Drive --> Upload to Gemini --> Inference --> Update status=done
+- Download จาก Google Drive --> Upload to Gemini --> Inference
+- Success -> Update status=`done`
+- Failure -> Update status=`error` (P1 fix, T005) for retry/recovery visibility
+
+**P1 fix (T005):** Queue worker no longer marks failed items as `done`. Failed queue items are persisted as `error`.
 
 ---
 
@@ -297,6 +313,15 @@ Return 200 "feedback accepted"
 | 422 | ไม่ได้แนบไฟล์ |
 | 429 | Admission control ปฏิเสธ (ระบบเต็ม) |
 | 500 | Gemini error หรือ internal error |
+
+---
+
+## P0/P1 Fix Notes (2026-02-23)
+
+Following items from `docs/improve-by-claude-23-02-2026.md` were implemented by Claude Code and are reflected in workflow behavior:
+- **T003:** `round3` helper fix, `allHeaders` propagation, MIME sniffing optimization, queue file-count guard, trailing URL newline cleanup
+- **T004:** Re-ask result routed through normalization/validation before finalization
+- **T005:** Queue worker failure status uses `error` (instead of `done`) to preserve retryability
 
 ---
 

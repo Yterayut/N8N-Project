@@ -38,6 +38,10 @@
 - ไม่มีการทำ patch ก่อน audit จบ (ยกเว้น emergency)
 
 ## Phase 1: P0/P1 Stabilization (ต้องแก้ก่อน production)
+### Status (2026-02-23)
+- **Completed by Claude Code (T003/T004/T005)** for all P0/P1 items listed in `docs/improve-by-claude-23-02-2026.md`
+- Documentation sync (T006) updates this plan to reflect completion and move focus to Phase 2
+
 ### Scope
 - P0 + P1 ทั้งหมดใน `docs/improve.md` (เฉพาะที่ audit แล้วว่ายัง open)
 
@@ -68,9 +72,9 @@
 - KM/changelog entries
 
 ### Gate ผ่าน
-- ไม่มี P0/P1 open ที่ confirmed และอยู่ใน scope
-- smoke tests ผ่านครบ
-- OCR regression test set ผ่าน (อย่างน้อยชุดที่ใช้เทรนล่าสุด)
+- ไม่มี P0/P1 open ที่ confirmed และอยู่ใน scope ✅
+- smoke tests ผ่านครบ (per HANDOFF/T003-T005 notes) ✅
+- OCR regression test set baseline available via T002 matrix ✅
 
 ## Phase 2: P2 Scale & Safety (ก่อน scale จริง)
 ### Scope
@@ -173,12 +177,16 @@ P2 ใน `docs/improve.md` + operational safety
 - มีเอกสารสถานะ `improve-audit-status.md` ว่าข้อไหนปิดแล้ว/เหลืออะไร
 
 ## 6) ลำดับลงมือที่แนะนำ (รอบถัดไป)
-1. `Phase 0` audit live workflow vs `docs/improve.md`
-2. เริ่ม `Phase 1` จาก 3 จุดก่อน:
-   - `round3` undefined
-   - re-ask normalize/validate loop
-   - queue worker retry/fail status
-3. retest regression set
-4. commit + push `stable`
-5. ค่อยไป P1 ที่เหลือ
+1. เริ่ม `Phase 2` ทันที โดยโฟกัส 3 เรื่อง impact สูง:
+   - file size validation (Webhook layer)
+   - sanitize Gemini error response ก่อนส่ง client
+   - few-shot truncation safe boundary
+2. วาง short-term mitigation สำหรับ Google Sheets bottleneck (`Get All row_key`, reconciliation job)
+3. ใช้ `docs/collab/tasks/regression-test-matrix.md` (T002) รัน regression หลังทุก patch
+4. commit + push `stable` พร้อม KM/changelog/update sanitized export
+5. เมื่อ P2 high-impact ปิดแล้ว ค่อยเข้ารอบ `Phase 3` cleanup
 
+## 7) Phase 1 Completion Notes (from HANDOFF)
+- **T003:** Fixed `round3`, `allHeaders`, MIME sniffing optimization, file-count guard, queue classifier, trailing URL newline cleanup
+- **T004:** Re-ask result now re-enters normalize/validate before final decision
+- **T005:** Queue worker marks failed items as `error` (not `done`)

@@ -6,7 +6,7 @@
 |-------|-------|
 | **Phase** | Phase 0 - Setup Complete, Ready to Start |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Working on T002 (agents/codex branch) |
+| **Codex Status** | Idle (agents/codex branch) |
 | **Last Sync** | 2026-02-23 |
 | **Base Commit** | 385ceb2 |
 
@@ -33,9 +33,7 @@
 ## Task Board
 
 ### In Progress
-| ID | Task | Owner | Priority | Started |
-|----|------|-------|----------|---------|
-| T006 | Update documentation after P0/P1 fixes | Codex | P2 | 2026-02-23 |
+_(none)_
 
 ### Pending
 _(none)_
@@ -48,6 +46,7 @@ _(none)_
 | T003 | Fix round3 + allHeaders + MIME + URL + file limit | Claude Code | 2026-02-23 | 6 nodes patched, commit c556967 |
 | T004 | Fix re-ask normalize bypass | Claude Code | 2026-02-23 | validation added before accepting re-ask |
 | T005 | Fix queue worker retry status | Claude Code | 2026-02-23 | Set Done now writes 'error' on fail |
+| T006 | Update documentation after P0/P1 fixes | Codex | 2026-02-23 | Updated workflow docs + improve docs + phase1 summary |
 
 ---
 

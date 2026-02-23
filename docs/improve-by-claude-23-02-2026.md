@@ -7,63 +7,63 @@
 
 ## P0 - CRITICAL (ต้องแก้ก่อน deploy)
 
-### 1. `round3` ไม่มีอยู่จริง — จะ crash ทุก fleet_card document
+### [FIXED 2026-02-23] 1. `round3` ไม่มีอยู่จริง — จะ crash ทุก fleet_card document
 **Node:** `Code (Normalize + Validate)`
 
 โค้ดเรียก `round3(amt / up)` แต่มีแค่ `round2` เท่านั้น ทำให้เกิด `ReferenceError` ทุกครั้งที่ประมวลผลเอกสาร fleet_card ที่มี line item แบบ fuel
 
-**แก้ไข:** เพิ่ม `function round3(v) { return Math.round(v * 1000) / 1000; }` หรือเปลี่ยนเป็น `round2`
+**แก้ไข (implemented, T003):** เพิ่ม helper `round3()` ใน `Code (Normalize + Validate)` เพื่อรองรับ fleet_card quantity derivation โดยไม่เกิด `ReferenceError`
 
 ---
 
 ## P1 - HIGH (ต้องแก้ก่อน production)
 
-### 2. Re-ask result ไม่ผ่าน Normalize+Validate
+### [FIXED 2026-02-23] 2. Re-ask result ไม่ผ่าน Normalize+Validate
 **Node:** `Code (Apply Re-ask Result)`
 
 เมื่อ Gemini re-ask สำเร็จ ข้อมูลใหม่ถูกใส่ลง `raw_json` โดยตรง **ไม่ผ่านการ normalize/validate อีกครั้ง** ทำให้อาจมีข้อมูลผิดรูปแบบ (เช่น date format ผิด, tax_id ไม่ครบ) เข้า production storage ได้
 
-**คำแนะนำ:** Route re-ask result กลับเข้า normalization หรืออย่างน้อย validate fields หลัก
+**แก้ไข (implemented, T004):** Re-ask result ถูก route กลับเข้าชั้น normalize/validate ก่อน final decision
 
-### 3. `allHeaders` ไม่ถูก set — caller_ip เป็น 'unknown' เสมอ
+### [FIXED 2026-02-23] 3. `allHeaders` ไม่ถูก set — caller_ip เป็น 'unknown' เสมอ
 **Node:** `Code in JavaScript5`
 
 ไม่มีบรรทัด `item.json.allHeaders = headers;` แต่ `Code in JavaScript9` อ้างอิง `allHeaders['x-forwarded-for']` ทำให้ log IP ไม่ได้เลย
 
-**แก้ไข:** เพิ่ม `item.json.allHeaders = headers;` ใน `Code in JavaScript5`
+**แก้ไข (implemented, T003):** เพิ่ม `item.json.allHeaders = headers;` ใน `Code in JavaScript5`
 
-### 4. MIME sniffing decode ทั้งไฟล์
+### [FIXED 2026-02-23] 4. MIME sniffing decode ทั้งไฟล์
 **Node:** `Code in JavaScript22`
 
 `Buffer.from(b64, 'base64')` decode base64 ทั้งหมดเพื่อดูแค่ 8 bytes แรก ไฟล์ 10MB จะจอง memory 10MB โดยไม่จำเป็น
 
-**แก้ไข:** ใช้ `Buffer.from(b64.slice(0, 16), 'base64')` แทน
+**แก้ไข (implemented, T003):** ใช้ base64 prefix-only decode (`slice(0, 16)`) เพื่อลด memory overhead
 
-### 5. ไม่จำกัดจำนวนไฟล์ใน queue upload
+### [FIXED 2026-02-23] 5. ไม่จำกัดจำนวนไฟล์ใน queue upload
 **Node:** `Code (Split Files)`
 
 ผู้ใช้สามารถส่ง 1000 ไฟล์ในครั้งเดียว แต่ละไฟล์สร้าง Google Drive upload + Sheets append ทำให้ hit rate limit ได้
 
-**แก้ไข:** เพิ่ม guard `if (Object.keys(files).length > 20) throw new Error('Too many files');`
+**แก้ไข (implemented, T003):** เพิ่ม file-count guard ใน `Code (Split Files)` เพื่อกัน queue fan-out เกินกำหนด
 
-### 6. Queue worker ไม่มี Document Classification
+### [FIXED 2026-02-23] 6. Queue worker ไม่มี Document Classification
 **Node:** `Code (Build Request)1`
 
 Queue path ไม่มี Document Classifier ทำให้ prompt ทุกประเภทถูกรวมกันส่ง Gemini โดยไม่แยก fuel/electricity/fleet_card ผลลัพธ์จะแย่กว่า main path มาก
 
-**แก้ไข:** เพิ่ม Document Classifier ใน queue path ให้เหมือน main path
+**แก้ไข (implemented, T003):** เพิ่ม Document Classifier ใน queue path ให้คุณภาพใกล้ main path มากขึ้น
 
-### 7. Queue worker ไม่ retry งานที่ fail
+### [FIXED 2026-02-23] 7. Queue worker ไม่ retry งานที่ fail
 ถ้า Gemini API error ใน queue path, item จะถูก mark เป็น `done` ทั้งที่ fail **งานหายถาวร**
 
-**แก้ไข:** Mark เป็น `error` แทน `done` แล้วให้ Schedule Trigger retry items ที่ status=error
+**แก้ไข (implemented, T005):** Queue worker failure path เขียน `status=error` แทน `done` เพื่อให้ retry/recovery ทำงานได้
 
-### 8. URL มี trailing `\n\n`
+### [FIXED 2026-02-23] 8. URL มี trailing `\n\n`
 **Node:** `HTTP Request1`, `HTTP GenerateContent3`
 
 URL ลงท้ายด้วย `\n\n` ซึ่งอาจทำให้ HTTP 400 จาก Gemini API
 
-**แก้ไข:** ลบ `\n\n` ออกจากท้าย URL
+**แก้ไข (implemented, T003):** cleanup trailing newline ใน Gemini HTTP URL nodes
 
 ---
 
@@ -169,14 +169,14 @@ Google Sheets มีข้อจำกัด:
 
 ## Checklist สรุป
 
-- [ ] **P0:** แก้ `round3` undefined ใน Normalize+Validate
-- [ ] **P1:** เพิ่ม normalization หลัง re-ask
-- [ ] **P1:** เพิ่ม `allHeaders` ใน Code in JavaScript5
-- [ ] **P1:** แก้ MIME sniffing ให้ decode แค่ 16 chars
-- [ ] **P1:** เพิ่ม file count limit ใน queue upload
-- [ ] **P1:** เพิ่ม Document Classifier ใน queue path
-- [ ] **P1:** แก้ queue worker ให้ retry failed items
-- [ ] **P1:** ลบ trailing `\n\n` จาก URL
+- [x] **P0:** แก้ `round3` undefined ใน Normalize+Validate *(FIXED 2026-02-23, T003)*
+- [x] **P1:** เพิ่ม normalization หลัง re-ask *(FIXED 2026-02-23, T004)*
+- [x] **P1:** เพิ่ม `allHeaders` ใน Code in JavaScript5 *(FIXED 2026-02-23, T003)*
+- [x] **P1:** แก้ MIME sniffing ให้ decode แค่ 16 chars *(FIXED 2026-02-23, T003)*
+- [x] **P1:** เพิ่ม file count limit ใน queue upload *(FIXED 2026-02-23, T003)*
+- [x] **P1:** เพิ่ม Document Classifier ใน queue path *(FIXED 2026-02-23, T003)*
+- [x] **P1:** แก้ queue worker ให้ retry failed items *(FIXED 2026-02-23, T005)*
+- [x] **P1:** ลบ trailing `\n\n` จาก URL *(FIXED 2026-02-23, T003)*
 - [ ] **P2:** วางแผนย้ายจาก Google Sheets เป็น DB
 - [ ] **P2:** ย้าย hardcoded pricing ไป env var
 - [ ] **P2:** เพิ่ม file size validation
