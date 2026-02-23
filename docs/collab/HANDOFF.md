@@ -4,11 +4,11 @@
 
 | Field | Value |
 |-------|-------|
-| **Phase** | Phase 3 - Cleanup & Maintainability (IN PROGRESS) |
+| **Phase** | Phase 3 - Cleanup & Maintainability (COMPLETE) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Assigned T020 (Phase 3 docs) |
-| **Last Sync** | 2026-02-23 |
-| **Base Commit** | ea9f4f1 |
+| **Codex Status** | Idle (T020 completed) |
+| **Last Sync** | 2026-02-23 19:05 |
+| **Base Commit** | 960293a |
 
 ---
 
@@ -36,9 +36,7 @@
 _(none)_
 
 ### Pending
-| ID | Task | Owner | Blocked By |
-|----|------|-------|-----------|
-| T020 | Phase 3 docs + regression matrix update | Codex | — |
+_(none)_
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -61,6 +59,7 @@ _(none)_
 | T017 | Re-ask confidence floor conditional + OCR_REASK_CONF_BOOST env | Claude Code | 2026-02-23 | Only boost if criticalErrs===0; default no-floor unless env set |
 | T018 | Electricity ref regex widen to /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN | Claude Code | 2026-02-23 | severity downgraded to warning; pattern overridable |
 | T019 | MIME: add TIFF (LE/BE) + HEIC extension detection | Claude Code | 2026-02-23 | sniffMimeFromBase64 + ext handler for heic/heif/tif/tiff |
+| T020 | Phase 3 docs + regression matrix update | Codex | 2026-02-23 | Added `phase3-summary.md`, regression matrix Section 7, updated HANDOFF phase status |
 
 ---
 
@@ -98,7 +97,7 @@ _(none)_
 ## Sync Log
 
 | Date | Direction | By | Notes |
-| 2026-02-23 17:15 | sync | codex | auto-sync |
+| 2026-02-23 19:05 | sync | codex | T020 docs updates after Phase 3 completions |
 | 2026-02-23 18:10 | sync | codex | T014 docs updates after Phase 2 completions |
 | 2026-02-23 10:40 | sync | codex | auto-sync |
 | 2026-02-23 10:18 | sync | codex | auto-sync |
