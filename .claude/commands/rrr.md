@@ -37,9 +37,12 @@ Review `memory/MEMORY.md` and update it with any new stable patterns, preference
 End with a single sentence summarizing the session outcome.
 
 ## 8. Save Retrospective
-Save the full retrospective to `docs/collab/retrospectives/YYYY-MM-DD.md` using today's date.
+Choose a short descriptive slug (2-4 words, kebab-case) summarizing the session's main theme.
+Save the full retrospective to `docs/collab/retrospectives/YYYY-MM-DD-<slug>.md` using today's date.
+Example: `2026-02-24-improve-plan-complete.md`
+
 Then commit the file:
 ```
-git add docs/collab/retrospectives/YYYY-MM-DD.md
-git commit -m "docs(retro): session retrospective YYYY-MM-DD"
+git add docs/collab/retrospectives/YYYY-MM-DD-<slug>.md
+git commit -m "docs(retro): session retrospective YYYY-MM-DD-<slug>"
 ```
