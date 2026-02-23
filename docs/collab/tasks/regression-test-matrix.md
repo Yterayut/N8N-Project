@@ -321,3 +321,25 @@ Use this after every patch on OCR workflow, validator, queue logic, re-ask logic
 - [ ] `OCR_RULE_CHANGELOG` updated for rule changes
 - [ ] Sanitized workflow export updated if workflow logic changed
 
+## 6. Phase 2 Scenarios (Scale & Safety)
+
+Use this section specifically after Phase 2 patches (T007/T008/T009/T011/T012/T013).
+
+| # | Scenario | Input / Setup | Expected Result |
+|---|---|---|---|
+| P2-1 | T007 main path rejects file >20MB | `POST /ocr-dev` with PDF `> OCR_MAX_FILE_BYTES` (default >20MB) | HTTP `413` or `422`; structured JSON error; no OCR processing starts |
+| P2-2 | T007 main path accepts file exactly 20MB | `POST /ocr-dev` with file size exactly `20971520` bytes | Request passes file-size guard (continues to normal OCR flow); no size-limit error |
+| P2-3 | T007 queue path rejects oversized file | `POST /ocr-queue` (or queue submit path) with one file >20MB | Queue path rejects file before fan-out/upload; structured error/failed queue item status |
+| P2-4 | T008 sanitize Gemini error response | Trigger Gemini/API failure (e.g. unsupported/corrupt file) | Client-facing error message contains only safe generic text (`Failed to process the document. Please try again.`) and **does not** include raw Gemini JSON/details |
+| P2-5 | T009 safe few-shot truncation at example boundary | Seed few-shot examples so combined text > 6000 chars with 3+ examples | Selected few-shot prompt contains only complete examples; no cut/malformed JSON/example fragment |
+| P2-6 | T011 re-ask HTTP failure continues workflow | Force `HTTP GenerateContent (Re-ask)` fail (temporary 5xx/timeout simulation) | Workflow does not crash; continues via `continueRegularOutput`; returns structured OCR response (likely `needs_review`) |
+| P2-7 | T012 pricing uses env vars | Set `OCR_PRICE_THB_PER_1K_INPUT/OUTPUT` to known test values and run OCR | Cost calculation (`est_cost_thb` / response cost fields) uses env values, not hardcoded defaults |
+
+### 6.1 Phase 2 Validation Notes
+
+- For `P2-1/P2-3`, if implementation returns `422` instead of `413`, this is acceptable **only if** message clearly indicates file size exceeds max limit.
+- For `P2-4`, test both:
+  - raw Gemini parse fail (e.g. invalid/empty PDF)
+  - OCR transport/API error path
+- For `P2-5`, verification may require inspecting prompt build output or debug logs (not just final OCR response).
+- For `P2-7`, record test env values and resulting computed THB in test evidence for reproducibility.
