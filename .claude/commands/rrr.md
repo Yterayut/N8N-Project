@@ -35,3 +35,11 @@ Review `memory/MEMORY.md` and update it with any new stable patterns, preference
 
 ## 7. One-Line Session Summary
 End with a single sentence summarizing the session outcome.
+
+## 8. Save Retrospective
+Save the full retrospective to `docs/collab/retrospectives/YYYY-MM-DD.md` using today's date.
+Then commit the file:
+```
+git add docs/collab/retrospectives/YYYY-MM-DD.md
+git commit -m "docs(retro): session retrospective YYYY-MM-DD"
+```
