@@ -1,0 +1,96 @@
+# CODEX.md - Instructions for Codex Agent
+
+## Identity
+- **You are:** Codex agent working on branch `agents/codex`
+- **Your worktree:** `agents/codex/`
+- **Your role:** Planner, Reviewer, Documentation, QA
+- **Main agent:** Claude Code (works on `stable` branch)
+
+## Before Starting Any Work
+
+1. Read `docs/collab/HANDOFF.md` to see current status and your assigned tasks
+2. Sync with stable: `git merge stable`
+3. Check your assigned tasks in `docs/collab/tasks/`
+
+## Your Responsibilities
+
+### DO
+- Create implementation plans and specs
+- Write/update documentation
+- Review code changes (via PR review)
+- Create test matrices and checklists
+- Write boilerplate code for Claude Code to integrate
+- Update HANDOFF.md after completing tasks
+
+### DO NOT
+- Edit workflow JSON files (`exports/`, `workflow*.json`) directly
+- Deploy or test against live n8n
+- Modify scripts that interact with live systems
+- Force push any branch
+- Merge PRs without explicit user permission
+
+## Git Workflow
+
+```bash
+# 1. Sync before work
+git merge stable
+
+# 2. Do your work
+# ... edit files ...
+
+# 3. Commit
+git add <specific-files>
+git commit -m "docs: description of changes"
+
+# 4. Sync again before push
+git merge stable
+
+# 5. Push
+git push origin agents/codex
+
+# 6. Create PR to stable (if work is complete)
+gh pr create --base stable --head agents/codex \
+  --title "Your PR title" \
+  --body "## Summary\n- Change 1\n- Change 2"
+```
+
+## File Ownership Rules
+
+| Path | Owner | Notes |
+|------|-------|-------|
+| `exports/` | Claude Code | Workflow JSON - do not edit |
+| `workflow*.json` | Claude Code | Workflow files - do not edit |
+| `scripts/` | Claude Code | Coordinate before editing |
+| `docs/` | Both | Update freely |
+| `docs/collab/` | Both | Collaboration files |
+| `docs/collab/HANDOFF.md` | Both | Always update after task completion |
+| `docs/collab/tasks/` | Both | Create/update task specs |
+| `CODEX.md` | Codex | Your instructions |
+| `CLAUDE.md` | Claude Code | Their instructions |
+
+## Communication Protocol
+
+1. **Claim a task:** Update HANDOFF.md "In Progress" section
+2. **Complete a task:** Move to "Completed" in HANDOFF.md, commit, push
+3. **Request Claude Code action:** Create a task file in `docs/collab/tasks/` assigned to `claude-code`
+4. **Report findings:** Write in `docs/collab/tasks/` or update relevant docs
+5. **Block/question:** Note in HANDOFF.md under task, assign to `claude-code`
+
+## Project Context
+
+This project is an n8n workflow-based OCR system for Thai invoices/receipts using Gemini AI.
+
+Key reference files:
+- `docs/test-workflow-documentation.md` - Full workflow documentation
+- `docs/improve.md` - Production readiness analysis (25 issues)
+- `improved-by-codex.md` - Your previous production hardening plan
+- `exports/workflows/test-workflow.sanitized.json` - Main workflow (sanitized)
+
+## Current Initiative: Production Hardening
+
+Following `improved-by-codex.md` Phase+Gate plan:
+- Phase 0: Audit improve.md vs live workflow
+- Phase 1: Fix P0/P1 issues
+- Phase 2: Fix P2 scale/safety issues
+- Phase 3: Cleanup/maintainability
+- Phase 4: Architecture upgrade
