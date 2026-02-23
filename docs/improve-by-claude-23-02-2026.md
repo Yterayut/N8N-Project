@@ -178,9 +178,11 @@ Google Sheets มีข้อจำกัด:
 - [x] **P1:** แก้ queue worker ให้ retry failed items *(FIXED 2026-02-23, T005)*
 - [x] **P1:** ลบ trailing `\n\n` จาก URL *(FIXED 2026-02-23, T003)*
 - [ ] **P2:** วางแผนย้ายจาก Google Sheets เป็น DB
-- [ ] **P2:** ย้าย hardcoded pricing ไป env var
-- [ ] **P2:** เพิ่ม file size validation
-- [ ] **P2:** sanitize Gemini error ก่อนส่งกลับ client
-- [ ] **P2:** ลบ disabled nodes ทั้งหมด
+- [x] **P2:** ย้าย hardcoded pricing ไป env var *(FIXED 2026-02-23, T012 — OCR_PRICE_THB_PER_1K_INPUT/OUTPUT)*
+- [x] **P2:** เพิ่ม file size validation *(FIXED 2026-02-23, T007 — max 20MB, configurable via OCR_MAX_FILE_BYTES)*
+- [x] **P2:** sanitize Gemini error ก่อนส่งกลับ client *(FIXED 2026-02-23, T008)*
+- [x] **P2:** ลบ disabled nodes ทั้งหมด *(FIXED 2026-02-23, T013 — 24 nodes removed)*
+- [x] **P2:** few-shot truncation ตัดที่ขอบเขต example *(FIXED 2026-02-23, T009)*
+- [x] **P2:** HTTP Re-ask retry + continueRegularOutput *(FIXED 2026-02-23, T011)*
 - [ ] **P3:** ย้าย hardcoded values ไป config/env
 - [ ] **P3:** เปลี่ยนชื่อ workflow

@@ -4,9 +4,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Phase** | Phase 0 - Setup Complete, Ready to Start |
+| **Phase** | Phase 2 - Scale & Safety (IN PROGRESS) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (agents/codex branch) |
+| **Codex Status** | Assigned T012 (Phase 2 docs + test matrix) |
 | **Last Sync** | 2026-02-23 |
 | **Base Commit** | 385ceb2 |
 
@@ -36,7 +36,9 @@
 _(none)_
 
 ### Pending
-_(none)_
+| ID | Task | Owner | Blocked By |
+|----|------|-------|-----------|
+| T014 | Phase 2 docs: spec + regression matrix update | Codex | — |
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -47,6 +49,12 @@ _(none)_
 | T004 | Fix re-ask normalize bypass | Claude Code | 2026-02-23 | validation added before accepting re-ask |
 | T005 | Fix queue worker retry status | Claude Code | 2026-02-23 | Set Done now writes 'error' on fail |
 | T006 | Update documentation after P0/P1 fixes | Codex | 2026-02-23 | Updated workflow docs + improve docs + phase1 summary |
+| T007 | File size guard (main + queue path) | Claude Code | 2026-02-23 | MAX_FILE_BYTES=20MB in JS22 + Code(Split Files) |
+| T008 | Sanitize Gemini error → client | Claude Code | 2026-02-23 | Respond to Webhook (error) uses literal safe message |
+| T009 | Few-shot truncation at example boundary | Claude Code | 2026-02-23 | Loop-based cut instead of char-slice mid-JSON |
+| T011 | HTTP Re-ask: retry + continueRegularOutput | Claude Code | 2026-02-23 | retryOnFail=true, maxTries=2, onError=continueRegularOutput |
+| T012 | THB pricing → env vars with fallback | Claude Code | 2026-02-23 | OCR_PRICE_THB_PER_1K_INPUT/OUTPUT, fallback to 0.0105/0.0875 |
+| T013 | Remove 24 disabled legacy nodes | Claude Code | 2026-02-23 | 24 nodes + dangling connections removed |
 
 ---
 
