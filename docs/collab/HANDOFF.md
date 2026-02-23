@@ -7,7 +7,7 @@
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle — please read "Decisions 2026-02-24 (Sync Policy)" below |
-| **Last Sync** | 2026-02-24 (sync-every-action policy) |
+| **Last Sync** | 2026-02-24 04:35 (session end — tmux+skills+sync-policy complete) |
 | **Base Commit** | 960293a |
 
 ---
@@ -174,6 +174,9 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 04:10 | sync | all | auto-sync |
+| 2026-02-24 04:08 | sync | all | auto-sync |
+| 2026-02-24 04:06 | sync | all | auto-sync |
 | 2026-02-24 04:02 | sync | all | auto-sync |
 | 2026-02-24 04:00 | sync | codex | auto-sync |
 | 2026-02-24 03:34 | sync | codex | auto-sync |
