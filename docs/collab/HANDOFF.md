@@ -7,7 +7,7 @@
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle — please read "Decisions 2026-02-24" below |
-| **Last Sync** | 2026-02-24 |
+| **Last Sync** | 2026-02-24 (skills update) |
 | **Base Commit** | 960293a |
 
 ---
@@ -62,6 +62,35 @@ _(none)_
 | T020 | Phase 3 docs + regression matrix update | Codex | 2026-02-23 | Added `phase3-summary.md`, regression matrix Section 7, updated HANDOFF phase status |
 | T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
 | T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
+
+---
+
+## Decisions 2026-02-24 (Skills & Rules Update)
+
+### Golden Rules (เพิ่มใน CLAUDE.md)
+Codex ต้องรู้และปฏิบัติตาม — ห้ามละเมิด:
+
+- **Never** `git push --force` บน `stable` หรือ `main`
+- **Never** `rm -rf` โดยไม่ backup ก่อน
+- **Never** commit `.env`, API keys, credentials
+- **Never** patch live n8n โดยไม่อ่าน `HANDOFF.md` ก่อน
+- **Never** แก้ workflow JSON ด้วย sed/direct file edit (ใช้ n8n REST API เสมอ)
+- **Never** merge PR โดยไม่มี human approval
+- **Always** รัน `./scripts/verify_nowThai_sync.sh` หลัง patch Code nodes
+- **Always** อัปเดต `HANDOFF.md` หลัง task เสร็จ
+- **Always** preserve workflow history — ห้ามลบ `workflow_history` records
+
+### Slash Skills (เพิ่ม `.claude/commands/`)
+Commands ใหม่ที่ใช้ได้ทั้ง Claude Code และ Codex:
+
+| Skill | ไฟล์ | ทำอะไร |
+|-------|------|--------|
+| `/recap` | `.claude/commands/recap.md` | Fresh-start orientation — โหลด FORWARD + HANDOFF + MEMORY แล้วสรุป |
+| `/fyi <info>` | `.claude/commands/fyi.md` | Log ข้อมูลลง MEMORY.md แบบ one-liner ไม่มีพิธี |
+| `/rrr` | `.claude/commands/rrr.md` | Session retrospective |
+| `/forward` | `.claude/commands/forward.md` | Handoff สำหรับ session ถัดไป |
+
+**Codex: ใช้ `/recap` ทุกครั้งที่เริ่ม session ใหม่**
 
 ---
 
@@ -124,6 +153,8 @@ _(none)_
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 03:34 | sync | codex | auto-sync |
+| 2026-02-24 | sync | claude | Golden Rules + /recap + /fyi skills added; Codex: read "Decisions 2026-02-24 (Skills & Rules Update)" |
 | 2026-02-24 | sync | claude | T021+T022 complete; improve plan 100% done (1 deferred); please read Decisions 2026-02-24 |
 | 2026-02-23 19:05 | sync | codex | T020 docs updates after Phase 3 completions |
 | 2026-02-23 18:10 | sync | codex | T014 docs updates after Phase 2 completions |
