@@ -4,11 +4,11 @@
 
 | Field | Value |
 |-------|-------|
-| **Phase** | Phase 2 - Scale & Safety (IN PROGRESS) |
+| **Phase** | Phase 3 - Cleanup & Maintainability (IN PROGRESS) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (T014 completed) |
-| **Last Sync** | 2026-02-23 18:10 |
-| **Base Commit** | 2821577 |
+| **Codex Status** | Assigned T020 (Phase 3 docs) |
+| **Last Sync** | 2026-02-23 |
+| **Base Commit** | ea9f4f1 |
 
 ---
 
@@ -36,7 +36,9 @@
 _(none)_
 
 ### Pending
-_(none)_
+| ID | Task | Owner | Blocked By |
+|----|------|-------|-----------|
+| T020 | Phase 3 docs + regression matrix update | Codex | — |
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -54,6 +56,11 @@ _(none)_
 | T012 | THB pricing → env vars with fallback | Claude Code | 2026-02-23 | OCR_PRICE_THB_PER_1K_INPUT/OUTPUT, fallback to 0.0105/0.0875 |
 | T013 | Remove 24 disabled legacy nodes | Claude Code | 2026-02-23 | 24 nodes + dangling connections removed |
 | T014 | Phase 2 docs: spec + regression matrix update | Codex | 2026-02-23 | Added `phase2-summary.md`, updated regression matrix (Section 6), updated plan docs |
+| T015 | Config externalization: queue batch, SLA thresholds, Telegram refs | Claude Code | 2026-02-23 | OCR_QUEUE_BATCH_SIZE, OCR_SLA_HEAVY/FAST_KB, $workflow.name/id |
+| T016 | Queue worker file_id reference fix (Code Set Done) | Claude Code | 2026-02-23 | Use $input.item.json.file_id first; .first() fallbacks |
+| T017 | Re-ask confidence floor conditional + OCR_REASK_CONF_BOOST env | Claude Code | 2026-02-23 | Only boost if criticalErrs===0; default no-floor unless env set |
+| T018 | Electricity ref regex widen to /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN | Claude Code | 2026-02-23 | severity downgraded to warning; pattern overridable |
+| T019 | MIME: add TIFF (LE/BE) + HEIC extension detection | Claude Code | 2026-02-23 | sniffMimeFromBase64 + ext handler for heic/heif/tif/tiff |
 
 ---
 

@@ -184,5 +184,12 @@ Google Sheets มีข้อจำกัด:
 - [x] **P2:** ลบ disabled nodes ทั้งหมด *(FIXED 2026-02-23, T013 — 24 nodes removed)*
 - [x] **P2:** few-shot truncation ตัดที่ขอบเขต example *(FIXED 2026-02-23, T009)*
 - [x] **P2:** HTTP Re-ask retry + continueRegularOutput *(FIXED 2026-02-23, T011)*
-- [ ] **P3:** ย้าย hardcoded values ไป config/env
+- [x] **P3:** Queue batch size → OCR_QUEUE_BATCH_SIZE env var *(FIXED 2026-02-23, T015)*
+- [x] **P3:** SLA thresholds → OCR_SLA_HEAVY_KB / OCR_SLA_FAST_KB env var *(FIXED 2026-02-23, T015)*
+- [x] **P3:** Telegram workflow name/id → $workflow.name / $workflow.id dynamic *(FIXED 2026-02-23, T015)*
+- [x] **P3:** Queue worker file_id reference fix *(FIXED 2026-02-23, T016)*
+- [x] **P3:** Re-ask confidence floor conditional + OCR_REASK_CONF_BOOST *(FIXED 2026-02-23, T017)*
+- [x] **P3:** Electricity ref regex → /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN, severity=warning *(FIXED 2026-02-23, T018)*
+- [x] **P3:** MIME: TIFF + HEIC detection added *(FIXED 2026-02-23, T019)*
+- [ ] **P3:** nowThai() helper consolidation (copy-paste across nodes)
 - [ ] **P3:** เปลี่ยนชื่อ workflow
