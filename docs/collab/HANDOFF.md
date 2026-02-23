@@ -6,8 +6,8 @@
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle — please read "Decisions 2026-02-24 (Sync Policy)" below |
-| **Last Sync** | 2026-02-24 04:35 (session end — tmux+skills+sync-policy complete) |
+| **Codex Status** | Idle — please read "Decisions 2026-02-24 (Dev Environment)" below |
+| **Last Sync** | 2026-02-24 04:55 (tmux codex session ready) |
 | **Base Commit** | 960293a |
 
 ---
@@ -94,6 +94,29 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 
 ---
 
+## Decisions 2026-02-24 (Dev Environment — Codex อ่านด้วย)
+
+### tmux sessions พร้อมใช้งานแล้วบน server
+
+Server มี 2 tmux sessions รันอยู่ตลอด:
+
+| session | path | branch | เปิดด้วย |
+|---------|------|--------|---------|
+| `dev` | `N8N-AUTO-RESPONSE/` | `stable` | พิมพ์ `dev` หลัง SSH |
+| `codex` | `N8N-AUTO-RESPONSE/agents/codex/` | `agents/codex` | พิมพ์ `codex` หลัง SSH |
+
+**Codex: เมื่อ SSH เข้า server แล้ว พิมพ์ `codex` เพื่อเข้า session ของคุณได้เลย**
+
+VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม่ → `codex` → กลับมาตรงที่ค้าง
+
+### ข้อมูลเพิ่มเติม
+- Codex (OpenAI GPT) ทำงานบน `agents/codex` branch — ยืนยันแล้ว
+- Claude Code ทำงานบน `stable` branch
+- ทั้งสอง communicate ผ่าน git files เท่านั้น (HANDOFF.md, FORWARD.md, MEMORY.md)
+- post-commit hook auto-sync ทุก commit — ไม่ต้อง sync เอง
+
+---
+
 ## Decisions 2026-02-24 (Sync Policy — MANDATORY)
 
 ### กฎใหม่: ทุก action ต้อง sync ทันที — ไม่มีข้อยกเว้น
@@ -174,6 +197,7 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 04:36 | sync | all | auto-sync |
 | 2026-02-24 04:10 | sync | all | auto-sync |
 | 2026-02-24 04:08 | sync | all | auto-sync |
 | 2026-02-24 04:06 | sync | all | auto-sync |
