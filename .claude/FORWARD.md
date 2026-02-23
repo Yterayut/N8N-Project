@@ -1,21 +1,33 @@
-# Forward Handoff — 2026-02-24 (ก่อนนอน)
+# Forward Handoff — 2026-02-24 (session end / ก่อนนอน)
 
 ## Where We Are
 - Branch: `stable`
-- Last commit: `707d676` docs(retro): session retrospective 2026-02-24-collab-tooling-sync-policy
-- Phase: **Collab Tooling Complete** — OCR improve plan 100% done, ถัดไปคือ /ocr-feedback + CarbonReceipt integration
+- Last commit: `db1ce7e` docs(retro): session retrospective 2026-02-24-tmux-carbonreceipt-context
+- Phase: **Dev Environment Complete + CarbonReceipt API analyzed — รอ implement**
 
 ---
 
-## What Was Accomplished This Session
+## What Was Accomplished This Session (ทั้ง session วันนี้)
 
-- `27ac3ad` — สร้าง `/recap` + `/fyi` skills + Golden Rules 9 ข้อใน CLAUDE.md
-- `2a17bd7` — แจ้ง Codex ผ่าน HANDOFF.md + sync
-- `c78b584` — เพิ่ม Sync Policy: ทุก commit ต้อง sync ทันที
-- `306926c → ef944bd` — ติดตั้ง `.git/hooks/post-commit` auto-sync ทุก commit (แก้ root cause: unset GIT env vars)
-- `707d676` — บันทึก retrospective session นี้
-- ติดตั้ง **tmux** config + `~/dev.sh` + alias `dev` ใน `.bashrc`
-- รับ context `/ocr-feedback` + CarbonReceipt API (Postman collection) — วิเคราะห์ gap แล้ว ยังไม่ได้ implement
+### Collab Tooling (commits 27ac3ad → ef944bd)
+- ✅ `/recap` + `/fyi` skills สร้างแล้ว
+- ✅ Golden Rules 9 ข้อ เพิ่มใน CLAUDE.md
+- ✅ Sync Policy — ทุก commit ต้อง sync ทันที
+- ✅ `.git/hooks/post-commit` auto-sync ทุก commit (แก้ root cause: unset GIT env vars)
+
+### Dev Environment / tmux (ไม่มี commit แยก — ทำใน session)
+- ✅ `~/.tmux.conf` — mouse on, history 50k
+- ✅ `~/dev.sh` + alias `dev` → tmux session "dev" (stable branch)
+- ✅ `~/codex.sh` + alias `codex` → tmux session "codex" (agents/codex branch)
+- ✅ ทดสอบผ่านทั้ง 2 sessions — pwd + git branch ถูกต้อง
+
+### CarbonReceipt API
+- ✅ วิเคราะห์ Postman collection ที่ admin ส่งมา
+- ✅ Gap analysis เสร็จ (URL, auth, response format, ไม่มี /ocr-feedback)
+- ⏳ ยังไม่ implement — รอข้อมูลเพิ่ม
+
+### Architecture Clarification
+- ✅ ยืนยัน: Codex = OpenAI GPT (ไม่ใช่ Claude) ทำงานบน agents/codex branch จริงๆ
 
 ---
 
@@ -23,87 +35,83 @@
 
 | ไฟล์ | สถานะ | หมายเหตุ |
 |------|-------|---------|
-| `.git/hooks/post-commit` | ✅ ติดตั้งแล้ว | auto-sync ทุก commit |
-| `.claude/commands/recap.md` | ✅ ใหม่ | fresh-start orientation |
-| `.claude/commands/fyi.md` | ✅ ใหม่ | quick memory log |
-| `CLAUDE.md` | ✅ อัปเดต | Golden Rules + Sync Policy |
-| `docs/collab/HANDOFF.md` | ✅ อัปเดต | Codex aware of all new policies |
-| `~/.tmux.conf` | ✅ ใหม่ | mouse on, history 50k |
-| `~/dev.sh` | ✅ ใหม่ | attach/create tmux session "dev" |
-| `~/.bashrc` | ✅ อัปเดต | alias `dev` |
+| `.git/hooks/post-commit` | ✅ active | auto-sync ทุก commit |
+| `~/.tmux.conf` | ✅ active | mouse on, history 50k |
+| `~/dev.sh` + `~/codex.sh` | ✅ active | tmux session scripts |
+| `~/.bashrc` | ✅ active | alias dev + codex |
+| `.claude/commands/` | ✅ active | recap, fyi, rrr, forward |
+| `CLAUDE.md` | ✅ active | Golden Rules + Sync Policy |
+| `docs/collab/HANDOFF.md` | ✅ synced | Codex รับข้อมูลแล้ว |
 
 ---
 
 ## What To Do Next (In Order)
 
-1. **ออกแบบ `/ocr-feedback` endpoint ใน n8n** — ตาม contract ที่ Codex ออกแบบไว้ (payload, idempotency, 202 response, background queue)
-2. **ตกลง Response format ของ `/ocr-dev`** กับ CarbonReceipt — เขาส่ง `{filename, content_type, file_base64}` มา เราจะตอบ JSON หน้าตาไหน?
-3. **สร้าง Webhook Adapter ใน n8n** — รับ format CarbonReceipt (`/api/v1/documents/process-batch`) แล้ว transform เข้า OCR pipeline เดิม
-4. **ถาม CarbonReceipt admin** เรื่อง: response format ที่คาดหวัง, `/ocr-feedback` endpoint ชื่ออะไรฝั่งเขา, Bearer token rotation policy
-5. **เทรน OCR ด้วยบิลจริง** — user จะ upload บิลเข้าระบบ แล้วส่ง output ที่ผิดมาให้แก้
+1. **ถาม CarbonReceipt admin 4 ข้อ** (ก่อน implement ทุกอย่าง):
+   - Response JSON format ที่คาดหวังจาก `/ocr-dev` หน้าตาแบบไหน?
+   - `/ocr-feedback` ฝั่งเขาจะ call endpoint ชื่ออะไร? หรือเขารอเราออกแบบ?
+   - Bearer token rotation ทำยังไง? มีระบบออก token หรือ static?
+   - `process-batch` = ส่งหลายไฟล์พร้อมกันได้ไหม หรือชื่อแค่ batch?
+
+2. **สร้าง Webhook Adapter ใน n8n** — รับ format CarbonReceipt → transform → OCR pipeline เดิม:
+   ```
+   POST /webhook/carbonreceipt-ocr  (path ใหม่)
+   รับ: { filename, content_type, file_base64 }
+   transform → เรียก OCR pipeline เดิม
+   ตอบ: JSON format ที่ตกลงกัน
+   ```
+
+3. **สร้าง `/ocr-feedback` endpoint ใน n8n** — ตาม contract ที่ Codex ออกแบบไว้:
+   - รับ `ocr_json_before` + `admin_json_after`
+   - ตอบ `202 Accepted`
+   - เก็บลง queue สำหรับ background learning
+
+4. **เทรน OCR ด้วยบิลจริง** — user จะ upload บิล แล้วส่ง output ที่ผิดมาแก้
 
 ---
 
 ## Pending Tasks (จาก HANDOFF.md)
-
-_(none formal)_ — ทำงานต่อจาก context นี้ได้เลย
-
----
-
-## CarbonReceipt API Context (สำคัญ — อย่าลืม)
-
-**API ที่ได้จาก admin:**
-```
-POST https://ai-api.manageai.co.th/oneclimat-poc/api/v1/documents/process-batch
-Authorization: Bearer MAI-xxxx
-Body: { filename, content_type, file_base64 }
-```
-
-**Gap ที่พบ:**
-- URL path ต่างกัน (เขาใช้ `/api/v1/documents/process-batch`, เราใช้ `/webhook/ocr-dev`)
-- Auth ต่างกัน (เขาใช้ Bearer token, เราใช้ Basic/API key)
-- `/ocr-feedback` ยังไม่มีใน Postman ของเขา — ต้องออกแบบร่วมกัน
-- ยังไม่รู้ response format ที่เขาคาดหวัง
-
-**แนวทางที่แนะนำ:** Adapter Layer ใน n8n — รับ format เขา → transform → pipeline เดิม
+_(none formal)_
 
 ---
 
 ## Uncommitted Changes
 
-| ไฟล์ | สถานะ |
-|------|-------|
-| `code-node-enhanced.js` | M — modified แต่ไม่เกี่ยวกับงาน session นี้ |
-| `docs/collab/HANDOFF.md` | M — sync log auto-append จาก sync.sh |
-| `memory.md` | M — ไม่ใช่ MEMORY.md หลัก ไม่ต้อง commit |
-| `workflow3.json`, `workflow_patch.json` | M — ไม่เกี่ยวกับงาน session นี้ |
+| ไฟล์ | สถานะ | ทำไม |
+|------|-------|------|
+| `code-node-enhanced.js` | M | ไม่เกี่ยวกับงาน session นี้ |
+| `docs/collab/HANDOFF.md` | M | sync log auto-append (ปกติ) |
+| `memory.md` | M | ไม่ใช่ MEMORY.md หลัก |
+| `workflow3.json`, `workflow_patch.json` | M | ไม่เกี่ยวกับงาน session นี้ |
 
-ไม่มีอะไรต้อง commit เพิ่ม
+ไม่ต้อง commit เพิ่ม
 
 ---
 
 ## Context That Took Time To Build (Don't Lose)
 
-1. **git post-commit hook + unset GIT env vars** — git inject `GIT_DIR`/`GIT_INDEX_FILE` เข้า hook environment ทำให้ `git -C agents/codex` งง ต้อง `unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX` ต้นไฟล์ hook ก่อนทุกครั้ง
-2. **tmux session "dev" รันอยู่แล้ว** — พรุ่งนี้ SSH มาแล้ว `dev` ได้เลย หรือ `tmux attach -t dev`
-3. **CarbonReceipt API ยัง POC** — path มี "poc" อยู่ (`/oneclimat-poc/`) — production URL น่าจะต่างออกไป ต้องถามก่อน implement
-4. **Codex aware ทุกอย่าง** — HANDOFF.md + CLAUDE.md sync แล้ว Codex เห็น Golden Rules, Sync Policy, skills ทั้งหมด
+1. **Codex = OpenAI GPT จริงๆ** — ไม่ใช่ Claude instance ที่ 2 ทั้ง 2 AI คนละค่าย collaborate ผ่าน git files เท่านั้น ไม่มีช่องทางอื่น
+2. **CarbonReceipt API ยัง POC** — path มี `/oneclimat-poc/` production URL น่าจะต่าง ต้องถาม
+3. **tmux sessions ไม่ persistent หลัง server reboot** — ถ้า server reboot ต้องรัน `dev` และ `codex` ใหม่ (scripts จะสร้าง session ใหม่ให้อัตโนมัติ)
+4. **post-commit hook ไม่ถูก git track** — อยู่ใน `.git/hooks/` ถ้า clone ใหม่ต้องติดตั้งใหม่ (ดู `.git/hooks/post-commit`)
+5. **Bearer token ใน Postman** — `MAI-tfCNjlqNVFYB64Pn8OsJIgU1ZbM7LGyJwK3gGENY1P9h04o7fr4g7gl8SNLDNKoB` อาจเป็น dev/test token — ห้าม commit
 
 ---
 
 ## Commands To Run First (session ถัดไป)
 
 ```bash
-# 1. กลับเข้า tmux session
-dev                          # หรือ tmux attach -t dev
+# 1. SSH + เข้า tmux
+dev                    # หรือ tmux attach -t dev
 
-# 2. ไปที่ project
-cd ~/Project-Yterayut/N8N-AUTO-RESPONSE
-
-# 3. ดูสถานะ
+# 2. ตรวจสถานะ
 git log --oneline -5
-./scripts/collab/status.sh
+tmux ls                # ตรวจว่า sessions ยังอยู่
 
-# 4. ถ้าได้ข้อมูลเพิ่มจาก CarbonReceipt admin แล้ว
-# → เริ่มออกแบบ adapter layer + /ocr-feedback endpoint ใน n8n
+# 3. อ่าน context
+/recap                 # Claude สรุปให้ทันที
+
+# 4. ถ้าได้ข้อมูลจาก CarbonReceipt admin แล้ว
+# → เริ่มออกแบบ Webhook Adapter ใน n8n
+# → เริ่มออกแบบ /ocr-feedback endpoint
 ```
