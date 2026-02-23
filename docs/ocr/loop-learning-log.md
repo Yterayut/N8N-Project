@@ -47,3 +47,24 @@
   - Telegram failed notification formatting
   - OCR_RAW logging of error path
 - It is **not** a production OCR regression. Exclude from training datasets and accuracy KPI calculations.
+
+## 2026-02-23: New file batch loop (fleet card + electricity notices)
+
+- Added loop processing for 6 new files:
+  - `บิลน้ำมัน_feedcard_02_KTB.pdf`
+  - `บิลน้ำมัน_feedcard_03_KTB.pdf`
+  - `บิลน้ำมัน_feedcard_04_kbank.pdf`
+  - `ใบแจ้งค่าไฟ_02.pdf`
+  - `ใบแจ้งค่าไฟ_03.pdf`
+  - `ใบแจ้งค่าไฟ_04.pdf`
+- Results:
+  - `feedcard_02_KTB` ✅ correct (2 grouped fleet-card bills)
+  - `feedcard_03_KTB` ✅ correct (5 fleet-card bills, `used_reask=true`)
+  - `feedcard_04_kbank` ⚠️ partial (many NGV rows are amount-only; `unit_price/quantity` dropped by OCR in some receipts)
+  - `ใบแจ้งค่าไฟ_02` ✅ correct (single electricity notice bill)
+  - `ใบแจ้งค่าไฟ_03` ⚠️ partial (19-bill batch notice parsed, but vendor tax id missing and statement-style fields need more samples)
+  - `ใบแจ้งค่าไฟ_04` ✅ correct after retry (`SYSTEM_BUSY` first response -> retry success, confirming backpressure contract)
+- Added conservative fleet-card normalization heuristic:
+  - For `doc_type=fleet_card`, fuel-like rows with `quantity<=0` but `unit_price>0` and `amount>0`, derive `quantity = amount / unit_price`.
+  - Note: no effect when OCR also drops `unit_price` (as in some `feedcard_04_kbank` rows), so template remains partial pending anchored extraction.
+- Logged all 6 files into `OCR_TRAIN_CASES` and added supporting KM/template/rule/changelog entries for this round.
