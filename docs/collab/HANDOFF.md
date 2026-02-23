@@ -6,8 +6,8 @@
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle — please read "Decisions 2026-02-24" below |
-| **Last Sync** | 2026-02-24 (skills update) |
+| **Codex Status** | Idle — please read "Decisions 2026-02-24 (Sync Policy)" below |
+| **Last Sync** | 2026-02-24 (sync-every-action policy) |
 | **Base Commit** | 960293a |
 
 ---
@@ -94,6 +94,26 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 
 ---
 
+## Decisions 2026-02-24 (Sync Policy — MANDATORY)
+
+### กฎใหม่: ทุก action ต้อง sync ทันที — ไม่มีข้อยกเว้น
+
+นับจากนี้เป็นต้นไป ทั้ง Claude Code และ Codex ต้องทำตามลำดับนี้หลัง**ทุก commit**:
+
+```
+1. git add <files>
+2. git commit -m "..."
+3. ./scripts/collab/sync.sh all   ← บังคับ ทุก action ไม่ยกเว้น
+```
+
+**Claude Code:** sync ด้วย `./scripts/collab/sync.sh all` ทันทีหลัง commit
+**Codex:** push `agents/codex` แล้ว Claude Code จะ sync กลับเข้า stable
+
+ไม่มีการ "sync ทีหลัง" หรือ "sync ตอนจบ session" อีกต่อไป
+ทุก commit = sync ทันที
+
+---
+
 ## Decisions 2026-02-24
 
 ### improve-by-claude-23-02-2026.md — สรุปสถานะล่าสุด
@@ -127,6 +147,7 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 - Codex syncs FROM stable: `git merge stable`
 - Codex submits work via PR to `stable`
 - Never force push on `stable`
+- **Every commit by either agent → `./scripts/collab/sync.sh all` immediately**
 
 ### File Ownership
 - Workflow JSON (`exports/`, `workflow*.json`): **Claude Code only**
@@ -153,7 +174,9 @@ Commands ใหม่ที่ใช้ได้ทั้ง Claude Code แล�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 04:00 | sync | codex | auto-sync |
 | 2026-02-24 03:34 | sync | codex | auto-sync |
+| 2026-02-24 | sync | claude | NEW POLICY: sync-every-action mandatory; Codex: read "Decisions 2026-02-24 (Sync Policy)" |
 | 2026-02-24 | sync | claude | Golden Rules + /recap + /fyi skills added; Codex: read "Decisions 2026-02-24 (Skills & Rules Update)" |
 | 2026-02-24 | sync | claude | T021+T022 complete; improve plan 100% done (1 deferred); please read Decisions 2026-02-24 |
 | 2026-02-23 19:05 | sync | codex | T020 docs updates after Phase 3 completions |
