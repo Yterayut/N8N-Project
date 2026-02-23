@@ -1,5 +1,19 @@
 - to memorize
 
+## Golden Rules
+
+Rules ที่ห้ามละเมิด — ทุก session ทุก agent:
+
+- **Never** `git push --force` บน `stable` หรือ `main`
+- **Never** `rm -rf` โดยไม่ backup ก่อน
+- **Never** commit ไฟล์ `.env`, API keys, credentials ใดๆ
+- **Never** patch live n8n โดยไม่อ่าน `docs/collab/HANDOFF.md` ก่อน
+- **Never** แก้ workflow JSON ด้วย sed/direct file edit — ใช้ n8n REST API เสมอ
+- **Never** merge PR โดยไม่มี human approval
+- **Always** รัน `./scripts/verify_nowThai_sync.sh` หลัง patch Code nodes
+- **Always** อัปเดต `HANDOFF.md` หลัง task เสร็จ
+- **Always** preserve workflow history — ห้ามลบ `workflow_history` records
+
 ## Multi-Agent Collaboration Protocol
 
 ### Identity
