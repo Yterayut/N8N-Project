@@ -1,1 +1,31 @@
 - to memorize
+
+## Multi-Agent Collaboration Protocol
+
+### Identity
+- You are Claude Code, working on branch `stable` (main worktree)
+- Codex agent works on branch `agents/codex` (worktree: `agents/codex/`)
+
+### Before Starting Work
+1. Read `docs/collab/HANDOFF.md` for current status
+2. Check if Codex has pending PRs or completed tasks
+3. Sync Codex worktree if needed: `./scripts/collab/sync.sh codex`
+
+### Collaboration Commands
+```bash
+./scripts/collab/status.sh          # Show all agent status
+./scripts/collab/sync.sh            # Auto-sync current branch
+./scripts/collab/sync.sh codex      # Sync Codex worktree
+./scripts/collab/sync.sh all        # Sync all agents
+./scripts/collab/assign.sh T007 codex "Task title"  # Create task for Codex
+```
+
+### After Completing a Task
+1. Update `docs/collab/HANDOFF.md` (move task to Completed)
+2. Commit and push to `stable`
+3. Run `./scripts/collab/sync.sh codex` so Codex gets latest
+
+### File Ownership
+- Workflow JSON, scripts, live system: **Claude Code only**
+- Documentation, plans, specs: **Both agents**
+- Always update HANDOFF.md after task completion

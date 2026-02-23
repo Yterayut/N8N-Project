@@ -6,7 +6,7 @@
 |-------|-------|
 | **Phase** | Phase 0 - Setup Complete, Ready to Start |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (agents/codex branch) |
+| **Codex Status** | Working on T002 (agents/codex branch) |
 | **Last Sync** | 2026-02-23 |
 | **Base Commit** | 385ceb2 |
 
@@ -33,7 +33,9 @@
 ## Task Board
 
 ### In Progress
-_(none)_
+| ID | Task | Owner | Priority | Started |
+|----|------|-------|----------|---------|
+| T002 | Create regression test matrix spec | Codex | P1 | 2026-02-23 |
 
 ### Pending
 | ID | Task | Owner | Priority | Depends On |
@@ -45,9 +47,7 @@ _(none)_
 | T006 | Update documentation after P0/P1 fixes | Codex | P2 | T003,T004,T005 |
 
 ### Completed
-| ID | Task | Owner | Priority | Completed |
-|----|------|-------|----------|-----------|
-| T002 | Create regression test matrix spec | Codex | P1 | 2026-02-23 |
+_(none)_
 
 ---
 

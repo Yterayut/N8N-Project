@@ -2,7 +2,7 @@
 
 **Owner:** Codex
 **Priority:** P1
-**Status:** completed
+**Status:** pending
 **Depends On:** -
 
 ## Objective
@@ -44,4 +44,3 @@
 ## Notes
 - อ้างอิง `docs/improve.md` สำหรับ edge cases ที่ต้อง cover
 - อ้างอิง `docs/test-workflow-documentation.md` สำหรับ flow details
-- Completed on `2026-02-23` by Codex (`agents/codex`)
