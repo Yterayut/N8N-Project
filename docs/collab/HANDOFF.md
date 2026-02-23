@@ -35,19 +35,19 @@
 ### In Progress
 | ID | Task | Owner | Priority | Started |
 |----|------|-------|----------|---------|
-| T002 | Create regression test matrix spec | Codex | P1 | 2026-02-23 |
+| T006 | Update documentation after P0/P1 fixes | Codex | P2 | 2026-02-23 |
 
 ### Pending
-| ID | Task | Owner | Priority | Depends On |
-|----|------|-------|----------|------------|
-| T001 | Phase 0 audit: verify improve.md vs live workflow | Claude Code | P0 | - |
-| T003 | Fix round3 undefined | Claude Code | P0 | T001 |
-| T004 | Fix re-ask normalize loop | Claude Code | P1 | T001 |
-| T005 | Fix queue worker retry status | Claude Code | P1 | T001 |
-| T006 | Update documentation after P0/P1 fixes | Codex | P2 | T003,T004,T005 |
+_(none)_
 
 ### Completed
-_(none)_
+| ID | Task | Owner | Completed | Notes |
+|----|------|-------|-----------|-------|
+| T001 | Audit improve.md vs live workflow | Claude Code | 2026-02-23 | All 8 P0/P1 issues confirmed OPEN |
+| T002 | Regression test matrix | Codex | 2026-02-23 | 18 scenarios, 5 sections, merged to stable |
+| T003 | Fix round3 + allHeaders + MIME + URL + file limit | Claude Code | 2026-02-23 | 6 nodes patched, commit c556967 |
+| T004 | Fix re-ask normalize bypass | Claude Code | 2026-02-23 | validation added before accepting re-ask |
+| T005 | Fix queue worker retry status | Claude Code | 2026-02-23 | Set Done now writes 'error' on fail |
 
 ---
 
