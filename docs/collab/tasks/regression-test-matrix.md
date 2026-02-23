@@ -343,3 +343,32 @@ Use this section specifically after Phase 2 patches (T007/T008/T009/T011/T012/T0
   - OCR transport/API error path
 - For `P2-5`, verification may require inspecting prompt build output or debug logs (not just final OCR response).
 - For `P2-7`, record test env values and resulting computed THB in test evidence for reproducibility.
+
+## 7. Phase 3 Scenarios (Cleanup & Maintainability)
+
+Use this section after Phase 3 patches (T015-T019) to verify env-configured behavior, queue loop correctness, confidence logic, electricity validation flexibility, and MIME support additions.
+
+| # | Scenario | Input / Setup | Expected Result |
+|---|---|---|---|
+| P3-1 | T015 queue batch size respects `OCR_QUEUE_BATCH_SIZE` | Set `OCR_QUEUE_BATCH_SIZE=3`; enqueue 10 items; run queue worker cycle | Only 3 items processed in one batch cycle; remaining items stay pending for next cycle |
+| P3-2 | T015 SLA lanes honor env thresholds | Set `OCR_SLA_FAST_KB=500`, `OCR_SLA_HEAVY_KB=2000`; test files around thresholds | Lane selection switches according to env values (fast/standard/heavy) rather than hardcoded 700/4000 |
+| P3-3 | T015 Telegram uses dynamic workflow name | Run OCR workflow with current name (or renamed clone) | Telegram message shows actual workflow name from `$workflow.name` (not hardcoded `test-workflow`) |
+| P3-4 | T016 queue completion uses correct `file_id` for 2nd loop item | Process queue batch with at least 2 items and distinct `file_id`s | `Code  Set Done` writes status/update to the matching 2nd item `file_id`, not item 1 |
+| P3-5 | T017 re-ask confidence not inflated when critical errors remain | Simulate re-ask result still containing critical validation errors | Confidence is **not** force-raised by `OCR_REASK_CONF_BOOST`; decision remains consistent with unresolved critical errors |
+| P3-6 | T017 re-ask confidence boost applies only when all critical errors resolved | Set `OCR_REASK_CONF_BOOST=0.88`; simulate re-ask that clears all critical errors | Confidence boosted to at least `0.88` (or env value) only in fully-resolved re-ask case |
+| P3-7 | T018 electricity ref: 10 digits accepted | Electricity fixture with ref length 10 digits | Validation accepts reference under default `/^\\d{10,15}$/`; no hard error for ref length |
+| P3-8 | T018 electricity ref: 16 digits rejected/warned | Electricity fixture with ref length 16 digits | Validation flags reference as invalid under default pattern (warning severity per T018 behavior) |
+| P3-9 | T018 custom `OCR_ELEC_REF_PATTERN` overrides default | Set custom env regex (e.g. allow 16 digits), rerun same fixture | Validation behavior follows env regex, overriding default pattern |
+| P3-10 | T019 TIFF magic-byte detection | Upload TIFF file (LE and/or BE magic bytes) | MIME identified as `image/tiff`; file passes MIME detection path |
+| P3-11 | T019 HEIC/HEIF extension detection | Upload `.heic` or `.heif` file | MIME identified as `image/heic` (or supported HEIF mapping) via extension handling |
+
+### 7.1 Phase 3 Validation Notes
+
+- `P3-1` may require inspecting queue table/sheet state before and after worker run to confirm exact processed count.
+- `P3-2` verification is easiest via debug output/log fields from `Code (SLA Lane + Timeout Budget)` (lane + timeout values).
+- `P3-3` should test both:
+  - normal `$workflow.name` availability
+  - fallback via `WORKFLOW_NAME` env var (if possible)
+- `P3-5/P3-6` require fixtures or simulated re-ask outputs that deterministically produce `criticalErrs > 0` vs `criticalErrs === 0`.
+- `P3-8` expected result is a **warning**, not hard-fail, per T018 severity downgrade.
+- `P3-10/P3-11` may be limited by upstream OCR provider support even if MIME detection succeeds; this scenario validates detection path first.
