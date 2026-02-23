@@ -77,6 +77,10 @@
 - OCR regression test set baseline available via T002 matrix ✅
 
 ## Phase 2: P2 Scale & Safety (ก่อน scale จริง)
+### Status (2026-02-23)
+- **Completed by Claude Code (T007/T008/T009/T011/T012/T013)** for documented Phase 2 items in `docs/improve-by-claude-23-02-2026.md`
+- T014 (Codex) updates regression matrix coverage and documentation summary for Phase 2
+
 ### Scope
 P2 ใน `docs/improve.md` + operational safety
 
@@ -106,6 +110,14 @@ P2 ใน `docs/improve.md` + operational safety
 ### Gate ผ่าน
 - ไม่มี P2 “high impact” ค้างที่เปิด production risk สูง
 - error path ทั้งหมดตอบ JSON มาตรฐาน
+
+### Phase 2 Completion Notes (from HANDOFF)
+- **T007:** file size guard added in main path (`Code in JavaScript22`) and queue path (`Code (Split Files)`)
+- **T008:** `Respond to Webhook (error)` now returns sanitized client-safe message (no raw Gemini payload leak)
+- **T009:** `Code (Select Few-shot Examples)` truncates at example boundary (not raw char slice)
+- **T011:** `HTTP GenerateContent (Re-ask)` retry enabled + `continueRegularOutput`
+- **T012:** THB pricing reads from env vars with fallback defaults
+- **T013:** removed 24 disabled legacy nodes and dangling connections
 
 ## Phase 3: P3 Cleanup / Maintainability
 ### Scope
@@ -177,14 +189,13 @@ P2 ใน `docs/improve.md` + operational safety
 - มีเอกสารสถานะ `improve-audit-status.md` ว่าข้อไหนปิดแล้ว/เหลืออะไร
 
 ## 6) ลำดับลงมือที่แนะนำ (รอบถัดไป)
-1. เริ่ม `Phase 2` ทันที โดยโฟกัส 3 เรื่อง impact สูง:
-   - file size validation (Webhook layer)
-   - sanitize Gemini error response ก่อนส่ง client
-   - few-shot truncation safe boundary
-2. วาง short-term mitigation สำหรับ Google Sheets bottleneck (`Get All row_key`, reconciliation job)
-3. ใช้ `docs/collab/tasks/regression-test-matrix.md` (T002) รัน regression หลังทุก patch
-4. commit + push `stable` พร้อม KM/changelog/update sanitized export
-5. เมื่อ P2 high-impact ปิดแล้ว ค่อยเข้ารอบ `Phase 3` cleanup
+1. เริ่ม `Phase 3` จากงาน config/env externalization (queue batch size, SLA thresholds, Telegram workflow metadata)
+2. แก้ queue worker correctness จุดค้าง (`file_id` reference in `Code Set Done`)
+3. ทบทวน re-ask confidence floor (`Math.max(conf, 0.88)`) พร้อม regression criteria กัน confidence inflation
+4. ปรับ electricity validation flexibility (reference regex / template compatibility)
+5. ประเมิน MIME extension (TIFF/HEIC) ตาม scope การใช้งานจริง + fixture readiness
+6. ใช้ `docs/collab/tasks/regression-test-matrix.md` (รวม Section 6 Phase 2) เป็น baseline ก่อน/หลังทุก patch
+7. commit + push `stable` พร้อม KM/changelog/update sanitized export ทุก phase
 
 ## 7) Phase 1 Completion Notes (from HANDOFF)
 - **T003:** Fixed `round3`, `allHeaders`, MIME sniffing optimization, file-count guard, queue classifier, trailing URL newline cleanup

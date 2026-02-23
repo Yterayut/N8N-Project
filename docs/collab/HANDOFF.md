@@ -6,9 +6,9 @@
 |-------|-------|
 | **Phase** | Phase 2 - Scale & Safety (IN PROGRESS) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Assigned T012 (Phase 2 docs + test matrix) |
-| **Last Sync** | 2026-02-23 |
-| **Base Commit** | 385ceb2 |
+| **Codex Status** | Idle (T014 completed) |
+| **Last Sync** | 2026-02-23 18:10 |
+| **Base Commit** | 2821577 |
 
 ---
 
@@ -36,9 +36,7 @@
 _(none)_
 
 ### Pending
-| ID | Task | Owner | Blocked By |
-|----|------|-------|-----------|
-| T014 | Phase 2 docs: spec + regression matrix update | Codex | — |
+_(none)_
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -55,6 +53,7 @@ _(none)_
 | T011 | HTTP Re-ask: retry + continueRegularOutput | Claude Code | 2026-02-23 | retryOnFail=true, maxTries=2, onError=continueRegularOutput |
 | T012 | THB pricing → env vars with fallback | Claude Code | 2026-02-23 | OCR_PRICE_THB_PER_1K_INPUT/OUTPUT, fallback to 0.0105/0.0875 |
 | T013 | Remove 24 disabled legacy nodes | Claude Code | 2026-02-23 | 24 nodes + dangling connections removed |
+| T014 | Phase 2 docs: spec + regression matrix update | Codex | 2026-02-23 | Added `phase2-summary.md`, updated regression matrix (Section 6), updated plan docs |
 
 ---
 
@@ -92,7 +91,7 @@ _(none)_
 ## Sync Log
 
 | Date | Direction | By | Notes |
-| 2026-02-23 16:00 | sync | codex | auto-sync |
+| 2026-02-23 18:10 | sync | codex | T014 docs updates after Phase 2 completions |
 | 2026-02-23 10:40 | sync | codex | auto-sync |
 | 2026-02-23 10:18 | sync | codex | auto-sync |
 |------|-----------|-----|-------|
