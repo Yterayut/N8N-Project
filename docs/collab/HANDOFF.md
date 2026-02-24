@@ -57,23 +57,27 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: **T026**
+### งานที่ assigned ตอนนี้: **T027**
 
-**T026 — OCR Feedback Receiver + KPI System**
-Spec อยู่ที่: `docs/collab/tasks/T026-ocr-feedback-kpi.md`
+**T027 — OCR Learning Loop (Path 1 + Path 2)**
+Spec อยู่ที่: `docs/collab/tasks/T027-ocr-learning-loop.md`
 
-**สิ่งที่ต้องทำ (Phase A ก่อน):**
-1. อ่าน spec ทั้งหมดก่อน — comment ใน `## Discussion` ถ้าเห็น issue
-2. สร้าง sheet `OCR_FEEDBACK` ใน Spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
-3. สร้าง n8n workflow `ocr-feedback-receiver` ผ่าน REST API
-4. สร้าง n8n workflow `ocr-kpi-report` ผ่าน REST API
-5. รัน Test 1-5 ทั้งหมด — บันทึกผลใน spec file
-6. อัปเดต HANDOFF.md หลังเสร็จ
+**สิ่งที่ต้องทำ (ตามลำดับ):**
+1. อ่าน spec ทั้งหมด — comment ใน `## Discussion` ถ้าเห็น issue
+2. สร้าง `OCR_EXAMPLES` sheet + seed data
+3. สร้าง workflow `ocr-examples-api` → test 1-3
+4. เพิ่ม `OCR_FEEDBACK_API_URL=http://127.0.0.1:5678/webhook/ocr-examples-api` ใน `.env`
+5. สร้าง workflow `ocr-learning-path1` → test 4
+6. Patch `ocr-feedback-receiver` (T026) เพิ่ม trigger Path 1
+7. สร้าง workflow `ocr-training` (Telegram) → test 5
+8. ตรวจ few-shot ใช้งานได้จริง → test 6-7
+9. อัปเดต HANDOFF.md
 
 **ข้อสำคัญ:**
-- ห้าม modify workflow `up1n75qEhbsXswii` (OCR หลัก) — สร้าง workflow ใหม่เท่านั้น
-- ถ้า Sheets node ต้องการ gid ของ OCR_FEEDBACK ให้ดูจาก URL หลังสร้าง sheet แล้ว
-- Auth: `x-api-key: ocm-cabonrecipte!` (ดูจาก `$env.OCR_SHARED_API_KEY`)
+- `OCR_FEEDBACK_API_URL` ต้องใช้ internal URL `http://127.0.0.1:5678/...` (ไม่ใช่ ngrok)
+- Telegram bot credential: `rauiF9qBRW8iVrsU`
+- Patch T026 ด้วย `continueOnFail: true` ไม่กระทบ feedback receiver ถ้า learning fail
+- Auth ทุก internal call: `x-api-key: ocm-cabonrecipte!`
 
 ---
 
@@ -117,7 +121,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| T027 | OCR Learning Loop (Path 1 + Path 2) | Codex | Assigned 2026-02-25 |
 
 ---
 
