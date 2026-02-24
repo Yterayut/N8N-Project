@@ -36,7 +36,65 @@
 _(none)_
 
 ### Pending
-_(none)_
+| ID | Task | Owner | Notes |
+|----|------|-------|-------|
+| T024 | Google Drive save spec for fast/standard path | Codex | เขียน implementation spec — Claude จะ implement |
+
+---
+
+### T024 — Context สำหรับ Codex (Claude รวบรวมไว้)
+
+**โจทย์:** เพิ่มการบันทึกไฟล์ที่ user ส่ง OCR ขึ้น Google Drive ทุกไฟล์ (ทั้ง fast/standard และ heavy path)
+
+**สถานะปัจจุบันใน workflow `up1n75qEhbsXswii` (ocr-invoice-processor):**
+
+```
+Webhook → ... → Code (Document Classifier) → Code (SLA Lane + Timeout Budget)
+                                                        │
+                          lane='heavy' (≥4000KB/mixed)  │  lane='fast'/'standard'
+                                  ▼                     │         ▼
+                       Code (Split Files)               │   HTTP Upload File5
+                               ▼                        │   (ตรงไป Gemini — ❌ ไม่ผ่าน Drive)
+                   ✅ Google Drive (Upload) ─────────────┘
+                      folder: Upload_Carbonrecipt
+                      folderID: 1Fc8U94SNk_EJLsvzyUHWcTxDBMLiwR-v
+                      filename: {file_id}.pdf
+                      credential: "Google Drive account" (IYyt3qEQVk3xfjcF)
+                      inputDataFieldName: "file"  ← (Code Split Files rename binary เป็น 'file')
+                               ▼
+                   Google Sheets (Append to Queue)  ← เก็บ drive_file_id
+```
+
+**Binary field names:**
+- Heavy path: binary field = `file` (Code Split Files rename ให้)
+- Fast path: binary field = `files0` (ชื่อดั้งเดิมจาก webhook)
+
+**Google Drive credential:**
+- Name: "Google Drive account"
+- ID: `IYyt3qEQVk3xfjcF`
+- Folder: "Upload_Carbonrecipt" (`1Fc8U94SNk_EJLsvzyUHWcTxDBMLiwR-v`) บน My Drive
+
+**OCR_RAW Sheet (Sheets ID: `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`):**
+- Queue sheet: `OCR_QUEUE` (gid: 2080899316) → มี column `drive_file_id` แล้ว
+- RAW sheet: `OCR_RAW` → ยังไม่มี `drive_file_id` column
+
+**Connections key nodes:**
+- `Code (SLA Lane + Timeout Budget)` → `HTTP Upload File5` (fast path)
+- `Code (SLA Lane + Timeout Budget)` → `Code (Split Files)` (heavy path — ต้อง verify connection นี้)
+- `HTTP Upload File5` → `Get row(s) in sheet1` → few-shot → Gemini
+
+**งานที่ต้องการให้ Codex เขียน spec:**
+1. Implementation plan — ต้องแทรก Google Drive upload ตรงไหน (fast path)
+2. เลือก approach: Option A (sequential ก่อน Gemini) vs Option C (parallel async)
+3. Error handling spec — ถ้า Drive upload fail → OCR ต้อง continue ไม่ block
+4. File naming convention — `{file_id}.pdf` เหมือน heavy path? หรือ subfolder by date/doc_type?
+5. OCR_RAW sheet — ต้องเพิ่ม column `drive_file_id` ไหม?
+6. ข้อเสนอแนะสำหรับ CarbonReceipt integration — ควร expose drive_file_id ใน OCR response?
+
+**Constraints ที่ Codex ต้องรู้:**
+- ห้ามแก้ workflow JSON โดยตรง — Claude Code จะ implement ผ่าน n8n REST API
+- ห้าม commit .env หรือ credentials
+- Codex ทำแค่ spec/docs — Claude Code จะ patch live workflow
 
 > **Codex — อ่านนี้:** T023 เสร็จแล้วและ TESTED (Claude Code 2026-02-24)
 >
@@ -220,6 +278,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 09:25 | sync | all | auto-sync |
+| 2026-02-24 09:25 | sync | all | auto-sync |
 | 2026-02-24 09:24 | sync | all | auto-sync |
 | 2026-02-24 09:24 | sync | all | auto-sync |
 | 2026-02-24 09:08 | sync | all | auto-sync |
