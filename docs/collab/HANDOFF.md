@@ -38,11 +38,11 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Notes |
 |----|------|-------|-------|
-| T024 | Google Drive save spec for fast/standard path | Codex | เขียน implementation spec — Claude จะ implement |
+| T024 | Google Drive save spec for fast/standard path | **Codex** | Spec พร้อมแล้วที่ `docs/collab/tasks/T024-gdrive-save-spec.md` — Codex review + ตัดสินใจ 3 จุด แล้ว mark Ready |
 
 ---
 
-### T024 — Context สำหรับ Codex (Claude รวบรวมไว้)
+### T024 — งานของ Codex (ต้องทำก่อน Claude implement)
 
 **โจทย์:** เพิ่มการบันทึกไฟล์ที่ user ส่ง OCR ขึ้น Google Drive ทุกไฟล์ (ทั้ง fast/standard และ heavy path)
 
@@ -83,18 +83,14 @@ Webhook → ... → Code (Document Classifier) → Code (SLA Lane + Timeout Budg
 - `Code (SLA Lane + Timeout Budget)` → `Code (Split Files)` (heavy path — ต้อง verify connection นี้)
 - `HTTP Upload File5` → `Get row(s) in sheet1` → few-shot → Gemini
 
-**งานที่ต้องการให้ Codex เขียน spec:**
-1. Implementation plan — ต้องแทรก Google Drive upload ตรงไหน (fast path)
-2. เลือก approach: Option A (sequential ก่อน Gemini) vs Option C (parallel async)
-3. Error handling spec — ถ้า Drive upload fail → OCR ต้อง continue ไม่ block
-4. File naming convention — `{file_id}.pdf` เหมือน heavy path? หรือ subfolder by date/doc_type?
-5. OCR_RAW sheet — ต้องเพิ่ม column `drive_file_id` ไหม?
-6. ข้อเสนอแนะสำหรับ CarbonReceipt integration — ควร expose drive_file_id ใน OCR response?
+**Spec พร้อมแล้ว:** `docs/collab/tasks/T024-gdrive-save-spec.md`
 
-**Constraints ที่ Codex ต้องรู้:**
-- ห้ามแก้ workflow JSON โดยตรง — Claude Code จะ implement ผ่าน n8n REST API
-- ห้าม commit .env หรือ credentials
-- Codex ทำแค่ spec/docs — Claude Code จะ patch live workflow
+Codex ต้องทำ 3 อย่างก่อน Claude implement:
+1. **Review spec** — Claude เลือก Option A (sequential) แล้ว, Codex ยืนยันหรือ propose alternative
+2. **ตัดสินใจ:** Expose `drive_file_id` ใน OCR response ไหม? (Section 7 ในไฟล์ spec)
+3. **ตัดสินใจ:** Folder structure — `Upload_Carbonrecipt` เดียวกัน หรือแยก subfolder by `YYYY-MM` / `doc_type`?
+4. **เขียน regression test cases** เพิ่มใน test matrix
+5. **อัปเดต HANDOFF.md** → เปลี่ยน T024 status เป็น "Ready for implementation"
 
 > **Codex — อ่านนี้:** T023 เสร็จแล้วและ TESTED (Claude Code 2026-02-24)
 >
@@ -278,6 +274,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 11:05 | sync | all | auto-sync |
+| 2026-02-24 11:05 | sync | all | auto-sync |
 | 2026-02-24 09:25 | sync | all | auto-sync |
 | 2026-02-24 09:25 | sync | all | auto-sync |
 | 2026-02-24 09:24 | sync | all | auto-sync |
