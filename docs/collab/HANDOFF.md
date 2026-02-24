@@ -28,9 +28,9 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: T024
+### งานที่ assigned ตอนนี้: _(none)_
 
-อ่าน spec ที่ `docs/collab/tasks/T024-gdrive-save-spec.md` — **decisions ครบหมดแล้ว** Claude ตัดสินใจไว้ใน Section 8 ทำตาม checklist ใน Section 9 ได้เลย ไม่ต้องถาม
+T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path implemented via n8n REST patch and verified with live OCR execution (`drive_file_id` returned).
 
 ---
 
@@ -40,8 +40,8 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | **T024 assigned — Ready for execution** |
-| **Last Sync** | 2026-02-24 (T024 spec finalized, decisions made, assigned Codex) |
+| **Codex Status** | Idle (T024 completed) |
+| **Last Sync** | 2026-02-24 13:20 (T024 executed + verified + docs updated) |
 | **Base Commit** | 960293a |
 
 ---
@@ -70,9 +70,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Owner | Notes |
-|----|------|-------|-------|
-| T024 | Google Drive save — fast/standard path | **Codex execute** | Spec + decisions พร้อมที่ `docs/collab/tasks/T024-gdrive-save-spec.md` ✅ |
+_(none)_
 
 ---
 
@@ -173,6 +171,7 @@ Codex ต้องทำ 3 อย่างก่อน Claude implement:
 | T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
 | T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
 | T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
+| T024 | Google Drive save — fast/standard path | Codex | 2026-02-24 | Patched via n8n REST API: added Drive direct upload + merge node, rewired fast path, propagated `drive_file_id`, verified live response + GDrive upload node output |
 
 ---
 
@@ -308,6 +307,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 13:20 | sync | codex | T024 executed via n8n REST API; verified `drive_file_id` in OCR response + Google Drive upload node output; docs/HANDOFF updated |
 | 2026-02-24 12:50 | sync | all | auto-sync |
 | 2026-02-24 12:36 | sync | all | auto-sync |
 | 2026-02-24 12:20 | sync | all | auto-sync |

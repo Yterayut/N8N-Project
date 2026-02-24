@@ -372,3 +372,25 @@ Use this section after Phase 3 patches (T015-T019) to verify env-configured beha
 - `P3-5/P3-6` require fixtures or simulated re-ask outputs that deterministically produce `criticalErrs > 0` vs `criticalErrs === 0`.
 - `P3-8` expected result is a **warning**, not hard-fail, per T018 severity downgrade.
 - `P3-10/P3-11` may be limited by upstream OCR provider support even if MIME detection succeeds; this scenario validates detection path first.
+
+## 8. T024 GDrive Save Scenarios (Fast/Standard Path Audit Trail)
+
+Use this section after T024 changes (Google Drive save before Gemini upload on main fast/standard path).
+
+| # | Scenario | Input / Setup | Expected Result |
+|---|---|---|---|
+| T024-1 | Fast/standard OCR uploads original file to Google Drive | `POST /ocr-dev` with small PDF (e.g. `shell.pdf`) | OCR success response includes non-empty `drive_file_id`; execution shows `Google Drive (Upload - Direct)` node ran successfully |
+| T024-2 | Google Drive file naming uses `YYYY-MM_request_id.ext` | Same as T024-1 | Uploaded Drive file name begins with `YYYY-MM_` and includes request ID + original extension |
+| T024-3 | `drive_file_id` propagates to final webhook response | Any successful fast/standard OCR request | `Respond to Webhook6` JSON contains `drive_file_id` matching Google Drive upload node output `id` |
+| T024-4 | `drive_file_id` saved in `OCR_RAW` row | Fast/standard OCR request with successful Drive upload | `OCR_RAW` append row includes `drive_file_id` column value (non-empty) |
+| T024-5 | Drive upload failure does not block OCR | Temporarily invalidate Google Drive credential / simulate Drive node failure | OCR flow still returns structured OCR result; `drive_file_id = \"UPLOAD_FAILED\"` |
+| T024-6 | Heavy queue path remains unaffected | Run heavy/queue OCR path request | Queue path still processes via existing `Queue Receiver` chain; no regression in queue upload/save flow |
+
+### 8.1 T024 Validation Notes
+
+- `T024-1` and `T024-3` can be verified from n8n execution runData:
+  - `Google Drive (Upload - Direct).json.id`
+  - `Respond to Webhook6.json.drive_file_id`
+- `T024-4` requires checking the latest appended row in `OCR_RAW` sheet (or execution output of `Append row in OCR_RAW4` if available).
+- `T024-5` is destructive if using live credential changes; run only in controlled test window and restore credential immediately.
+- `T024-6` focuses on regression safety: T024 patch targets main fast/standard path only.
