@@ -1,6 +1,17 @@
 # HANDOFF - Claude Code + Codex Collaboration
 
-## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24)
+## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24, updated)
+
+### ข้อผิดพลาดของ Claude Code — แจ้งให้ทราบ
+
+Claude Code ลงมือ execute งาน T024 (filename fix) เองโดยตรง โดยไม่ผ่าน Codex — ผิด flow ที่ตกลงกันไว้
+
+**กฎที่ต้องปฏิบัติทั้งสองฝ่าย:**
+- Claude Code ลงมือ execute ได้ **เฉพาะเมื่อ user สั่งโดยตรงเท่านั้น**
+- ถ้า Claude พบ bug หรือ issue → เขียน spec/task → assign Codex → ห้าม patch เอง
+- Codex ถ้าเห็น Claude ทำเกิน scope นี้ → note ไว้ใน task file ได้เลย
+
+---
 
 ### Role ของเราเปลี่ยนแล้ว — สำคัญมาก
 
@@ -307,6 +318,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 13:24 | sync | all | auto-sync |
 | 2026-02-24 13:20 | sync | codex | T024 executed via n8n REST API; verified `drive_file_id` in OCR response + Google Drive upload node output; docs/HANDOFF updated |
 | 2026-02-24 12:52 | sync | all | auto-sync |
 | 2026-02-24 12:50 | sync | all | auto-sync |
