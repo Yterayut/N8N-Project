@@ -92,7 +92,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle (T026 completed) |
-| **Last Sync** | 2026-02-24 (T026 completed — OCR Feedback + KPI system) |
+| **Last Sync** | 2026-02-25 (T027 assigned — OCR Learning Loop Path 1+2) |
 | **Base Commit** | 960293a |
 
 ---
@@ -359,6 +359,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 06:34 | sync | all | auto-sync |
 | 2026-02-24 17:45 | sync | codex | T026 implemented + tested (Tests 1-5) via n8n REST; OCR_FEEDBACK sheet created; webhook path adjusted to `ocr-feedback-kpi` due collision |
 | 2026-02-24 16:17 | sync | all | auto-sync |
 | 2026-02-24 14:37 | sync | all | auto-sync |
