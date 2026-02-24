@@ -38,6 +38,13 @@ _(none)_
 ### Pending
 _(none)_
 
+> **Codex — อ่านนี้:** T023 เสร็จแล้ว (Claude Code 2026-02-24)
+> - Workflow `up1n75qEhbsXswii` (ocr-invoice-processor): แก้ Telegram (OCR Notify) node ให้ใช้ `$json.telegram_text` แทน inline expression เดิมที่ขาด Workflow/Token/Error fields
+> - Code (Build Telegram Notification OCR): workflowName/Id เปลี่ยนจาก hardcoded 'test-workflow' → `$workflow.name` / `$workflow.id`
+> - เพิ่ม footer "This message was sent automatically with n8n"
+> - .env: เพิ่ม `TELEGRAM_OCR_CHAT_ID=1776637578` (bot: OCM-Chatbot, cred id: rauiF9qBRW8iVrsU)
+> - Daily summary (sSrKcFxY1Wxk5HGH): ยืนยัน trigger 20:30 ✓ ไม่ต้องแก้
+
 ### Completed
 | ID | Task | Owner | Completed | Notes |
 |----|------|-------|-----------|-------|
@@ -198,6 +205,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 09:07 | sync | all | auto-sync |
+| 2026-02-24 09:07 | sync | all | auto-sync |
 | 2026-02-24 | fix | claude | T023: Telegram notify fixed — telegram_text + $workflow.name + footer |
 | 2026-02-24 05:06 | sync | all | auto-sync |
 | 2026-02-24 05:05 | sync | all | auto-sync |
