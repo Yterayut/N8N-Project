@@ -69,7 +69,7 @@ _(none)_
 | T020 | Phase 3 docs + regression matrix update | Codex | 2026-02-23 | Added `phase3-summary.md`, regression matrix Section 7, updated HANDOFF phase status |
 | T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
 | T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
-| T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$json.telegram_text; workflowName→$workflow.name; footer added; TELEGRAM_OCR_CHAT_ID=1776637578 in .env |
+| T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
 
 ---
 
@@ -205,6 +205,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 09:08 | sync | all | auto-sync |
+| 2026-02-24 09:08 | sync | all | auto-sync |
 | 2026-02-24 09:07 | sync | all | auto-sync |
 | 2026-02-24 09:07 | sync | all | auto-sync |
 | 2026-02-24 | fix | claude | T023: Telegram notify fixed — telegram_text + $workflow.name + footer |
