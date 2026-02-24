@@ -87,8 +87,8 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (T024 completed) |
-| **Last Sync** | 2026-02-24 (T026 assigned — OCR Feedback + KPI system) |
+| **Codex Status** | Idle (T026 completed) |
+| **Last Sync** | 2026-02-24 (T026 completed — OCR Feedback + KPI system) |
 | **Base Commit** | 960293a |
 
 ---
@@ -117,7 +117,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 _(none)_
 
 ### In Progress (Codex)
-| T026 | OCR Feedback Receiver + KPI System | Codex | Assigned 2026-02-24 |
+_(none)_
 
 ---
 
@@ -218,6 +218,7 @@ Codex ต้องทำ 3 อย่างก่อน Claude implement:
 | T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
 | T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
 | T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
+| T026 | OCR Feedback Receiver + KPI System | Codex | 2026-02-24 | Implemented `ocr-feedback-receiver` + `ocr-kpi-report`; webhook path `ocr-feedback-kpi` (collision avoidance); created `OCR_FEEDBACK` tab; Tests 1-5 passed |
 | T024 | Google Drive save — fast/standard path | Codex | 2026-02-24 | Patched via n8n REST API: added Drive direct upload + merge node, rewired fast path, propagated `drive_file_id`, verified live response + GDrive upload node output |
 
 ---
@@ -354,6 +355,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 17:45 | sync | codex | T026 implemented + tested (Tests 1-5) via n8n REST; OCR_FEEDBACK sheet created; webhook path adjusted to `ocr-feedback-kpi` due collision |
 | 2026-02-24 16:17 | sync | all | auto-sync |
 | 2026-02-24 14:37 | sync | all | auto-sync |
 | 2026-02-24 14:29 | sync | all | auto-sync |
