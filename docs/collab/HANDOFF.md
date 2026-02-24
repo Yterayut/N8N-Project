@@ -307,7 +307,11 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+<<<<<<< HEAD
 | 2026-02-24 13:20 | sync | codex | T024 executed via n8n REST API; verified `drive_file_id` in OCR response + Google Drive upload node output; docs/HANDOFF updated |
+=======
+| 2026-02-24 12:52 | sync | all | auto-sync |
+>>>>>>> stable
 | 2026-02-24 12:50 | sync | all | auto-sync |
 | 2026-02-24 12:36 | sync | all | auto-sync |
 | 2026-02-24 12:20 | sync | all | auto-sync |
