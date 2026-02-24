@@ -1,6 +1,6 @@
 # T026 — OCR Feedback Receiver + KPI Accuracy System
 
-**Status:** Ready for implementation
+**Status:** Completed (implemented + tested by Codex, 2026-02-24)
 **Owner:** Codex
 **Assigned by:** Claude Code (2026-02-24)
 **Priority:** High
@@ -13,6 +13,7 @@
 
 - **เส้นที่ 1** `/webhook/ocr-dev` — มีอยู่แล้ว (ไม่แตะ)
 - **เส้นที่ 2** `/webhook/ocr-feedback` — **ใหม่** รับข้อมูลที่ admin แก้ไขแล้ว
+  - **Implementation note (Codex):** ใช้ path จริงเป็น `/webhook/ocr-feedback-kpi` ชั่วคราวเพื่อหลีกเลี่ยงชนกับ `Webhook_OCR_Feedback` ใน workflow หลัก (`ocr-invoice-processor`) ที่ใช้ `/webhook/ocr-feedback` อยู่แล้ว
 
 Flow:
 ```
@@ -31,6 +32,7 @@ OCR ประมวลผล → เก็บ OCR_RAW sheet (request_id)
 
 ### A1. Webhook Node
 - **Path:** `ocr-feedback`
+  - **Implemented path:** `ocr-feedback-kpi` (see Discussion)
 - **Method:** POST
 - **Response mode:** `responseNode` (respond manually)
 - **Authentication:** ไม่ตั้ง built-in — ใช้ Code node validate เอง
@@ -458,17 +460,86 @@ curl -X POST ... -H "x-api-key: wrong-key" -d '{...}'
 ---
 
 ## Discussion
-*(Codex: comment ถ้าเห็น issue กับ spec นี้ก่อน implement)*
+### Codex implementation notes (2026-02-24)
+
+1. **Webhook path collision**
+   - Spec ระบุ `/webhook/ocr-feedback`
+   - แต่ workflow หลัก `ocr-invoice-processor` มี `Webhook_OCR_Feedback` path นี้อยู่แล้ว
+   - ถ้าสร้าง workflow ใหม่ใช้ path เดียวกัน request จะวิ่งเข้า workflow หลักแทน
+   - จึงเปลี่ยน path ของ workflow ใหม่เป็น **`/webhook/ocr-feedback-kpi`**
+
+2. **n8n REST-created webhook node ต้องมี `webhookId`**
+   - Workflow `ocr-feedback-receiver` ถูกสร้างผ่าน REST API และ activate ได้ แต่ route ไม่ register (404)
+   - Root cause: webhook node ไม่มี field `webhookId`
+   - Fix: patch node ให้มี `webhookId` แล้ว toggle active/restart n8n
+
+3. **`bills_processed` response count bug**
+   - `Respond to Webhook (feedback success)` รับ input จาก Telegram node จึงอ่าน `bills_processed` ไม่เจอ (ได้ `0`)
+   - Fix: เปลี่ยน expression ให้ดึงจาก `$('Code node: Build Telegram Notification').first().json.bills_processed`
+
+4. **`OCR_FEEDBACK` sheet tab ยังไม่มี**
+   - สร้าง tab ผ่าน workflow ชั่วคราว (Webhook -> Google Sheets resource=`sheet`, operation=`create`)
+   - Header row ถูกสร้างอัตโนมัติจาก append ครั้งแรกของ `Google Sheets (Append OCR_FEEDBACK)` (autoMapInputData)
 
 ---
 
 ## Completion Checklist
-- [ ] สร้าง `OCR_FEEDBACK` sheet (header row ครบ)
-- [ ] สร้าง workflow `ocr-feedback-receiver` ใน n8n
-- [ ] สร้าง workflow `ocr-kpi-report` ใน n8n
-- [ ] รัน Test 1-5 ทั้งหมดผ่าน
-- [ ] บันทึกผลทดสอบใน task file นี้ (section ด้านล่าง)
-- [ ] อัปเดต HANDOFF.md
+- [x] สร้าง `OCR_FEEDBACK` sheet (header row ครบ)
+- [x] สร้าง workflow `ocr-feedback-receiver` ใน n8n
+- [x] สร้าง workflow `ocr-kpi-report` ใน n8n
+- [x] รัน Test 1-5 ทั้งหมดผ่าน
+- [x] บันทึกผลทดสอบใน task file นี้ (section ด้านล่าง)
+- [x] อัปเดต HANDOFF.md
 
 ## Test Results (Codex fill in)
-*(fill หลัง implement)*
+### Environment
+- n8n base: `http://127.0.0.1:5678` (production webhook endpoint on local server)
+- Spreadsheet: `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
+- OCR_FEEDBACK gid (created): `1589922285`
+- `ocr-feedback-receiver` workflow ID: `ztJ8oCBHREUPPry6`
+- `ocr-kpi-report` workflow ID: `yCqvdl3vrHGgiBMt`
+
+### Test 1 — Happy path ✅
+- Endpoint used: `POST /webhook/ocr-feedback-kpi`
+- Input: valid `request_id` (`1771496401701-14eff6e1c7e3f`) + 1 corrected bill
+- Result:
+  - HTTP `200`
+  - Response: `{\"status\":\"ok\",\"bills_processed\":1}`
+  - `OCR_FEEDBACK` append success (verified by KPI workflow reading rows)
+  - Telegram feedback notify node executed
+
+### Test 2 — Invalid API key ✅
+- Endpoint used: `POST /webhook/ocr-feedback-kpi`
+- Header: `x-api-key: wrong-key`
+- Result:
+  - HTTP `401`
+  - Response: `{\"error\":\"UNAUTHORIZED\"}`
+
+### Test 3 — `request_id` not found ✅
+- Endpoint used: `POST /webhook/ocr-feedback-kpi`
+- Input: non-existent `request_id` (`req_not_found_99999`) + 1 bill
+- Result:
+  - HTTP `200`
+  - Response: `{\"status\":\"ok\",\"bills_processed\":1}`
+  - `ocr_found=false` row appended (verified indirectly via workflow logic + row read in KPI workflow)
+  - Accuracy remains blank/empty in row (by design)
+
+### Test 4 — Multi-bill document ✅
+- Endpoint used: `POST /webhook/ocr-feedback-kpi`
+- Input: valid `request_id` + `bills` array length `2`
+- Result:
+  - HTTP `200`
+  - Response: `{\"status\":\"ok\",\"bills_processed\":2}`
+  - 2 rows appended to `OCR_FEEDBACK`
+
+### Test 5 — KPI report workflow ✅
+- Trigger: manual execution via n8n REST `/rest/workflows/{id}/run` (with `triggerToStartFrom: Manual Trigger`)
+- Execution ID: `151377`
+- Result (decoded from execution runData):
+  - `Google Sheets (OCR_FEEDBACK)` read success (`items=4`)
+  - `Code node: Aggregate KPI` success (report generated, `overall=100`, `total_feedback=3`)
+  - `Telegram (OCR KPI Report)` success (`ok=true`, message sent to chat `1776637578`)
+
+### Notes
+- `OCR_FEEDBACK` headers were auto-generated from first successful append (`autoMapInputData`) after tab creation.
+- Workflow path differs from spec (`ocr-feedback-kpi` instead of `ocr-feedback`) to avoid collision with main OCR feedback webhook in `ocr-invoice-processor`.
