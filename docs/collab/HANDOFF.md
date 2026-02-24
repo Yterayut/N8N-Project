@@ -6,8 +6,8 @@
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle — please read "Decisions 2026-02-24 (Dev Environment)" below |
-| **Last Sync** | 2026-02-24 (role redesign — Codex=Executor, Claude=Planner+Manager) |
+| **Codex Status** | **T024 assigned — Ready for execution** |
+| **Last Sync** | 2026-02-24 (T024 spec finalized, decisions made, assigned Codex) |
 | **Base Commit** | 960293a |
 
 ---
@@ -35,14 +35,14 @@
 ### In Progress
 _(none)_
 
-### Pending
+### In Progress (Codex)
 | ID | Task | Owner | Notes |
 |----|------|-------|-------|
-| T024 | Google Drive save spec for fast/standard path | **Codex** | Spec พร้อมแล้วที่ `docs/collab/tasks/T024-gdrive-save-spec.md` — Codex review + ตัดสินใจ 3 จุด แล้ว mark Ready |
+| T024 | Google Drive save — fast/standard path | **Codex execute** | Spec + decisions พร้อมที่ `docs/collab/tasks/T024-gdrive-save-spec.md` ✅ |
 
 ---
 
-### T024 — งานของ Codex (ต้องทำก่อน Claude implement)
+### T024 — งานของ Codex
 
 **โจทย์:** เพิ่มการบันทึกไฟล์ที่ user ส่ง OCR ขึ้น Google Drive ทุกไฟล์ (ทั้ง fast/standard และ heavy path)
 
@@ -274,6 +274,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 12:36 | sync | all | auto-sync |
+| 2026-02-24 12:20 | sync | all | auto-sync |
 | 2026-02-24 11:21 | sync | all | auto-sync |
 | 2026-02-24 11:21 | sync | all | auto-sync |
 | 2026-02-24 11:05 | sync | all | auto-sync |
