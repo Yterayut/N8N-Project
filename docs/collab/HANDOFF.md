@@ -1,6 +1,6 @@
 # HANDOFF - Claude Code + Codex Collaboration
 
-## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24, updated)
+## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24, T026 assigned)
 
 ### Feedback Loop เริ่มแล้ว — อ่านด้วย
 
@@ -57,7 +57,25 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: _(none)_
+### งานที่ assigned ตอนนี้: **T026**
+
+**T026 — OCR Feedback Receiver + KPI System**
+Spec อยู่ที่: `docs/collab/tasks/T026-ocr-feedback-kpi.md`
+
+**สิ่งที่ต้องทำ (Phase A ก่อน):**
+1. อ่าน spec ทั้งหมดก่อน — comment ใน `## Discussion` ถ้าเห็น issue
+2. สร้าง sheet `OCR_FEEDBACK` ใน Spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
+3. สร้าง n8n workflow `ocr-feedback-receiver` ผ่าน REST API
+4. สร้าง n8n workflow `ocr-kpi-report` ผ่าน REST API
+5. รัน Test 1-5 ทั้งหมด — บันทึกผลใน spec file
+6. อัปเดต HANDOFF.md หลังเสร็จ
+
+**ข้อสำคัญ:**
+- ห้าม modify workflow `up1n75qEhbsXswii` (OCR หลัก) — สร้าง workflow ใหม่เท่านั้น
+- ถ้า Sheets node ต้องการ gid ของ OCR_FEEDBACK ให้ดูจาก URL หลังสร้าง sheet แล้ว
+- Auth: `x-api-key: ocm-cabonrecipte!` (ดูจาก `$env.OCR_SHARED_API_KEY`)
+
+---
 
 T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path implemented via n8n REST patch and verified with live OCR execution (`drive_file_id` returned).
 
@@ -70,7 +88,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle (T024 completed) |
-| **Last Sync** | 2026-02-24 14:45 (session end — feedback system installed, T024 complete) |
+| **Last Sync** | 2026-02-24 (T026 assigned — OCR Feedback + KPI system) |
 | **Base Commit** | 960293a |
 
 ---
@@ -99,7 +117,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| T026 | OCR Feedback Receiver + KPI System | Codex | Assigned 2026-02-24 |
 
 ---
 
@@ -336,6 +354,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 14:37 | sync | all | auto-sync |
 | 2026-02-24 14:29 | sync | all | auto-sync |
 | 2026-02-24 13:33 | sync | all | auto-sync |
 | 2026-02-24 13:24 | sync | all | auto-sync |
