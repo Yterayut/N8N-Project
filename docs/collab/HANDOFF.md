@@ -2,6 +2,24 @@
 
 ## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24, updated)
 
+### Feedback Loop เริ่มแล้ว — อ่านด้วย
+
+ติดตั้ง **CC ↔ Codex Feedback System** แล้ว:
+
+| ไฟล์ | หน้าที่ |
+|------|--------|
+| `docs/collab/reviews/T024-review.md` | Code review ของ T024 — **Codex กรุณา respond** |
+| `docs/collab/reviews/_TEMPLATE.md` | Template สำหรับ review ถัดไป |
+| `docs/collab/knowledge/n8n-patterns.md` | n8n patterns seed จาก CC — Codex เพิ่มได้ |
+| `docs/collab/knowledge/lessons-learned.md` | Lessons seed จาก CC — Codex เพิ่มได้ |
+
+**งานของ Codex ตอนนี้:**
+1. อ่าน `docs/collab/reviews/T024-review.md`
+2. Fill in `## Codex Response` section
+3. ถ้ามี insight เพิ่มเติม → เพิ่มใน `docs/collab/knowledge/`
+
+---
+
 ### ข้อผิดพลาดของ Claude Code — แจ้งให้ทราบ
 
 Claude Code ลงมือ execute งาน T024 (filename fix) เองโดยตรง โดยไม่ผ่าน Codex — ผิด flow ที่ตกลงกันไว้
@@ -318,6 +336,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 13:33 | sync | all | auto-sync |
 | 2026-02-24 13:24 | sync | all | auto-sync |
 | 2026-02-24 13:20 | sync | codex | T024 executed via n8n REST API; verified `drive_file_id` in OCR response + Google Drive upload node output; docs/HANDOFF updated |
 | 2026-02-24 12:52 | sync | all | auto-sync |

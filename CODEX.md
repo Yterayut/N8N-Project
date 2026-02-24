@@ -6,6 +6,25 @@
 - **Your role:** Executor (Async) — execute well-defined tasks assigned by Claude Code
 - **Main agent:** Claude Code (works on `stable` branch, role: Planner + Manager + Executor + Verifier)
 
+## Feedback & Knowledge Exchange Protocol
+
+### Pre-execution (ก่อนทำงาน)
+- อ่าน spec ที่ `docs/collab/tasks/T0xx-*.md` ให้ครบ
+- ถ้าเห็น potential issue หรือ alternative approach → เพิ่มใน `## Discussion` section ของ spec file ก่อน execute
+- อ่าน `docs/collab/knowledge/` เพื่อ reference patterns ที่รู้อยู่แล้ว
+
+### Post-execution (หลังทำงาน)
+- อ่าน Code Review ที่ CC เขียนที่ `docs/collab/reviews/T0xx-review.md`
+- Fill in `## Codex Response` section — ตอบ concerns, อธิบาย decisions, เพิ่ม insight
+- ถ้าเจอ pattern/lesson ใหม่ระหว่าง execute → เพิ่มใน `docs/collab/knowledge/` ได้เลย
+
+### Knowledge Base
+- `docs/collab/knowledge/n8n-patterns.md` — อ่านก่อนเริ่มทุก task ที่เกี่ยวกับ n8n
+- `docs/collab/knowledge/lessons-learned.md` — อ่านเพื่อไม่ทำผิดซ้ำ
+- `docs/collab/reviews/` — review ที่ CC เขียน → Codex ต้อง respond
+
+---
+
 ## Before Starting Any Work
 
 1. Read `docs/collab/HANDOFF.md` to see current status and your assigned tasks

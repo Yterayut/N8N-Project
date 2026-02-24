@@ -1,5 +1,24 @@
 - to memorize
 
+## Feedback & Knowledge Exchange Protocol
+
+### Flow ต่อทุก task
+1. **Pre-execution:** Codex อ่าน spec → comment ใน `## Discussion` section ถ้าเห็น issue
+2. **Post-execution:** CC เขียน Code Review ที่ `docs/collab/reviews/T0xx-review.md` ก่อน merge เสมอ
+3. **Knowledge:** Extract insight → `docs/collab/knowledge/` (ทั้งคู่เพิ่มได้)
+
+### CC Responsibilities
+- เขียน Code Review ทุกครั้งที่ Codex push — ใช้ template ที่ `docs/collab/reviews/_TEMPLATE.md`
+- ถ้าเจอ pattern/gotcha ใหม่ → เพิ่มใน `docs/collab/knowledge/n8n-patterns.md`
+- ถ้าเจอ lesson learned → เพิ่มใน `docs/collab/knowledge/lessons-learned.md`
+
+### Knowledge Base
+- `docs/collab/knowledge/n8n-patterns.md` — n8n-specific patterns & gotchas
+- `docs/collab/knowledge/lessons-learned.md` — สิ่งที่เรียนรู้จากความผิดพลาด
+- `docs/collab/reviews/` — Code reviews per task
+
+---
+
 ## Agent Roles
 
 - **Claude Code** = Planner + Manager + Executor (complex tasks) + Verifier (review Codex output)
