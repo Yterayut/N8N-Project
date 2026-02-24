@@ -1,5 +1,15 @@
 - to memorize
 
+## Agent Roles
+
+- **Claude Code** = Planner + Manager + Executor (complex tasks) + Verifier (review Codex output)
+- **Codex** = Executor (Async) — receives well-defined specs, executes assigned tasks
+- Before assigning a task to Codex, must have a clear spec at `docs/collab/tasks/T0xx-*.md`
+- Codex CAN: patch n8n via REST API, read/write SQLite, run bash scripts
+- Communication: via `docs/collab/tasks/` + `docs/collab/HANDOFF.md`
+
+---
+
 ## Golden Rules
 
 Rules ที่ห้ามละเมิด — ทุก session ทุก agent:

@@ -7,7 +7,7 @@
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle — please read "Decisions 2026-02-24 (Dev Environment)" below |
-| **Last Sync** | 2026-02-24 05:05 (session end — all tooling complete, going to sleep) |
+| **Last Sync** | 2026-02-24 (role redesign — Codex=Executor, Claude=Planner+Manager) |
 | **Base Commit** | 960293a |
 
 ---
@@ -17,16 +17,16 @@
 ### Claude Code (main agent)
 - **Branch:** `stable`
 - **Worktree:** `/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE`
-- **Role:** Executor - patch code, test, deploy, review
-- **Can:** Access live n8n, run tests, edit workflow JSON, deploy, git operations
+- **Role:** Planner + Manager + Executor (complex tasks) + Verifier (review Codex output)
+- **Can:** Access live n8n, run tests, patch workflow via REST API, deploy, git operations
 - **Cannot:** Work async/background
 
 ### Codex (agent/codex)
 - **Branch:** `agents/codex`
 - **Worktree:** `/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/agents/codex`
-- **Role:** Planner - create plans, write docs, review, QA, boilerplate
-- **Can:** Read/write files, create PRs, work async
-- **Cannot:** Access live n8n, run against production, test live system
+- **Role:** Executor (Async) — execute well-defined tasks assigned by Claude Code
+- **Can:** Patch n8n via REST API, read/write SQLite DB, run bash scripts, read/write files, create PRs
+- **Must have:** Clear spec at `docs/collab/tasks/T0xx-*.md` before starting any task
 
 ---
 
@@ -274,6 +274,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 11:21 | sync | all | auto-sync |
+| 2026-02-24 11:21 | sync | all | auto-sync |
 | 2026-02-24 11:05 | sync | all | auto-sync |
 | 2026-02-24 11:05 | sync | all | auto-sync |
 | 2026-02-24 09:25 | sync | all | auto-sync |
