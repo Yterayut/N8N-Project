@@ -1,7 +1,7 @@
 # T024 — Google Drive Save for All OCR Files
 
 **Owner:** Codex (execute)
-**Status:** Ready for Implementation ✅
+**Status:** Completed ✅
 **Created:** 2026-02-24
 **Decisions finalized:** 2026-02-24 (Claude Code)
 **Goal:** บันทึกไฟล์ทุกไฟล์ที่ user ส่งมา OCR ขึ้น Google Drive เพื่อ audit trail และรองรับ CarbonReceipt integration
@@ -261,17 +261,41 @@ drive_file_id: $json.drive_file_id || '',
 
 **งานของ Codex (ทำตามลำดับ):**
 
-- [ ] 1. Login n8n: `POST /rest/login` → save cookie
-- [ ] 2. GET workflow `up1n75qEhbsXswii` → load nodes + connections
-- [ ] 3. Add Node A: `Google Drive (Upload - Direct)` (spec ใน Section 4) — ใช้ filename format ใหม่จาก Section 8.1
-- [ ] 4. Add Node B: `Code (Merge Drive Result)` (spec ใน Section 4)
-- [ ] 5. Update connections: SLA Lane → Google Drive → Merge → HTTP Upload File5
-- [ ] 6. Update `Append row in OCR_RAW4`: เพิ่ม `drive_file_id` column (Section 4)
-- [ ] 7. Update `Respond to Webhook6`: เพิ่ม `drive_file_id` ใน responseBody (Section 8.2)
-- [ ] 8. PATCH workflow via REST API
-- [ ] 9. ส่ง test OCR → ยืนยัน: ไฟล์ปรากฏใน Google Drive + `drive_file_id` อยู่ใน response
-- [ ] 10. อัปเดต HANDOFF.md → T024 status = "Completed"
-- [ ] 11. Commit + push `agents/codex`
+- [x] 1. Login n8n: `POST /rest/login` → save cookie
+- [x] 2. GET workflow `up1n75qEhbsXswii` → load nodes + connections
+- [x] 3. Add Node A: `Google Drive (Upload - Direct)` (spec ใน Section 4) — ใช้ filename format ใหม่จาก Section 8.1
+- [x] 4. Add Node B: `Code (Merge Drive Result)` (spec ใน Section 4)
+- [x] 5. Update connections: SLA Lane → Google Drive → Merge → HTTP Upload File5
+- [x] 6. Update `Append row in OCR_RAW4`: เพิ่ม `drive_file_id` column (Section 4)
+- [x] 7. Update `Respond to Webhook6`: เพิ่ม `drive_file_id` ใน responseBody (Section 8.2) *(already present; verified)*
+- [x] 8. PATCH workflow via REST API
+- [x] 9. ส่ง test OCR → ยืนยัน: ไฟล์ปรากฏใน Google Drive + `drive_file_id` อยู่ใน response
+- [x] 10. อัปเดต HANDOFF.md → T024 status = "Completed"
+- [x] 11. Commit + push `agents/codex`
+
+---
+
+## 11. Execution Notes (Codex, 2026-02-24)
+
+### Implemented
+- Added fast/standard path node `Google Drive (Upload - Direct)` using binary field `files0`
+- Added `Code (Merge Drive Result)` to merge `drive_file_id` back into OCR JSON while preserving original binary
+- Rewired fast path:
+  - `Code (SLA Lane + Timeout Budget)` → `Google Drive (Upload - Direct)` → `Code (Merge Drive Result)` → `HTTP Upload File5`
+- Updated `Append row in OCR_RAW4` mapping to include `drive_file_id`
+- Verified `Respond to Webhook6` already exposed `drive_file_id` (no further patch needed)
+- Patched `Code in JavaScript9` to propagate `drive_file_id` to downstream response/raw logging nodes
+
+### Verification evidence
+- OCR test file: `shell.pdf`
+- OCR response contained non-empty `drive_file_id`:
+  - `1whvCsJN85r7MwnjpULA30RyoeauUjYYp`
+- n8n execution runData for `Google Drive (Upload - Direct)` returned matching Google Drive file ID and folder parent:
+  - `parents: [\"1Fc8U94SNk_EJLsvzyUHWcTxDBMLiwR-v\"]`
+- `Respond to Webhook6` runData also contained same `drive_file_id`
+
+### Notes / spec drift observed
+- Current heavy path is a separate `Queue Receiver` chain (not directly split from SLA lane in main path). T024 patch intentionally targeted fast/standard main path only and left heavy queue path unchanged.
 
 ---
 
