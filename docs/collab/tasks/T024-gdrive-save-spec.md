@@ -1,8 +1,9 @@
 # T024 — Google Drive Save for All OCR Files
 
-**Owner:** Codex (spec) → Claude Code (implement)
-**Status:** Pending
+**Owner:** Codex (execute)
+**Status:** Ready for Implementation ✅
 **Created:** 2026-02-24
+**Decisions finalized:** 2026-02-24 (Claude Code)
 **Goal:** บันทึกไฟล์ทุกไฟล์ที่ user ส่งมา OCR ขึ้น Google Drive เพื่อ audit trail และรองรับ CarbonReceipt integration
 
 ---
@@ -224,23 +225,59 @@ Code (Merge Drive Result)        → HTTP Upload File5                 [ต่�
 
 ---
 
-## 8. งานของ Codex (Deliverables)
+## 8. Decisions (Claude Code ตัดสินใจแล้ว — Codex implement ตามนี้)
 
-Codex ต้องทำก่อน Claude Code implement:
+| # | Decision | Result |
+|---|----------|--------|
+| 1 | Expose `drive_file_id` ใน OCR response? | **YES** — เพิ่มใน response body (Section 8.1) |
+| 2 | Folder structure | **ใช้ `Upload_Carbonrecipt` เดียว + prefix `YYYY-MM_` ในชื่อไฟล์** (ไม่แยก subfolder เพราะต้องสร้าง folder dynamically ซึ่งเพิ่ม latency) |
 
-1. **Review spec นี้** — มีข้อสงสัย/ข้อเสนอแนะ? แก้ไขได้ที่ไฟล์นี้
-2. **ตัดสินใจ:** ควร expose `drive_file_id` ใน response ไหม? (Section 7)
-3. **ตัดสินใจ:** Folder organization — ใช้ `Upload_Carbonrecipt` เดียวกัน หรือแยก subfolder by `doc_type` / `YYYY-MM`?
-4. **เขียน regression test cases** — เพิ่มใน test matrix (Section 6 ของ regression doc)
-5. **อัปเดต HANDOFF.md** เมื่อ review เสร็จ — เปลี่ยน T024 status เป็น "Ready for implementation"
+### 8.1 — Filename format (แทน Section 4 Node A)
 
-Claude Code จะ implement หลัง Codex mark T024 ว่า Ready
+```
+YYYY-MM_request_id.ext
+```
+
+ตัวอย่าง: `2026-02_req_abc123.pdf`
+
+Expression ใน n8n:
+```
+={{ $now.format('YYYY-MM') + '_' + $json.request_id + '.' + (($binary && $binary['files0'] && $binary['files0'].fileName) ? $binary['files0'].fileName.split('.').pop().toLowerCase() : 'pdf') }}
+```
+
+### 8.2 — เพิ่ม `drive_file_id` ใน Respond to Webhook6 response
+
+ไฟล์ที่ต้องแก้: node `Respond to Webhook6` — เพิ่มใน responseBody JSON object:
+
+```js
+drive_file_id: $json.drive_file_id || '',
+```
+
+แทรกต่อจาก `request_id: $json.request_id || '',`
 
 ---
 
-## 9. Constraints
+## 9. Codex Execution Checklist
 
-- ห้ามแก้ workflow JSON โดยตรง — Claude Code patch ผ่าน n8n REST API เท่านั้น
+**งานของ Codex (ทำตามลำดับ):**
+
+- [ ] 1. Login n8n: `POST /rest/login` → save cookie
+- [ ] 2. GET workflow `up1n75qEhbsXswii` → load nodes + connections
+- [ ] 3. Add Node A: `Google Drive (Upload - Direct)` (spec ใน Section 4) — ใช้ filename format ใหม่จาก Section 8.1
+- [ ] 4. Add Node B: `Code (Merge Drive Result)` (spec ใน Section 4)
+- [ ] 5. Update connections: SLA Lane → Google Drive → Merge → HTTP Upload File5
+- [ ] 6. Update `Append row in OCR_RAW4`: เพิ่ม `drive_file_id` column (Section 4)
+- [ ] 7. Update `Respond to Webhook6`: เพิ่ม `drive_file_id` ใน responseBody (Section 8.2)
+- [ ] 8. PATCH workflow via REST API
+- [ ] 9. ส่ง test OCR → ยืนยัน: ไฟล์ปรากฏใน Google Drive + `drive_file_id` อยู่ใน response
+- [ ] 10. อัปเดต HANDOFF.md → T024 status = "Completed"
+- [ ] 11. Commit + push `agents/codex`
+
+---
+
+## 10. Constraints
+
+- ห้ามแก้ workflow JSON โดยตรง — patch ผ่าน n8n REST API (`PATCH /rest/workflows/{id}`) เท่านั้น
 - ห้าม commit `.env` หรือ credentials
 - ต้องรัน `./scripts/verify_nowThai_sync.sh` หลัง patch (ถ้าแก้ Code nodes)
-- ต้องรัน `./scripts/collab/sync.sh all` หลัง commit ทุกครั้ง
+- ต้องรัน `git push origin agents/codex` หลัง commit
