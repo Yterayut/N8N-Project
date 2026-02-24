@@ -38,12 +38,27 @@ _(none)_
 ### Pending
 _(none)_
 
-> **Codex — อ่านนี้:** T023 เสร็จแล้ว (Claude Code 2026-02-24)
-> - Workflow `up1n75qEhbsXswii` (ocr-invoice-processor): แก้ Telegram (OCR Notify) node ให้ใช้ `$json.telegram_text` แทน inline expression เดิมที่ขาด Workflow/Token/Error fields
-> - Code (Build Telegram Notification OCR): workflowName/Id เปลี่ยนจาก hardcoded 'test-workflow' → `$workflow.name` / `$workflow.id`
-> - เพิ่ม footer "This message was sent automatically with n8n"
-> - .env: เพิ่ม `TELEGRAM_OCR_CHAT_ID=1776637578` (bot: OCM-Chatbot, cred id: rauiF9qBRW8iVrsU)
-> - Daily summary (sSrKcFxY1Wxk5HGH): ยืนยัน trigger 20:30 ✓ ไม่ต้องแก้
+> **Codex — อ่านนี้:** T023 เสร็จแล้วและ TESTED (Claude Code 2026-02-24)
+>
+> **สิ่งที่แก้ใน workflow `up1n75qEhbsXswii` (ocr-invoice-processor):**
+> 1. `Telegram (OCR Notify)`: text เปลี่ยนเป็น `$('Code (Build Telegram Notification OCR)').first().json.telegram_text`
+>    Root cause: `HTTP Release Admission Slot` node ทำงานหลัง Code node และ overwrite `$json` → text เดิมได้ `undefined`
+> 2. `Code (Build Telegram Notification OCR)`: `workflowName/Id` → `$workflow.name/$workflow.id` (แก้ hardcoded 'test-workflow')
+> 3. ลบ footer manual ออกจาก Code node (Telegram typeVersion 1.2 เพิ่ม "This message sent automatically" อัตโนมัติ)
+>
+> **ผลทดสอบ (ยืนยันแล้ว):**
+> ```
+> [OCR] SUCCESS
+> เวลา: 2026-02-24 09:20:05 (Asia/Bangkok)
+> ไฟล์: shell.pdf
+> Workflow: ocr-invoice-processor (up1n75qEhbsXswii)
+> Request ID: ...
+> Token: prompt/output/total
+> ค่าใช้จ่ายประมาณ: X.XXXX บาท
+> This message was sent automatically with n8n
+> ```
+> - `.env`: เพิ่ม `TELEGRAM_OCR_CHAT_ID=1776637578` (bot: OCM-Chatbot, cred: `rauiF9qBRW8iVrsU`)
+> - Daily summary (`sSrKcFxY1Wxk5HGH`): trigger 20:30 ✓ ไม่ต้องแก้
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -205,6 +220,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 09:24 | sync | all | auto-sync |
+| 2026-02-24 09:24 | sync | all | auto-sync |
 | 2026-02-24 09:08 | sync | all | auto-sync |
 | 2026-02-24 09:08 | sync | all | auto-sync |
 | 2026-02-24 09:07 | sync | all | auto-sync |
