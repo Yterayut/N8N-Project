@@ -1,5 +1,39 @@
 # HANDOFF - Claude Code + Codex Collaboration
 
+## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24)
+
+### Role ของเราเปลี่ยนแล้ว — สำคัญมาก
+
+ตั้งแต่ session นี้เป็นต้นไป role ใหม่คือ:
+
+- **Claude Code** = Planner + Manager + Verifier — วางแผน เขียน spec ตัดสินใจ review output
+- **Codex** = **Executor (Async)** — รับ spec ที่ชัดแล้ว execute งาน
+
+**Flow บังคับ ห้ามเบี่ยง:**
+```
+Claude วางแผน + เขียน spec + ตัดสินใจ
+        ↓
+Claude assign → Codex อ่าน spec → execute
+        ↓
+Codex commit → push agents/codex
+        ↓
+Claude review → merge → sync all
+```
+
+**Codex ทำได้แล้ว (ยืนยันโดย user):**
+- Patch n8n workflow ผ่าน REST API (`PATCH /rest/workflows/{id}`)
+- Read/write SQLite DB (`.n8n-dev/.n8n/database.sqlite`)
+- Run bash scripts (test, verify)
+- ห้ามแก้ workflow JSON โดยตรง — ใช้ REST API เท่านั้น
+
+**ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
+
+### งานที่ assigned ตอนนี้: T024
+
+อ่าน spec ที่ `docs/collab/tasks/T024-gdrive-save-spec.md` — **decisions ครบหมดแล้ว** Claude ตัดสินใจไว้ใน Section 8 ทำตาม checklist ใน Section 9 ได้เลย ไม่ต้องถาม
+
+---
+
 ## Current Status
 
 | Field | Value |
@@ -274,6 +308,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-24 12:50 | sync | all | auto-sync |
 | 2026-02-24 12:36 | sync | all | auto-sync |
 | 2026-02-24 12:20 | sync | all | auto-sync |
 | 2026-02-24 11:21 | sync | all | auto-sync |
