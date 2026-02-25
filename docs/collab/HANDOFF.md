@@ -359,6 +359,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 06:50 | sync | all | auto-sync |
+| 2026-02-25 06:36 | sync | all | auto-sync |
 | 2026-02-25 06:34 | sync | all | auto-sync |
 | 2026-02-24 17:45 | sync | codex | T026 implemented + tested (Tests 1-5) via n8n REST; OCR_FEEDBACK sheet created; webhook path adjusted to `ocr-feedback-kpi` due collision |
 | 2026-02-24 16:17 | sync | all | auto-sync |
