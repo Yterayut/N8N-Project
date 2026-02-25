@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T029A complete — pending CC review |
+| **Codex Status** | T029B complete — pending CC review |
 | **Last Sync** | 2026-02-25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
@@ -79,20 +79,18 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Started | Notes |
-|----|------|---------|-------|
-| T029B-discuss | Reviewing T029B spec (discuss mode) | 2026-02-25 | timezone / sheet creation / test data filter |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | T029B-discuss done |
 | T029D | Benchmark Runner | Codex | T029A + ground truth data |
 | T029C | Runtime Rules (highest risk) | Codex | T029B + T029D |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | 2026-02-25 | Implemented; workflow `NkKd02QyzLRcpIJM` active; webhook 401/200 verified; E2E exec `151678` |
 | T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
 | T027 | OCR Learning Loop Path1+Path2 | Codex | 2026-02-25 | 7.5/10 |

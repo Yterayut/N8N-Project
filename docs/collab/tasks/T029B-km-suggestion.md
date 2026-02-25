@@ -396,25 +396,25 @@ _No open concerns — proceeding to implement_
 ## Definition of Done
 
 **Implemented:**
-- [ ] `ocr-km-suggest` workflow active
-- [ ] `Webhook (trigger)` มี webhookId UUID
-- [ ] OCR_KM_LESSONS sheet tab สร้างแล้ว + headers row 1 ครบ 14 columns
-- [ ] OCR_RULE_CHANGELOG sheet tab สร้างแล้ว + headers row 1 (empty data — T029C จะเขียน)
-- [ ] Code (Analyze Patterns): P1 + P2 + P3 + dedup implemented
-- [ ] source=manual filter implemented
-- [ ] Telegram notify implemented with continueOnFail
+- [x] `ocr-km-suggest` workflow active
+- [x] `Webhook (trigger)` มี webhookId UUID
+- [x] OCR_KM_LESSONS sheet tab สร้างแล้ว + headers row 1 ครบ 14 columns
+- [x] OCR_RULE_CHANGELOG sheet tab สร้างแล้ว + headers row 1 (empty data — T029C จะเขียน)
+- [x] Code (Analyze Patterns): P1 + P2 + P3 + dedup implemented
+- [x] source=manual filter implemented
+- [x] Telegram notify implemented with continueOnFail
 
 **Verified from system (required):**
-- [ ] GET /rest/workflows แสดง ocr-km-suggest, active=true
-- [ ] Webhook 401 เมื่อ key ผิด
-- [ ] Webhook 200 เมื่อ key ถูก
-- [ ] OCR_KM_LESSONS tab exists in spreadsheet (check via Sheets API)
+- [x] GET /rest/workflows แสดง ocr-km-suggest, active=true
+- [x] Webhook 401 เมื่อ key ผิด
+- [x] Webhook 200 เมื่อ key ถูก
+- [x] OCR_KM_LESSONS tab exists in spreadsheet (check via Sheets API)
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — on-demand trigger → (lessons written if data qualifies OR new_lessons=0) → response OK
+- [x] Exec ID: `151678` — on-demand trigger → (lessons written if data qualifies OR new_lessons=0) → response OK (`{"ok":true,"new_lessons":0,"analyzed_cases":2}`)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 - [ ] Review file created (CC จะทำ)
 
 ---
@@ -423,8 +423,8 @@ _No open concerns — proceeding to implement_
 *(Codex fill ก่อน push — บังคับ)*
 
 ```
-Runtime patched:
-Verified from:
-Docs synced:
-Remaining limits:
+Runtime patched: Created + activated workflow `ocr-km-suggest` (`NkKd02QyzLRcpIJM`) via n8n REST API; added webhook auth, Sheets reads/appends, pattern analysis (P1/P2/P3), dedup, Telegram notify. Added `Merge (Sync Sheet Reads)` node to avoid multi-input race before Analyze.
+Verified from: n8n REST GET workflow (active=true + webhookId present), webhook tests (401 wrong key / 200 valid key), executions (`151678`, `151679`, `151680` success after fix), Google Sheets API header readback for `OCR_KM_LESSONS` + `OCR_RULE_CHANGELOG`.
+Docs synced: Updated this spec DoD/closing section and `docs/collab/HANDOFF.md` task board.
+Remaining limits: Current TRAIN_CASES data produced `new_lessons=0` (no pattern rows generated yet), so append-row structure/Telegram content paths were not exercised in this run; schedule trigger not time-tested (cron set to `0 23 * * *` UTC per spec).
 ```
