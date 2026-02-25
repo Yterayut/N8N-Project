@@ -48,8 +48,8 @@ Claude review → merge → sync all
 | Field | Value |
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
-| **Active Agent** | Claude Code (stable) + Codex (implementing T029A) |
-| **Codex Status** | Implementing T029A — ocr-km-logger + sheet logging |
+| **Active Agent** | Claude Code (stable) |
+| **Codex Status** | T029A complete — pending CC review |
 | **Last Sync** | 2026-02-25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
@@ -76,14 +76,10 @@ Claude review → merge → sync all
 ## Task Board
 
 ### In Progress (CC)
-| ID | Task | Started | Notes |
-|----|------|---------|-------|
-| process | Strengthen collaboration process (items 1-5) | 2026-02-25 | templates + codex-exec.sh + HANDOFF slim |
+_(none — writing T029A review next)_
 
 ### In Progress (Codex)
-| ID | Task | Started | Notes |
-|----|------|---------|-------|
-| T029A | OCR KM Logger — TRAIN_CASES + FIELD_DIFFS | 2026-02-25 | Re-running with danger-full-access fix |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -95,10 +91,10 @@ Claude review → merge → sync all
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | pending review — workflow `jmJHPPj0OM5LcZ0n` active, exec 151644 ✅ |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
 | T027 | OCR Learning Loop Path1+Path2 | Codex | 2026-02-25 | 7.5/10 |
 | T026 | OCR Feedback + KPI | Codex | 2026-02-24 | 9/10 |
-| T024 | Google Drive save | Codex | 2026-02-24 | 8/10 |
 
 _ดู T001–T028 ทั้งหมดได้ที่ `docs/collab/completed-tasks.md`_
 
