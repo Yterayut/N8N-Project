@@ -158,7 +158,10 @@ curl -s -X POST http://localhost:5678/webhook/ocr-dev \
 
 ## Discussion
 
-_Codex: เพิ่ม concerns / ข้อสงสัย ที่นี่ก่อน implement_
+### Codex notes (2026-02-25)
+
+- Proceeded as specified.
+- Runtime finding during T1: `Code (Apply Runtime Rules)` ran and `rules_engine='applied'`, but upstream payload had `bills_count > 0` while `bills=[]` (empty array) in tested successful execs, so `field_default` smoke rule could not mutate `bills[0]`. Restored all changes and recorded evidence.
 
 ---
 
@@ -184,22 +187,22 @@ _Codex: เพิ่ม concerns / ข้อสงสัย ที่นี่�
 ## Definition of Done
 
 **Implemented:**
-- [ ] Test rule `rr_smoke_test_031` เพิ่มแล้วใน RUNTIME_RULES sheet (status=active ระหว่าง test)
-- [ ] IF node patched temporary = true
+- [x] Test rule `rr_smoke_test_031` เพิ่มแล้วใน RUNTIME_RULES sheet (status=active ระหว่าง test)
+- [x] IF node patched temporary = true
 
 **Verified from system:**
-- [ ] `rules_engine: 'applied'` ใน exec output (Exec ID: `_______`)
-- [ ] `_test_rule_marker: 'runtime_rules_v1'` ปรากฏใน bills[0]
-- [ ] rules-reader GET return rule `rr_smoke_test_031`
+- [x] `rules_engine: 'applied'` ใน exec output (Exec ID: `151793`)
+- [ ] `_test_rule_marker: 'runtime_rules_v1'` ปรากฏใน bills[0] *(blocked: exec `151793` had `bills_count=3` but `bills=[]` in `Code (Apply Runtime Rules)` output; `rules_applied=[]`)*
+- [x] rules-reader GET return rule `rr_smoke_test_031`
 
 **Restored:**
-- [ ] IF node condition กลับเป็น `{{ String($env.OCR_RUNTIME_RULES_ENABLED || 'false').toLowerCase() === 'true' }}`
-- [ ] `rr_smoke_test_031` status=inactive ใน sheet
-- [ ] Verify restore: E2E ผ่าน flag=false (exec ID: `_______`)
+- [x] IF node condition กลับเป็น `{{ String($env.OCR_RUNTIME_RULES_ENABLED || 'false').toLowerCase() === 'true' }}`
+- [x] `rr_smoke_test_031` status=inactive ใน sheet
+- [x] Verify restore: E2E ผ่าน flag=false (exec ID: `151800`)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
-- [ ] T029C-review.md checklist item "flag=true path" mark done
+- [x] HANDOFF.md updated
+- [x] T029C-review.md checklist item "flag=true path" mark done *(with note: rule apply on `bills[0]` still blocked by empty `bills` runtime payload)*
 
 ---
 
@@ -208,7 +211,7 @@ _Codex: เพิ่ม concerns / ข้อสงสัย ที่นี่�
 
 ```
 Runtime patched:    IF node (temp=true→restored), sheet rr_smoke_test_031 (active→inactive)
-Verified from:      Exec [ID] flag=true applied; Exec [ID] flag=false restored
+Verified from:      Exec 151793 flag=true branch + rules-reader hit + rules_engine=applied; Exec 151800 flag=false restored
 Docs synced:        HANDOFF.md, T029C-review.md checklist
-Remaining limits:
+Remaining limits:   `Code (Apply Runtime Rules)` received `bills=[]` (while `bills_count>0`) in exec 151793, so `_test_rule_marker` / non-empty `rules_applied` could not be verified in this smoke test
 ```

@@ -49,8 +49,8 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T029C complete — reviewed APPROVED 8/10; T029 learning loop complete (T029D deferred) |
-| **Last Sync** | 2026-02-25 19:50 |
+| **Codex Status** | T031 complete (runtime-rules flag=true smoke + restore); found `bills=[]` vs `bills_count` gap in rules-apply node output; T029 learning loop complete (T029D deferred) |
+| **Last Sync** | 2026-02-25 20:18 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -90,6 +90,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T031 | Runtime Rules flag=true E2E Smoke Test | Codex | 2026-02-25 | flag=true branch verified (`151793`), restore verified (`151800`); rule apply blocked by runtime `bills=[]` in `Code (Apply Runtime Rules)` |
 | T029C | Runtime Rules (Dynamic Rules Integration) | Codex | 2026-02-25 | **8/10 APPROVED**; +3 nodes main OCR; `ocr-rules-reader` active; exec 151755 flag=false ✅; review: `docs/collab/reviews/T029C-review.md` |
 | T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | 2026-02-25 | Implemented; workflow `NkKd02QyzLRcpIJM` active; webhook 401/200 verified; E2E exec `151678` |
 | T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
