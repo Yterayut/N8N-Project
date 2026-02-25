@@ -53,123 +53,137 @@ rule_id | created_at | updated_at | status | priority | doc_type | vendor_tax_id
 
 ## Node ที่ต้องเพิ่มใน main workflow
 
-### Position:
+### Architecture (updated post-Codex discuss):
+
 ```
-Code in JavaScript9
-        ↓
 Code (Normalize + Validate)   ← เดิม
         ↓
-[NEW] Code (Apply Runtime Rules)   ← เพิ่มตรงนี้
+[NEW] IF (Runtime Rules Enabled?)   ← check $env ไม่ call Sheets
+    │                    │
+    │ true               │ false
+    ↓                    │
+[NEW] HTTP GET ocr-rules-reader   │
+    ↓                    │
+[NEW] Code (Apply Runtime Rules)  │
+    └────────────────────┘
         ↓
 If (Need Re-ask)              ← เดิม
 ```
 
-### Node spec:
-- **Type:** Code node
-- **Name:** `Code (Apply Runtime Rules)`
-- **Input:** รับจาก `Code (Normalize + Validate)` output[0]
-- **Output[0]:** ต่อไป `If (Need Re-ask)`
+**เหตุผล:** IF node ก่อน = guarantee ไม่ call Sheets เลยตอน flag=false (ไม่ใช่แค่ continueOnFail)
 
-### Code logic (ให้ Codex implement ตาม pseudocode นี้):
+### Clarification — "response unchanged":
+- **Business fields unchanged** (bills, request_id, accuracy, etc.) — DoD requirement นี้หมายถึง bill fields
+- **Audit fields เพิ่มได้** — `rules_engine`, `rules_applied`, `rules_skipped` เป็น additive metadata ที่ downstream ไม่ใช้
+- สรุป: ตอน flag=false output ไม่มี rules_ fields เลย (pure pass-through) ตอน flag=true มี audit fields เพิ่ม
 
-```javascript
-// 1. Feature flag check — ถ้า off → pass-through ทันที
-const enabled = String($env.OCR_RUNTIME_RULES_ENABLED || 'false').toLowerCase() === 'true';
-if (!enabled) {
-  return [{ json: { ...$json, rules_engine: 'disabled', rules_applied: [], rules_skipped: [] } }];
-}
+### Nodes ที่ต้องเพิ่ม (3 nodes):
 
-// 2. อ่าน rules จาก Google Sheets (Codex ใช้ HTTP call ไปยัง ocr-examples-api pattern หรือ Sheets node ก็ได้)
-// rules = active rules only (status === 'active') เรียง priority ASC
-// ถ้า read fail → ใช้ empty rules
+**Node 1: IF (Runtime Rules Enabled?)**
+- Type: IF node
+- Condition: `{{ String($env.OCR_RUNTIME_RULES_ENABLED || 'false').toLowerCase() === 'true' }}`
+- true output[0] → HTTP GET ocr-rules-reader
+- false output[1] → If (Need Re-ask) โดยตรง
 
-// 3. Filter rules ที่ match doc_type + vendor_tax_id ของ request นี้
-// match logic: rule.doc_type === '*' || rule.doc_type === bills[0].doc_type
-//              rule.vendor_tax_id === '*' || rule.vendor_tax_id === bills[0].vendor_tax_id
+**Node 2: HTTP GET ocr-rules-reader**
+- Type: httpRequest
+- Method: GET
+- URL: `{{ $env.OCR_RULES_READER_URL || 'http://localhost:5678/webhook/ocr-rules' }}`
+- Query params: `doc_type={{ $json.bills[0].doc_type }}`, `vendor={{ $json.bills[0].vendor_tax_id }}`
+- `continueOnFail: true` → ถ้า fail ให้ return empty rules
+- Input ต้องรับ `$json` จาก Normalize+Validate (merge กลับมาใน Code node)
 
-// 4. Apply rules ตาม rule_type:
-//   field_format: ตรวจ field value match regex — ถ้าไม่ match และมี transform → apply transform
-//   field_default: ถ้า field value ว่าง/null → set default value
-//   skip_validation: เพิ่ม skip_validations[] array ไว้ใน output (downstream ใช้)
-//   vendor_hint: ห้าม implement
+**Node 3: Code (Apply Runtime Rules)**
+- Input: รับผล HTTP + รับ bills จาก Normalize+Validate
+- Logic:
+  ```javascript
+  const bills = $('Code (Normalize + Validate)').first().json.bills || [];
+  const rulesData = $input.first().json || {};
+  const rules = Array.isArray(rulesData.rules) ? rulesData.rules : [];
+  // กรณี HTTP fail → rules = []
 
-// 5. Return bills ที่ patch แล้ว + audit log
-```
+  const applied = [], skipped = [];
+  const patchedBills = bills.map(bill => {
+    let b = { ...bill };
+    for (const rule of rules) {
+      try {
+        const rv = JSON.parse(rule.rule_value);
+        if (rule.rule_type === 'field_default') {
+          if (!b[rv.field] || b[rv.field] === '') {
+            applied.push({ rule_id: rule.rule_id, field: rv.field, old: b[rv.field], new: rv.default });
+            b[rv.field] = rv.default;
+          }
+        } else if (rule.rule_type === 'field_format') {
+          // ตรวจ regex + apply transform ถ้ามี
+          // ...
+        } else if (rule.rule_type === 'skip_validation') {
+          b._skip_validations = [...(b._skip_validations || []), rv.validation_id];
+          applied.push({ rule_id: rule.rule_id, validation_id: rv.validation_id });
+        }
+        // vendor_hint: ห้าม implement
+      } catch (e) {
+        skipped.push({ rule_id: rule.rule_id, reason: e.message });
+      }
+    }
+    return b;
+  });
 
-### ข้อมูลที่ต้อง append ใน output:
-```javascript
-{
-  ...existingFields,    // ทุก field เดิม ไม่ตัด
-  bills: patchedBills,  // bills ที่ apply rules แล้ว
-  rules_engine: 'applied',  // 'disabled' | 'no_rules' | 'applied'
-  rules_applied: [...],     // [{rule_id, rule_key, field, old_value, new_value}]
-  rules_skipped: [...],     // [{rule_id, rule_key, reason}]
-}
-```
+  // รวม fields เดิมทั้งหมด จาก Normalize+Validate
+  const base = $('Code (Normalize + Validate)').first().json;
+  return [{ json: { ...base, bills: patchedBills, rules_engine: rules.length ? 'applied' : 'no_rules', rules_applied: applied, rules_skipped: skipped } }];
+  ```
+- Output[0] → If (Need Re-ask)
 
 ---
 
-## วิธีอ่าน Rules (Codex ใช้ approach นี้)
+## ocr-rules-reader Workflow (สร้างใหม่)
 
-อ่าน OCR_KM_RUNTIME_RULES ผ่าน Google Sheets REST API โดยตรง (เหมือน km-logger/km-suggest ใช้):
-
-```
-GET https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/OCR_KM_RUNTIME_RULES!A:Q
-```
-
-หรือถ้าใช้ HTTP call ให้อ่าน via n8n Google Sheets node แบบ split execution node แยกต่างหาก
-
-**แต่:** เนื่องจาก node นี้อยู่ใน main workflow ที่รัน per-request — ถ้า flag=false ต้องไม่ call Sheets เลย (latency)
+สร้าง workflow `ocr-rules-reader` ใหม่:
+- Webhook: `GET /webhook/ocr-rules` (query params: `doc_type`, `vendor`)
+- อ่าน `OCR_KM_RUNTIME_RULES` sheet — filter `status=active` + match doc_type/vendor
+- Return `{ rules: [...active rules sorted by priority] }`
+- `continueOnFail` บน Sheets node → return `{ rules: [] }` ถ้า Sheets fail
+- Auth: ไม่ต้องการ (localhost only, non-sensitive)
 
 ---
 
-## Scope ที่ Codex ต้องทำ
+## Scope ที่ Codex ต้องทำ (ตามลำดับ)
 
-1. **สร้าง sheet tab** `OCR_KM_RUNTIME_RULES` — header row ตาม schema ด้านบน
-   - Codex ทำผ่าน Google Sheets API หรือ n8n node โดยตรง
-   - ใส่ **1 test rule** (inactive) ไว้เพื่อ verify schema ถูก:
-     ```
-     rule_id: rr_test_001
-     status: inactive
-     priority: 99
-     doc_type: fuel
-     vendor_tax_id: *
-     scope: post_normalize
-     rule_type: field_default
-     rule_key: currency_default
-     rule_value: {"field":"currency","default":"THB"}
-     description: Default currency to THB if missing
-     approved_by: (ว่าง — inactive ไม่ต้องมี)
-     ```
+**Step 1: สร้าง Sheet + Workflow อ่าน Rules**
+- สร้าง tab `OCR_KM_RUNTIME_RULES` ใน Spreadsheet — header row ตาม schema ด้านบน + 1 test rule (inactive)
+- สร้าง workflow `ocr-rules-reader` (Webhook GET `/webhook/ocr-rules` → Sheets → return rules[])
 
-2. **Patch main workflow** `up1n75qEhbsXswii`:
-   - เพิ่ม node `Code (Apply Runtime Rules)` ระหว่าง `Code (Normalize + Validate)` → `If (Need Re-ask)`
-   - ต้องตัด connection เดิม แล้วต่อ: Normalize → NewNode → Re-ask
-   - **ต้องเพิ่ม Google Sheets node** สำหรับอ่าน RUNTIME_RULES (ถ้าไม่ทำ inline call)
-     - หรือ: ทำ HTTP call ไป endpoint ที่สร้างเพิ่มใน step 3
+**Step 2: Patch main workflow `up1n75qEhbsXswii`**
+- ตัด connection: `Code (Normalize + Validate)` → `If (Need Re-ask)`
+- เพิ่ม 3 nodes ใหม่: IF (flag?) → HTTP (rules-reader) → Code (Apply Rules)
+- ต่อ connection ใหม่ตาม architecture diagram ด้านบน
+- snapshot connections เดิมก่อน patch (ป้องกัน typo)
 
-3. **ทางเลือกที่แนะนำสำหรับ read rules** (เพื่อไม่ให้ main workflow complex เกิน):
-   - สร้าง workflow `ocr-rules-reader` ที่ expose `/webhook/ocr-rules` → อ่าน sheet → return active rules
-   - Main workflow เรียก HTTP GET `/webhook/ocr-rules?doc_type=X&vendor=Y` เฉพาะตอน flag=true
-   - ทำให้ main workflow ไม่ต้องมี Sheets credential โดยตรง + testable แยก
-
-4. **Verify** รัน end-to-end test กับ flag=false → ยืนยัน response ไม่เปลี่ยน
-5. **Verify** รัน verify_nowThai_sync.sh ถ้า patch Code nodes ใน main workflow
+**Step 3: Verify**
+- รัน E2E test กับ `OCR_RUNTIME_RULES_ENABLED` ไม่ set / false → response bill fields เหมือนเดิม
+- รัน `./scripts/verify_nowThai_sync.sh` ถ้า patch Code node ใน main workflow
+- บันทึก exec ID
 
 ---
 
 ## Definition of Done
 
-- [ ] Sheet `OCR_KM_RUNTIME_RULES` สร้างแล้ว มี header + 1 test rule (inactive)
-- [ ] `Code (Apply Runtime Rules)` node อยู่ใน main workflow ถูก position
-- [ ] flag=false → request response เหมือนเดิม 100% (exec evidence)
-- [ ] flag=true + inactive rules → response เหมือนเดิม (no active rules)
-- [ ] `rules_engine` field อยู่ใน output เสมอ (disabled / no_rules / applied)
-- [ ] `continueOnFail` หรือ try/catch บน Sheets read
+- [ ] Sheet `OCR_KM_RUNTIME_RULES` สร้างแล้ว มี header row + 1 test rule (status=inactive)
+- [ ] Workflow `ocr-rules-reader` active — GET `/webhook/ocr-rules` return `{rules:[]}` ถ้า Sheets ว่าง
+- [ ] Main workflow: IF(flag?) node อยู่ระหว่าง Normalize+Validate และ If(Need Re-ask)
+- [ ] **flag=false (หรือไม่ set) → bill fields identical 100%** — verified ด้วย exec จริง
+- [ ] flag=true + 0 active rules → `rules_engine: 'no_rules'`, bills unchanged
+- [ ] continueOnFail บน HTTP rules-reader → ถ้า fail rules=[] ไม่ crash
 - [ ] HANDOFF.md updated
 
 ---
 
 ## Discussion
-*(Codex fill ก่อน implement — raise concerns ทุกข้อ)*
+*(Codex complete แล้ว — 2026-02-25)*
+
+Codex raised 4 concerns (via codex-exec.sh discuss):
+1. **ocr-rules-reader แยก workflow** → เห็นด้วย, spec updated ✅
+2. **IF gate ก่อน Sheets call** → เห็นด้วย, architecture updated ✅
+3. **Connection re-wire** → ต้อง snapshot เดิมก่อน + assert ชื่อ node ✅ (ใส่ใน Step 2)
+4. **Spec contradiction "response unchanged vs rules_engine always"** → resolved: flag=false = no audit fields (pure pass-through), flag=true = additive ✅
 
