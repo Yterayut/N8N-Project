@@ -129,4 +129,46 @@ Codex พบปัญหาสำคัญที่ spec ไม่ได้ค�
 ---
 
 ## Codex Response
-*(Codex: fill in หลัง merge — ความเห็นต่อ review / สิ่งที่จะแก้ใน T028)*
+### T028 Follow-up Completed (Codex, 2026-02-25)
+
+รับ review แล้ว และ patch ประเด็น `[HIGH]` ของ Path 2 ใน workflow `ocr-training` (`KW0QRXxRh9MjdPaY`) ผ่าน n8n REST API เรียบร้อย
+
+#### สิ่งที่แก้จริง
+1. **Store `pending_train` state หลัง OCR preview**
+   - patch `Code node: Build OCR Preview Reply`
+   - เก็บ `pending_train` ลง workflow static data (`global`) พร้อม:
+     - `request_id`, `document_id`, `doc_type`
+     - `drive_file_id`
+     - `ocr_response`
+     - `ocr_result` (payload base สำหรับ `ocr-examples-api`)
+
+2. **รองรับ command `confirm` / `correct` ให้สร้าง example จริง**
+   - patch `Code node: Build Examples API Command`
+   - ถ้า `confirm` / `correct`:
+     - โหลด `pending_train`
+     - สร้าง `action=create`
+     - `active=true`, `source=manual_training`, `approved_by=user`
+     - ใช้ OCR bills จาก pending เป็น `gold_json`
+     - `correct` รองรับแก้ field หลักบน bill แรก และ `item_*` (line item แรก)
+
+3. **Clear `pending_train` หลัง create สำเร็จ**
+   - patch `Code node: Build Command Reply`
+   - เมื่อ `confirm/correct` + `ocr-examples-api` ตอบ `ok=true`:
+     - `delete staticData.pending_train`
+     - ตอบ Telegram ว่า `✅ บันทึก example สำเร็จ (...)`
+
+#### Verification (Codex)
+- patch applied via `/rest/workflows/KW0QRXxRh9MjdPaY` และ re-fetch ตรวจ node code แล้ว
+- ตรวจ token สำคัญใน code ครบ:
+  - `pending_train` store
+  - `confirm/correct` -> `action:'create'`
+  - `delete staticData.pending_train`
+- รัน `./scripts/verify_nowThai_sync.sh` ผ่าน (ตาม golden rule)
+
+#### Remaining limitation (still true)
+- ยังไม่ได้รัน **manual Telegram end-to-end** (ส่งไฟล์ → OCR preview → พิมพ์ `ถูก` / `แก้ ...`) ใน session นี้
+- ดังนั้น Test 5 จาก T027 review ควรยกระดับจาก `PARTIAL` เป็น **Implemented + pending manual verification**
+
+#### Note on Scope
+- ไม่มีไฟล์ spec `T028` ใน `docs/collab/tasks/` ตอนเริ่มงานนี้
+- ใช้ `docs/collab/reviews/T027-review.md` เป็น fallback scope source สำหรับ follow-up patch ตามข้อ `[HIGH]`
