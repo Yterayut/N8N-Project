@@ -297,27 +297,52 @@ Webhook → Validate+Auth → IF(auth ok?)
 
 ### Patch 2: `ocr-training` (KW0QRXxRh9MjdPaY)
 
-เพิ่ม HTTP node หลัง `Build Command Reply` ใน confirm/correct path (เมื่อ OCR_EXAMPLES row สร้างสำเร็จ):
+**[UPDATED จาก Codex Discussion]** — วาง km-log ก่อน `Build Command Reply` (ซึ่งจะลบ staticData.pending_train)
+ใช้ข้อมูลจาก `Code node: Build Examples API Command` output + staticData โดยตรง
 
-**Node ใหม่: HTTP (POST ocr-km-log training)**
+**Node ใหม่ (A): Code (Prepare KM Log Payload)**
 ```javascript
-// URL: http://127.0.0.1:5678/webhook/ocr-km-log
-// Method: POST
-// Headers: x-api-key = $env.OCR_SHARED_API_KEY
-// Body:
-{
-  "source": "telegram_train",
-  "request_id": "={{ $('Build OCR Preview Reply').first().json.request_id || '' }}",
-  "doc_type": "={{ $('Build OCR Preview Reply').first().json.doc_type || '' }}",
-  "vendor_tax_id": "={{ $('Build OCR Preview Reply').first().json.vendor || '' }}",
-  "drive_file_id": "={{ $('Build OCR Preview Reply').first().json.drive_file_id || '' }}",
-  "example_id_ref": "={{ $json.example_id || '' }}",
-  "ocr_bills": "={{ $('Build OCR Preview Reply').first().json.ocr_result?.bills || [] }}",
-  "correct_bills": "={{ $json.gold_bills || $('Build OCR Preview Reply').first().json.ocr_result?.bills || [] }}"
-}
+// วางหลัง HTTP node: POST ocr-examples-api (ก่อน Build Command Reply)
+const sta = $getWorkflowStaticData('global');
+const cmdReq = $('Code node: Build Examples API Command').first().json;
+
+let goldBills = [];
+try {
+  goldBills = JSON.parse(cmdReq.data?.gold_json || '{}').bills || [];
+} catch (_) {}
+
+const pending = sta.pending_train || {};
+const ocrBills = pending.ocr_result?.bills || [];
+
+return [{
+  json: {
+    _km_payload: {
+      source: 'telegram_train',
+      request_id: String(cmdReq._pending_request_id || pending.request_id || ''),
+      doc_type: String(cmdReq.data?.doc_type || pending.doc_type || ''),
+      vendor_tax_id: String(goldBills[0]?.vendor_tax_id || ''),
+      vendor_name: String(goldBills[0]?.vendor_name || pending.vendor || ''),
+      drive_file_id: String(cmdReq.data?.drive_file_id || pending.drive_file_id || ''),
+      example_id_ref: String($json.example_id || ''),
+      ocr_bills: ocrBills,
+      correct_bills: goldBills,
+    }
+  }
+}];
 ```
+
+**Node ใหม่ (B): HTTP (POST ocr-km-log training)**
+- URL: `http://127.0.0.1:5678/webhook/ocr-km-log`
+- Method: POST
+- Headers: `x-api-key` = `$env.OCR_SHARED_API_KEY`
+- Body: `={{ JSON.stringify($json._km_payload) }}`
 - `continueOnFail: true`
 - timeout: 10000ms
+
+**Placement:** วางใน flow ระหว่าง `HTTP node: POST ocr-examples-api` → `Code (Prepare KM Payload)` → `HTTP (km-log)` → `Build Command Reply`
+(ห้ามวางหลัง Build Command Reply เพราะ staticData.pending_train จะถูกลบแล้ว)
+
+**Gate:** ใส่เฉพาะ path ที่ action = confirm/correct เท่านั้น (ไม่รวม _no_api path)
 
 ---
 
@@ -342,10 +367,16 @@ Webhook → Validate+Auth → IF(auth ok?)
 _Codex: เพิ่มข้อสงสัย/ความเห็นที่นี่ก่อน implement_
 
 ### Q1 (CC): Build OCR Preview Reply ใน ocr-training เก็บ `request_id` ไว้ใน staticData ไหม?
-ถ้าไม่มี → อาจต้องดึงจาก `$('Telegram Trigger').first().json.message.message_id` แทน ให้ Codex ตรวจก่อน implement Patch 2
+**[ตอบโดย Codex]** มี — เก็บใน `staticData.pending_train.request_id` และ `pending_train.ocr_result` แต่ node นั้น return แค่ `{ telegram_text }` — ห้ามอ่าน fields อื่นจาก node output โดยตรง ต้องอ่านจาก staticData หรือ `Build Examples API Command` output
 
 ### Q2 (CC): `gold_bills` ใน ocr-training — ตอน correct path มี correct_bills ครบไหม?
-`Build Examples API Command` น่าจะมีข้อมูลที่ corrected อยู่แล้ว — ให้ Codex ตรวจ node นั้นก่อน
+**[ตอบโดย Codex]** ไม่มี field ชื่อ `gold_bills` — แต่มี `data.gold_json` (JSON string) ใน `Build Examples API Command` output → ต้อง `JSON.parse(cmdReq.data.gold_json).bills` → Patch 2 updated แล้วตาม finding นี้
+
+### Concerns จาก Codex (resolved ใน spec v2):
+1. ✅ Placement: วางก่อน `Build Command Reply` แทน
+2. ✅ Field refs: ใช้ `Build Examples API Command` output + staticData โดยตรง
+3. ✅ vendor_tax_id: อ่านจาก `goldBills[0].vendor_tax_id` ไม่ใช่ `pending.vendor`
+4. ✅ Gate เฉพาะ confirm/correct path
 
 ---
 
