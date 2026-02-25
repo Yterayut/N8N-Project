@@ -128,6 +128,13 @@ CC สามารถสั่ง Codex โดยตรงผ่าน `scripts/
 5. CC review → merge → sync
 6. CC เรียก `codex-exec.sh respond` → Codex ตอบ review
 
+### Context Limit Protocol (MANDATORY)
+- **ถ้า context left < 20%:**
+  1. รัน `/forward` ทันที
+  2. **หยุดทุกงานทันที** — ห้ามทำงานต่อ
+  3. แจ้ง user ว่า forward เสร็จแล้ว
+  4. User จะเปิด session ใหม่แล้วรัน `/recap` เอง
+
 ### After Completing ANY Action (not just tasks)
 1. Update `docs/collab/HANDOFF.md` if task status changed
 2. Commit to `stable`
