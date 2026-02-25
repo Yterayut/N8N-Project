@@ -92,7 +92,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
 | **Codex Status** | Idle (T026 completed) |
-| **Last Sync** | 2026-02-25 (T027 assigned — OCR Learning Loop Path 1+2) |
+| **Last Sync** | 2026-02-25 (T028 merged + T5e real Telegram test PASSED — ocr-training workflow bugs fixed) |
 | **Base Commit** | 960293a |
 
 ---
@@ -224,6 +224,7 @@ Codex ต้องทำ 3 อย่างก่อน Claude implement:
 | T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
 | T026 | OCR Feedback Receiver + KPI System | Codex | 2026-02-24 | Implemented `ocr-feedback-receiver` + `ocr-kpi-report`; webhook path `ocr-feedback-kpi` (collision avoidance); created `OCR_FEEDBACK` tab; Tests 1-5 passed |
 | T024 | Google Drive save — fast/standard path | Codex | 2026-02-24 | Patched via n8n REST API: added Drive direct upload + merge node, rewired fast path, propagated `drive_file_id`, verified live response + GDrive upload node output |
+| T028 | ocr-training Path 2 confirm/correct + pending_train | Codex+CC | 2026-02-25 | Codex implemented; CC reviewed (8.5/10); 3 bugs fixed by CC: (1) IF node typeVersion+conditions mismatch → fixed to v2.3+v3 format, (2) Normalize Binary used $input instead of $('Telegram Trigger') → lost binary, (3) removed direct fan-out Normalize→Telegram. T5e real Telegram test PASSED (exec 151539): OCR preview sent correctly |
 
 ---
 
@@ -359,6 +360,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 09:30 | sync | all | auto-sync |
+| 2026-02-25 09:10 | sync | all | auto-sync |
 | 2026-02-25 09:09 | sync | all | auto-sync |
 | 2026-02-25 09:00 | sync | all | auto-sync |
 | 2026-02-25 08:26 | sync | codex | auto-sync |
