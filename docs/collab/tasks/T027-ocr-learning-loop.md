@@ -529,7 +529,7 @@ curl -X POST http://localhost:5678/webhook/ocr-learning-trigger \
 - [x] เพิ่ม `OCR_FEEDBACK_API_URL` ใน `.env`
 - [x] สร้าง workflow `ocr-learning-path1` + test 4
 - [x] Patch `ocr-feedback-receiver` เพิ่ม trigger Path 1
-- [x] สร้าง workflow `ocr-training` + test 5 *(v1 workflow implemented; manual Telegram end-to-end confirm flow ยังไม่ได้รันครบใน session นี้)*
+- [x] สร้าง workflow `ocr-training` + test 5 *(v1 implemented in T027; manual Telegram end-to-end confirm flow completed in T028 follow-up / T5e)*
 - [x] ตรวจ few-shot ใช้งานได้จริง (test 6-7)
 - [x] อัปเดต HANDOFF.md
 
@@ -585,10 +585,10 @@ curl -X POST http://localhost:5678/webhook/ocr-learning-trigger \
   - creates pending example in `OCR_EXAMPLES`
 
 ### Test 5 — Path 2 (Telegram confirm flow)
-- **Result:** ⚠️ PARTIAL
+- **Result:** ✅ PASS *(final status after T028 follow-up / T5e real Telegram test)*
 - `ocr-training` workflow created and active
 - Telegram command/file routes implemented
-- Manual end-to-end file upload + `"ถูก"` confirm flow not fully executed in this session
+- Real Telegram end-to-end verified: ส่งไฟล์ → OCR preview reply → confirm path works (`T5e`, exec `151539`)
 
 ### Test 6 — OCR ใช้ few-shot จริง
 - **Result:** ✅ PASS

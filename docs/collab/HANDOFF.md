@@ -1,6 +1,6 @@
 # HANDOFF - Claude Code + Codex Collaboration
 
-## Message for Codex — อ่านก่อนเริ่มงาน (2026-02-24, T026 assigned)
+## Message for Codex — อ่านก่อนเริ่มงาน
 
 ### Feedback Loop เริ่มแล้ว — อ่านด้วย
 
@@ -8,28 +8,10 @@
 
 | ไฟล์ | หน้าที่ |
 |------|--------|
-| `docs/collab/reviews/T024-review.md` | Code review ของ T024 — **Codex กรุณา respond** |
+| `docs/collab/reviews/*.md` | Code review records และ Codex response notes |
 | `docs/collab/reviews/_TEMPLATE.md` | Template สำหรับ review ถัดไป |
 | `docs/collab/knowledge/n8n-patterns.md` | n8n patterns seed จาก CC — Codex เพิ่มได้ |
 | `docs/collab/knowledge/lessons-learned.md` | Lessons seed จาก CC — Codex เพิ่มได้ |
-
-**งานของ Codex ตอนนี้:**
-1. อ่าน `docs/collab/reviews/T024-review.md`
-2. Fill in `## Codex Response` section
-3. ถ้ามี insight เพิ่มเติม → เพิ่มใน `docs/collab/knowledge/`
-
----
-
-### ข้อผิดพลาดของ Claude Code — แจ้งให้ทราบ
-
-Claude Code ลงมือ execute งาน T024 (filename fix) เองโดยตรง โดยไม่ผ่าน Codex — ผิด flow ที่ตกลงกันไว้
-
-**กฎที่ต้องปฏิบัติทั้งสองฝ่าย:**
-- Claude Code ลงมือ execute ได้ **เฉพาะเมื่อ user สั่งโดยตรงเท่านั้น**
-- ถ้า Claude พบ bug หรือ issue → เขียน spec/task → assign Codex → ห้าม patch เอง
-- Codex ถ้าเห็น Claude ทำเกิน scope นี้ → note ไว้ใน task file ได้เลย
-
----
 
 ### Role ของเราเปลี่ยนแล้ว — สำคัญมาก
 
@@ -57,31 +39,7 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: **T027**
-
-**T027 — OCR Learning Loop (Path 1 + Path 2)**
-Spec อยู่ที่: `docs/collab/tasks/T027-ocr-learning-loop.md`
-
-**สิ่งที่ต้องทำ (ตามลำดับ):**
-1. อ่าน spec ทั้งหมด — comment ใน `## Discussion` ถ้าเห็น issue
-2. สร้าง `OCR_EXAMPLES` sheet + seed data
-3. สร้าง workflow `ocr-examples-api` → test 1-3
-4. เพิ่ม `OCR_FEEDBACK_API_URL=http://127.0.0.1:5678/webhook/ocr-examples-api` ใน `.env`
-5. สร้าง workflow `ocr-learning-path1` → test 4
-6. Patch `ocr-feedback-receiver` (T026) เพิ่ม trigger Path 1
-7. สร้าง workflow `ocr-training` (Telegram) → test 5
-8. ตรวจ few-shot ใช้งานได้จริง → test 6-7
-9. อัปเดต HANDOFF.md
-
-**ข้อสำคัญ:**
-- `OCR_FEEDBACK_API_URL` ต้องใช้ internal URL `http://127.0.0.1:5678/...` (ไม่ใช่ ngrok)
-- Telegram bot credential: `rauiF9qBRW8iVrsU`
-- Patch T026 ด้วย `continueOnFail: true` ไม่กระทบ feedback receiver ถ้า learning fail
-- Auth ทุก internal call: `x-api-key: ocm-cabonrecipte!`
-
----
-
-T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path implemented via n8n REST patch and verified with live OCR execution (`drive_file_id` returned).
+### งานที่ assigned ตอนนี้: _(none)_
 
 ---
 
@@ -91,9 +49,9 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 |-------|-------|
 | **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
 | **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (T026 completed) |
+| **Codex Status** | Idle (T028 completed; no task assigned) |
 | **Last Sync** | 2026-02-25 (T028 merged + T5e real Telegram test PASSED — ocr-training workflow bugs fixed) |
-| **Base Commit** | 960293a |
+| **Base Commit** | 5546362 |
 
 ---
 
@@ -121,81 +79,7 @@ T024 completed by Codex (2026-02-24) — Google Drive save on fast/standard path
 _(none)_
 
 ### In Progress (Codex)
-| T027 | OCR Learning Loop (Path 1 + Path 2) | Codex | Assigned 2026-02-25 |
-
----
-
-### T024 — งานของ Codex
-
-**โจทย์:** เพิ่มการบันทึกไฟล์ที่ user ส่ง OCR ขึ้น Google Drive ทุกไฟล์ (ทั้ง fast/standard และ heavy path)
-
-**สถานะปัจจุบันใน workflow `up1n75qEhbsXswii` (ocr-invoice-processor):**
-
-```
-Webhook → ... → Code (Document Classifier) → Code (SLA Lane + Timeout Budget)
-                                                        │
-                          lane='heavy' (≥4000KB/mixed)  │  lane='fast'/'standard'
-                                  ▼                     │         ▼
-                       Code (Split Files)               │   HTTP Upload File5
-                               ▼                        │   (ตรงไป Gemini — ❌ ไม่ผ่าน Drive)
-                   ✅ Google Drive (Upload) ─────────────┘
-                      folder: Upload_Carbonrecipt
-                      folderID: 1Fc8U94SNk_EJLsvzyUHWcTxDBMLiwR-v
-                      filename: {file_id}.pdf
-                      credential: "Google Drive account" (IYyt3qEQVk3xfjcF)
-                      inputDataFieldName: "file"  ← (Code Split Files rename binary เป็น 'file')
-                               ▼
-                   Google Sheets (Append to Queue)  ← เก็บ drive_file_id
-```
-
-**Binary field names:**
-- Heavy path: binary field = `file` (Code Split Files rename ให้)
-- Fast path: binary field = `files0` (ชื่อดั้งเดิมจาก webhook)
-
-**Google Drive credential:**
-- Name: "Google Drive account"
-- ID: `IYyt3qEQVk3xfjcF`
-- Folder: "Upload_Carbonrecipt" (`1Fc8U94SNk_EJLsvzyUHWcTxDBMLiwR-v`) บน My Drive
-
-**OCR_RAW Sheet (Sheets ID: `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`):**
-- Queue sheet: `OCR_QUEUE` (gid: 2080899316) → มี column `drive_file_id` แล้ว
-- RAW sheet: `OCR_RAW` → ยังไม่มี `drive_file_id` column
-
-**Connections key nodes:**
-- `Code (SLA Lane + Timeout Budget)` → `HTTP Upload File5` (fast path)
-- `Code (SLA Lane + Timeout Budget)` → `Code (Split Files)` (heavy path — ต้อง verify connection นี้)
-- `HTTP Upload File5` → `Get row(s) in sheet1` → few-shot → Gemini
-
-**Spec พร้อมแล้ว:** `docs/collab/tasks/T024-gdrive-save-spec.md`
-
-Codex ต้องทำ 3 อย่างก่อน Claude implement:
-1. **Review spec** — Claude เลือก Option A (sequential) แล้ว, Codex ยืนยันหรือ propose alternative
-2. **ตัดสินใจ:** Expose `drive_file_id` ใน OCR response ไหม? (Section 7 ในไฟล์ spec)
-3. **ตัดสินใจ:** Folder structure — `Upload_Carbonrecipt` เดียวกัน หรือแยก subfolder by `YYYY-MM` / `doc_type`?
-4. **เขียน regression test cases** เพิ่มใน test matrix
-5. **อัปเดต HANDOFF.md** → เปลี่ยน T024 status เป็น "Ready for implementation"
-
-> **Codex — อ่านนี้:** T023 เสร็จแล้วและ TESTED (Claude Code 2026-02-24)
->
-> **สิ่งที่แก้ใน workflow `up1n75qEhbsXswii` (ocr-invoice-processor):**
-> 1. `Telegram (OCR Notify)`: text เปลี่ยนเป็น `$('Code (Build Telegram Notification OCR)').first().json.telegram_text`
->    Root cause: `HTTP Release Admission Slot` node ทำงานหลัง Code node และ overwrite `$json` → text เดิมได้ `undefined`
-> 2. `Code (Build Telegram Notification OCR)`: `workflowName/Id` → `$workflow.name/$workflow.id` (แก้ hardcoded 'test-workflow')
-> 3. ลบ footer manual ออกจาก Code node (Telegram typeVersion 1.2 เพิ่ม "This message sent automatically" อัตโนมัติ)
->
-> **ผลทดสอบ (ยืนยันแล้ว):**
-> ```
-> [OCR] SUCCESS
-> เวลา: 2026-02-24 09:20:05 (Asia/Bangkok)
-> ไฟล์: shell.pdf
-> Workflow: ocr-invoice-processor (up1n75qEhbsXswii)
-> Request ID: ...
-> Token: prompt/output/total
-> ค่าใช้จ่ายประมาณ: X.XXXX บาท
-> This message was sent automatically with n8n
-> ```
-> - `.env`: เพิ่ม `TELEGRAM_OCR_CHAT_ID=1776637578` (bot: OCM-Chatbot, cred: `rauiF9qBRW8iVrsU`)
-> - Daily summary (`sSrKcFxY1Wxk5HGH`): trigger 20:30 ✓ ไม่ต้องแก้
+_(none)_
 
 ### Completed
 | ID | Task | Owner | Completed | Notes |
@@ -224,6 +108,7 @@ Codex ต้องทำ 3 อย่างก่อน Claude implement:
 | T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
 | T026 | OCR Feedback Receiver + KPI System | Codex | 2026-02-24 | Implemented `ocr-feedback-receiver` + `ocr-kpi-report`; webhook path `ocr-feedback-kpi` (collision avoidance); created `OCR_FEEDBACK` tab; Tests 1-5 passed |
 | T024 | Google Drive save — fast/standard path | Codex | 2026-02-24 | Patched via n8n REST API: added Drive direct upload + merge node, rewired fast path, propagated `drive_file_id`, verified live response + GDrive upload node output |
+| T027 | OCR Learning Loop (Path 1 + Path 2) | Codex | 2026-02-25 | Created `ocr-examples-api`, `ocr-learning-path1`, `ocr-training`; patched T026 trigger + compat proxy; few-shot active; Path 2 final Telegram T5e verified via T028 follow-up |
 | T028 | ocr-training Path 2 confirm/correct + pending_train | Codex+CC | 2026-02-25 | Codex implemented; CC reviewed (8.5/10); 3 bugs fixed by CC: (1) IF node typeVersion+conditions mismatch → fixed to v2.3+v3 format, (2) Normalize Binary used $input instead of $('Telegram Trigger') → lost binary, (3) removed direct fan-out Normalize→Telegram. T5e real Telegram test PASSED (exec 151539): OCR preview sent correctly |
 
 ---
