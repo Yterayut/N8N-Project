@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | improve-by-claude-23-02-2026.md — ALL ITEMS COMPLETE (except 1 deferred) |
-| **Active Agent** | Claude Code (stable branch) |
-| **Codex Status** | Idle (T028 completed; no task assigned) |
-| **Last Sync** | 2026-02-25 (T028 merged + T5e real Telegram test PASSED — ocr-training workflow bugs fixed) |
-| **Base Commit** | 5546362 |
+| **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
+| **Active Agent** | Claude Code (stable) |
+| **Codex Status** | T029A complete — pending CC review |
+| **Last Sync** | 2026-02-25 |
+| **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
 
@@ -75,42 +75,30 @@ Claude review → merge → sync all
 
 ## Task Board
 
-### In Progress
+### In Progress (CC)
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Started | Notes |
+|----|------|---------|-------|
+| T029B-discuss | Reviewing T029B spec (discuss mode) | 2026-02-25 | timezone / sheet creation / test data filter |
 
-### Completed
-| ID | Task | Owner | Completed | Notes |
-|----|------|-------|-----------|-------|
-| T029A | OCR KM Logger: Logging Phase | Codex | 2026-02-25 | Created `ocr-km-logger` (`jmJHPPj0OM5LcZ0n`), patched `ocr-feedback-receiver` + `ocr-training`; verified km-log webhook + feedback→km logging; fixed pre-existing wrong KM tab headers by clearing tabs + autoMap append |
-| T001 | Audit improve.md vs live workflow | Claude Code | 2026-02-23 | All 8 P0/P1 issues confirmed OPEN |
-| T002 | Regression test matrix | Codex | 2026-02-23 | 18 scenarios, 5 sections, merged to stable |
-| T003 | Fix round3 + allHeaders + MIME + URL + file limit | Claude Code | 2026-02-23 | 6 nodes patched, commit c556967 |
-| T004 | Fix re-ask normalize bypass | Claude Code | 2026-02-23 | validation added before accepting re-ask |
-| T005 | Fix queue worker retry status | Claude Code | 2026-02-23 | Set Done now writes 'error' on fail |
-| T006 | Update documentation after P0/P1 fixes | Codex | 2026-02-23 | Updated workflow docs + improve docs + phase1 summary |
-| T007 | File size guard (main + queue path) | Claude Code | 2026-02-23 | MAX_FILE_BYTES=20MB in JS22 + Code(Split Files) |
-| T008 | Sanitize Gemini error → client | Claude Code | 2026-02-23 | Respond to Webhook (error) uses literal safe message |
-| T009 | Few-shot truncation at example boundary | Claude Code | 2026-02-23 | Loop-based cut instead of char-slice mid-JSON |
-| T011 | HTTP Re-ask: retry + continueRegularOutput | Claude Code | 2026-02-23 | retryOnFail=true, maxTries=2, onError=continueRegularOutput |
-| T012 | THB pricing → env vars with fallback | Claude Code | 2026-02-23 | OCR_PRICE_THB_PER_1K_INPUT/OUTPUT, fallback to 0.0105/0.0875 |
-| T013 | Remove 24 disabled legacy nodes | Claude Code | 2026-02-23 | 24 nodes + dangling connections removed |
-| T014 | Phase 2 docs: spec + regression matrix update | Codex | 2026-02-23 | Added `phase2-summary.md`, updated regression matrix (Section 6), updated plan docs |
-| T015 | Config externalization: queue batch, SLA thresholds, Telegram refs | Claude Code | 2026-02-23 | OCR_QUEUE_BATCH_SIZE, OCR_SLA_HEAVY/FAST_KB, $workflow.name/id |
-| T016 | Queue worker file_id reference fix (Code Set Done) | Claude Code | 2026-02-23 | Use $input.item.json.file_id first; .first() fallbacks |
-| T017 | Re-ask confidence floor conditional + OCR_REASK_CONF_BOOST env | Claude Code | 2026-02-23 | Only boost if criticalErrs===0; default no-floor unless env set |
-| T018 | Electricity ref regex widen to /^\d{10,15}$/ + OCR_ELEC_REF_PATTERN | Claude Code | 2026-02-23 | severity downgraded to warning; pattern overridable |
-| T019 | MIME: add TIFF (LE/BE) + HEIC extension detection | Claude Code | 2026-02-23 | sniffMimeFromBase64 + ext handler for heic/heif/tif/tiff |
-| T020 | Phase 3 docs + regression matrix update | Codex | 2026-02-23 | Added `phase3-summary.md`, regression matrix Section 7, updated HANDOFF phase status |
-| T021 | Rename workflow test-workflow → ocr-invoice-processor | Claude Code | 2026-02-24 | Renamed via n8n REST API + updated 3 JSON export files |
-| T022 | nowThai() consolidation — standardize 5 nodes | Claude Code | 2026-02-24 | Canonical `[SHARED]` block in JS9, JS17, JS24, JS26, Parse Result; verify script: `scripts/verify_nowThai_sync.sh` |
-| T023 | Fix Telegram OCR Notify + workflowName + .env | Claude Code | 2026-02-24 | Telegram node→$('Code (Build Telegram Notification OCR)').first().json.telegram_text; workflowName→$workflow.name; TELEGRAM_OCR_CHAT_ID=1776637578 in .env; footer handled by Telegram node (typeVersion 1.2) auto-appends |
-| T026 | OCR Feedback Receiver + KPI System | Codex | 2026-02-24 | Implemented `ocr-feedback-receiver` + `ocr-kpi-report`; webhook path `ocr-feedback-kpi` (collision avoidance); created `OCR_FEEDBACK` tab; Tests 1-5 passed |
-| T024 | Google Drive save — fast/standard path | Codex | 2026-02-24 | Patched via n8n REST API: added Drive direct upload + merge node, rewired fast path, propagated `drive_file_id`, verified live response + GDrive upload node output |
-| T027 | OCR Learning Loop (Path 1 + Path 2) | Codex | 2026-02-25 | Created `ocr-examples-api`, `ocr-learning-path1`, `ocr-training`; patched T026 trigger + compat proxy; few-shot active; Path 2 final Telegram T5e verified via T028 follow-up |
-| T028 | ocr-training Path 2 confirm/correct + pending_train | Codex+CC | 2026-02-25 | Codex implemented; CC reviewed (8.5/10); 3 bugs fixed by CC: (1) IF node typeVersion+conditions mismatch → fixed to v2.3+v3 format, (2) Normalize Binary used $input instead of $('Telegram Trigger') → lost binary, (3) removed direct fan-out Normalize→Telegram. T5e real Telegram test PASSED (exec 151539): OCR preview sent correctly |
+### Pending
+| ID | Task | Owner | Depends on |
+|----|------|-------|-----------|
+| T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | T029B-discuss done |
+| T029D | Benchmark Runner | Codex | T029A + ground truth data |
+| T029C | Runtime Rules (highest risk) | Codex | T029B + T029D |
+
+### Recently Completed
+| ID | Task | Owner | Date | Score |
+|----|------|-------|------|-------|
+| T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
+| T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
+| T027 | OCR Learning Loop Path1+Path2 | Codex | 2026-02-25 | 7.5/10 |
+| T026 | OCR Feedback + KPI | Codex | 2026-02-24 | 9/10 |
+
+_ดู T001–T028 ทั้งหมดได้ที่ `docs/collab/completed-tasks.md`_
 
 ---
 
@@ -246,6 +234,20 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 15:45 | sync | all | auto-sync |
+| 2026-02-25 15:44 | sync | all | auto-sync |
+| 2026-02-25 15:37 | sync | all | auto-sync |
+| 2026-02-25 15:27 | sync | all | auto-sync |
+| 2026-02-25 15:26 | sync | all | auto-sync |
+| 2026-02-25 15:00 | sync | all | auto-sync |
+| 2026-02-25 15:00 | sync | all | auto-sync |
+| 2026-02-25 14:56 | sync | all | auto-sync |
+| 2026-02-25 14:56 | sync | all | auto-sync |
+| 2026-02-25 14:53 | sync | all | auto-sync |
+| 2026-02-25 14:53 | sync | all | auto-sync |
+| 2026-02-25 14:43 | sync | all | auto-sync |
+| 2026-02-25 14:43 | sync | all | auto-sync |
+| 2026-02-25 14:14 | sync | all | auto-sync |
 | 2026-02-25 14:14 | sync | all | auto-sync |
 | 2026-02-25 11:57 | sync | all | auto-sync |
 | 2026-02-25 10:57 | sync | all | auto-sync |
