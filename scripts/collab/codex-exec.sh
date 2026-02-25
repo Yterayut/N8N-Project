@@ -13,7 +13,12 @@ CODEX_CLI="/home/oneclimate-uat/.nvm/versions/node/v20.19.0/bin/codex"
 CODEX_EXEC="$CODEX_CLI exec -c 'sandbox_permissions=[\"disk-full-read-access\",\"network=true\"]'"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# ใช้ git-common-dir เพื่อหา main repo root — ทำงานถูกต้องทั้งใน stable และ agents/codex worktree
+_GIT_COMMON="$(git -C "$SCRIPT_DIR" rev-parse --git-common-dir 2>/dev/null || echo "")"
+case "$_GIT_COMMON" in
+  /*)  REPO_ROOT="$(dirname "$_GIT_COMMON")" ;;  # worktree → absolute path
+  *)   REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)" ;;  # main repo → relative .git
+esac
 CODEX_DIR="$REPO_ROOT/agents/codex"
 MODE="${1:?Usage: codex-exec.sh <discuss|implement|verify|respond|ask> [task-id] [message]}"
 
