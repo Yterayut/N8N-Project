@@ -168,13 +168,13 @@ If (Need Re-ask)              ← เดิม
 
 ## Definition of Done
 
-- [ ] Sheet `OCR_KM_RUNTIME_RULES` สร้างแล้ว มี header row + 1 test rule (status=inactive)
-- [ ] Workflow `ocr-rules-reader` active — GET `/webhook/ocr-rules` return `{rules:[]}` ถ้า Sheets ว่าง
-- [ ] Main workflow: IF(flag?) node อยู่ระหว่าง Normalize+Validate และ If(Need Re-ask)
-- [ ] **flag=false (หรือไม่ set) → bill fields identical 100%** — verified ด้วย exec จริง
-- [ ] flag=true + 0 active rules → `rules_engine: 'no_rules'`, bills unchanged
-- [ ] continueOnFail บน HTTP rules-reader → ถ้า fail rules=[] ไม่ crash
-- [ ] HANDOFF.md updated
+- [x] Sheet `OCR_KM_RUNTIME_RULES` สร้างแล้ว มี header row + 1 test rule (status=inactive)
+- [x] Workflow `ocr-rules-reader` active — GET `/webhook/ocr-rules` return `{rules:[]}` ถ้า Sheets ว่าง *(verified with inactive seed row / 0 active rules)*
+- [x] Main workflow: IF(flag?) node อยู่ระหว่าง Normalize+Validate และ If(Need Re-ask)
+- [x] **flag=false (หรือไม่ set) → bill fields identical 100%** — verified ด้วย exec จริง *(branch=false bypass; rules nodes not run)*
+- [ ] flag=true + 0 active rules → `rules_engine: 'no_rules'`, bills unchanged *(not run — requires n8n runtime env restart/set)*
+- [x] continueOnFail บน HTTP rules-reader → ถ้า fail rules=[] ไม่ crash *(configured on main HTTP + Sheets read in reader workflow)*
+- [x] HANDOFF.md updated
 
 ---
 
@@ -187,3 +187,45 @@ Codex raised 4 concerns (via codex-exec.sh discuss):
 3. **Connection re-wire** → ต้อง snapshot เดิมก่อน + assert ชื่อ node ✅ (ใส่ใน Step 2)
 4. **Spec contradiction "response unchanged vs rules_engine always"** → resolved: flag=false = no audit fields (pure pass-through), flag=true = additive ✅
 
+---
+
+## Execution Notes (Codex, 2026-02-25)
+
+### Implemented
+- Created/updated Google Sheet tab `OCR_KM_RUNTIME_RULES` in spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
+- Wrote schema header row and ensured 1 inactive seed rule (`rr_test_inactive_001`)
+- Created workflow `ocr-rules-reader` (ID `dFzVzAFjdRJHbQqe`) and activated it
+- Added webhook auth check (`x-api-key` vs `$env.OCR_SHARED_API_KEY`) on `GET /webhook/ocr-rules` *(spec said localhost-only/no-auth; implemented stricter auth for checklist compliance)*
+- Patched main workflow `ocr-invoice-processor` (`up1n75qEhbsXswii`) with:
+  - `IF (Runtime Rules Enabled?)`
+  - `HTTP GET ocr-rules-reader` (`continueOnFail`)
+  - `Code (Apply Runtime Rules)`
+- Rewired path: `Code (Normalize + Validate)` → IF(flag) → (true: HTTP→Code Apply) / (false: direct) → `If (Need Re-ask)`
+- Saved pre-patch connection snapshot to `/tmp/t029c-main-connections-before.json`
+
+### Verification Evidence
+- `ocr-rules-reader`:
+  - wrong key → `401 {"ok":false,"error":"UNAUTHORIZED"}`
+  - correct key → `200 {"rules":[],"warnings":[]}`
+- Main OCR E2E (flag unset/false):
+  - Webhook `POST /webhook/ocr-dev` with `shell.pdf` returned `HTTP 202`
+  - Execution `151755` (workflow `up1n75qEhbsXswii`) shows:
+    - `IF (Runtime Rules Enabled?)` ran and took branch `1` (false)
+    - `HTTP GET ocr-rules-reader` = NOT RUN
+    - `Code (Apply Runtime Rules)` = NOT RUN
+- `./scripts/verify_nowThai_sync.sh` → PASS (`OK — all 5 nodes have identical nowThai()`)
+
+### Limitations / Follow-up
+- `flag=true` runtime verification not executed in this task because `OCR_RUNTIME_RULES_ENABLED` is runtime env-based and current n8n process was not restarted/reconfigured during task.
+
+---
+
+## Closing Template
+*(Codex fill ก่อน push — บังคับ)*
+
+```
+Runtime patched: ocr-invoice-processor (up1n75qEhbsXswii), ocr-rules-reader (dFzVzAFjdRJHbQqe), sheet OCR_KM_RUNTIME_RULES
+Verified from: rules-reader webhook (401/200), main OCR exec 151755 (flag=false branch bypass), verify_nowThai_sync.sh PASS
+Docs synced: HANDOFF.md + T029C-runtime-rules.md
+Remaining limits: flag=true runtime test not executed (env-based toggle on running n8n process)
+```

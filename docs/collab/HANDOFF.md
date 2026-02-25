@@ -85,11 +85,11 @@ _(none)_
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T029D | Benchmark Runner | Codex | T029A + ground truth data |
-| T029C | Runtime Rules (highest risk) | Codex | T029B + T029D |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T029C | Runtime Rules (Dynamic Rules Integration) | Codex | 2026-02-25 | Implemented; workflows `up1n75qEhbsXswii` + `dFzVzAFjdRJHbQqe`; rules-reader 401/200 verified; E2E exec `151755` (flag=false path) |
 | T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | 2026-02-25 | Implemented; workflow `NkKd02QyzLRcpIJM` active; webhook 401/200 verified; E2E exec `151678` |
 | T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
