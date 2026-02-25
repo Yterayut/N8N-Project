@@ -76,22 +76,24 @@ Claude review → merge → sync all
 ## Task Board
 
 ### In Progress (CC)
-_(none — writing T029A review next)_
+_(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Started | Notes |
+|----|------|---------|-------|
+| T029B-discuss | Reviewing T029B spec (discuss mode) | 2026-02-25 | timezone / sheet creation / test data filter |
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | T029A verified |
+| T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | T029B-discuss done |
 | T029D | Benchmark Runner | Codex | T029A + ground truth data |
 | T029C | Runtime Rules (highest risk) | Codex | T029B + T029D |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
-| T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | pending review — workflow `jmJHPPj0OM5LcZ0n` active, exec 151644 ✅ |
+| T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
 | T027 | OCR Learning Loop Path1+Path2 | Codex | 2026-02-25 | 7.5/10 |
 | T026 | OCR Feedback + KPI | Codex | 2026-02-24 | 9/10 |
@@ -232,6 +234,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 15:37 | sync | all | auto-sync |
+| 2026-02-25 15:27 | sync | all | auto-sync |
 | 2026-02-25 15:26 | sync | all | auto-sync |
 | 2026-02-25 15:00 | sync | all | auto-sync |
 | 2026-02-25 15:00 | sync | all | auto-sync |

@@ -1,7 +1,7 @@
 # T029B — OCR KM Suggestion: Knowledge Generation Phase
 
 **Author:** Claude Code (CC)
-**Date:** 2026-02-25
+**Date:** 2026-02-25 (revised post-Codex Discussion)
 **Assignee:** Codex
 **Priority:** Medium
 **Risk:** ต่ำ-กลาง (generate suggestions only — no auto-activate, human review required)
@@ -11,11 +11,20 @@
 
 ## Overview
 
-Scheduled workflow ที่อ่านข้อมูลสะสมจาก OCR_TRAIN_CASES + OCR_TRAIN_FIELD_DIFFS → วิเคราะห์ pattern → เขียน suggestion rows ลง OCR_KM_LESSONS + OCR_RULE_CHANGELOG
+Scheduled workflow ที่อ่านข้อมูลสะสมจาก OCR_TRAIN_CASES → วิเคราะห์ pattern → เขียน suggestion rows ลง OCR_KM_LESSONS
 
 **ไม่มีผลต่อ runtime** — ทุก suggestion มี `status=suggestion` รอ human approve ก่อนเสมอ
 
-เป้าหมาย: เมื่อมีข้อมูลสะสมพอ ระบบจะ auto-detect ว่า vendor/field ไหนมีปัญหาซ้ำ แล้วสร้าง lesson สำหรับ human admin พิจารณา
+**Codex Discussion Fixes applied (2026-02-25):**
+1. Timezone: n8n runs UTC (GENERIC_TIMEZONE not set) → cron `0 23 * * *` = 06:00 Bangkok
+2. Sheet creation: ใช้ Google Sheets API โดยตรง (not temp workflow)
+3. source=manual excluded by default (add `include_manual=true` flag for debug)
+4. P1 renamed: "repeated error pattern" (tag-based) — not field-level (ไม่อ่าน FIELD_DIFFS ใน T029B)
+5. P1 excludes `full_ocr_failure` (P3 handles it) ป้องกัน duplicate suggestions
+6. Remove RULE_CHANGELOG write from T029B scope — changelog only when rules created (T029C)
+7. Node naming cleaned up — dedup inside Analyze node, no separate Deduplicate node
+8. Timestamp comparison: use `new Date().getTime()` ไม่ใช่ string compare
+9. Error handling: `continueOnFail` on Sheets → workflow never crashes (not 500)
 
 ---
 
@@ -23,93 +32,166 @@ Scheduled workflow ที่อ่านข้อมูลสะสมจาก 
 
 **In scope:**
 - สร้าง workflow ใหม่ `ocr-km-suggest` (scheduled + on-demand webhook)
-- สร้าง Sheet tab `OCR_KM_LESSONS` ใน Spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
-- สร้าง Sheet tab `OCR_RULE_CHANGELOG` ใน Spreadsheet เดียวกัน
-- Pattern 1: Repeated field error (same field + vendor ≥3 cases ใน window)
-- Pattern 2: High severity rate (>50% ใน 7 วัน)
-- Pattern 3: Full OCR failure (root_cause_tag = 'full_ocr_failure' ≥2 ครั้งต่อ vendor/doc_type)
-- Dedup: ห้ามสร้าง lesson ซ้ำ (เช็ค existing lessons ก่อน)
+- สร้าง Sheet tab `OCR_KM_LESSONS` ใน Spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0` ด้วย Sheets API โดยตรง
+- Pattern 1: Repeated error pattern (same root_cause_tag + vendor ≥3 cases/30d) — excludes `no_diff` + `full_ocr_failure`
+- Pattern 2: High severity rate (>50% cases ที่ severity=high ใน 7 วัน ต่อ doc_type)
+- Pattern 3: Full OCR failure (root_cause_tag = `full_ocr_failure` ≥2 ครั้ง ต่อ vendor/doc_type)
+- Dedup: ห้ามสร้าง lesson ซ้ำ (เช็ค existing lessons ก่อน — same doc_type + vendor + pattern keyword)
 - Telegram notify admin เมื่อมี new suggestions
+- source=manual excluded by default (webhook param: `include_manual=true` to override)
 
 **Out of scope (explicit):**
-- ห้าม auto-approve lesson ใดๆ — human approve เท่านั้น
-- ห้ามแตะ OCR_KM_RUNTIME_RULES (T029C)
+- ห้าม auto-approve lesson ใดๆ
+- ห้ามแตะ OCR_KM_RUNTIME_RULES + OCR_RULE_CHANGELOG (T029C)
+- ห้าม read OCR_TRAIN_FIELD_DIFFS (defer to future T029B+ enhancement)
 - ห้ามแตะ main OCR workflow
-- ไม่ต้อง fetch ข้อมูลจาก OCR_RAW4 sheet (ใช้ TRAIN_CASES เท่านั้น)
 
 ---
 
 ## Technical Spec
 
-### Workflow: `ocr-km-suggest`
+### Pre-step: Create Sheet Tabs (Codex does this FIRST before creating workflow)
 
-**Nodes (เรียงตามลำดับ):**
+ใช้ Google Sheets API บน access_token จาก n8n credential (หรือ service account) สร้าง 2 tabs:
 
+```bash
+# Check existing tabs
+SPREADSHEET_ID="12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0"
+
+# 1. Get existing sheet names
+curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SPREADSHEET_ID?fields=sheets.properties.title" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+
+# 2. batchUpdate to add missing tabs
+curl -s -X POST "https://sheets.googleapis.com/v4/spreadsheets/$SPREADSHEET_ID:batchUpdate" \
+  -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" \
+  -d '{"requests":[
+    {"addSheet":{"properties":{"title":"OCR_KM_LESSONS"}}},
+    {"addSheet":{"properties":{"title":"OCR_RULE_CHANGELOG"}}}
+  ]}'
+
+# 3. Write headers to OCR_KM_LESSONS row 1
+LESSONS_HEADERS="lesson_id,created_at,status,doc_type,vendor_tax_id,field_affected,pattern_observed,lesson_text,suggested_action,evidence_count,source_case_ids,approved_by,approved_at,rule_id_ref"
+curl -s -X PUT "https://sheets.googleapis.com/v4/spreadsheets/$SPREADSHEET_ID/values/OCR_KM_LESSONS!A1:N1?valueInputOption=RAW" \
+  -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" \
+  -d "{\"values\":[[$(echo $LESSONS_HEADERS | sed 's/,/\",\"/g' | sed 's/^/\"/' | sed 's/$/\"/')]]}"
 ```
-Schedule Trigger (daily 06:00) ──┐
-                                  ├──► Code (Load + Analyze) → Code (Pattern 1) → IF (P1 found?)
-Webhook (on-demand) ─────────────┘       ↓                          ↓ yes
-                                   Code (Pattern 2)          Code (Write P1 Lessons)
-                                         ↓                          ↓
-                                   Code (Pattern 3)          Google Sheets (Append KM_LESSONS - P1)
-                                         ↓                          ↓
-                                   Code (Collect Results) ←─────────┘
-                                         ↓
-                                   IF (any lessons?)
-                                         ↓ yes
-                                   Google Sheets (Append KM_LESSONS - all)
-                                         ↓
-                                   Code (Build Telegram Notify)
-                                         ↓
-                                   Telegram (Admin Notify)
-                                         ↓
-                                   Respond / Done
-```
 
-**Simplified node list (12-15 nodes):**
-
-1. `Schedule Trigger` — Cron: `0 6 * * *` (daily 06:00 Bangkok = UTC+7 = `-1 23 * * *` ถ้า n8n ใช้ UTC)
-   - Note: ตรวจสอบ n8n timezone — ถ้า `GENERIC_TIMEZONE=Asia/Bangkok` แล้ว ใช้ `0 6 * * *`
-2. `Webhook (trigger)` — path: `ocr-km-suggest`, method POST, responseMode: responseNode
-   - ต้องมี `webhookId` UUID (PATTERN-008)
-   - Auth: x-api-key vs `$env.OCR_SHARED_API_KEY`
-3. `Code (Load TRAIN_CASES)` — อ่านจาก Sheets → pass ข้อมูลไปวิเคราะห์
-4. `Code (Analyze Patterns)` — รัน Pattern 1, 2, 3 พร้อมกัน → return array ของ lessons ที่จะสร้าง
-5. `Google Sheets (Read TRAIN_CASES)` — อ่าน Sheet OCR_TRAIN_CASES (`getAll`, ไม่ต้อง filter)
-6. `Google Sheets (Read KM_LESSONS existing)` — อ่าน OCR_KM_LESSONS เพื่อ dedup
-7. `Code (Deduplicate Lessons)` — กรอง lesson ที่มีอยู่แล้วออก (same doc_type + vendor + field + pattern type)
-8. `IF (any new lessons?)` — `$json.new_lessons.length > 0`
-9. `Google Sheets (Append KM_LESSONS)` — append ทุก lesson ใหม่ (autoMapInputData)
-10. `Google Sheets (Append RULE_CHANGELOG)` — 1 row ต่อ lesson: change_type=`suggestion_created`
-11. `Code (Build Telegram Notify)` — สรุป N lessons ใหม่ที่ต้อง review
-12. `Telegram (Admin KM Notify)` — ส่ง Telegram ไปหา `$env.TELEGRAM_ADMIN_CHAT_ID`
-13. `Respond to Webhook (success)` — `{"ok":true,"new_lessons":N}`
-14. `Respond to Webhook (no new lessons)` — `{"ok":true,"new_lessons":0,"message":"no new patterns found"}`
+**Note:** ACCESS_TOKEN ได้จาก n8n OAuth2 credential — Codex ต้องดู pattern ใน `cmd.md` สำหรับวิธี get token
 
 ---
 
-### Code (Analyze Patterns) — Logic Detail
+### Workflow: `ocr-km-suggest` (13 nodes)
+
+```
+Schedule Trigger ──┐
+                   ├──► Code (Auth + Config) → Google Sheets (Read TRAIN_CASES) → Google Sheets (Read KM_LESSONS existing)
+Webhook (trigger) ─┘                              ↓                                       ↓
+                                          Code (Analyze Patterns) ← (both inputs) ────────┘
+                                                  ↓
+                                          IF (any new lessons?)
+                                          ↙              ↘
+                               Google Sheets              Respond (no new lessons)
+                            (Append KM_LESSONS)
+                                    ↓
+                            Code (Build Telegram)
+                                    ↓
+                            Telegram (Admin Notify) [continueOnFail]
+                                    ↓
+                            Respond to Webhook (success)
+```
+
+**Node list:**
+
+1. `Schedule Trigger` — Cron: `0 23 * * *` (23:00 UTC = 06:00 Bangkok)
+2. `Webhook (trigger)` — path: `ocr-km-suggest`, POST, responseMode: responseNode, **ต้องมี webhookId UUID**
+3. `Code (Auth + Config)` — validate x-api-key (from webhook) OR allow schedule trigger, set config vars (include_manual, window_days)
+4. `Google Sheets (Read TRAIN_CASES)` — Read all rows from `OCR_TRAIN_CASES`, spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`, `continueOnFail: true`
+5. `Google Sheets (Read KM_LESSONS existing)` — Read all from `OCR_KM_LESSONS`, `continueOnFail: true`
+6. `Code (Analyze Patterns)` — Pattern 1+2+3 + dedup → returns `new_lessons[]` array (see logic below)
+7. `IF (any new lessons?)` — `{{ $json.new_lessons.length > 0 }}`
+8. `Code (Prepare Lesson Rows)` — map each lesson to flat object for Sheets append
+9. `Google Sheets (Append KM_LESSONS)` — append N rows, `continueOnFail: true`, **autoMapInputData**
+10. `Code (Build Telegram)` — format message
+11. `Telegram (Admin Notify)` — chatId `{{ $env.TELEGRAM_ADMIN_CHAT_ID }}`, `continueOnFail: true`
+12. `Respond to Webhook (success)` — `{"ok":true,"new_lessons":N,"analyzed_cases":M}`
+13. `Respond to Webhook (no new lessons)` — `{"ok":true,"new_lessons":0}`
+
+---
+
+### Code (Auth + Config)
 
 ```javascript
-// Input: items = 1 item with { train_cases: [...], existing_lessons: [...] }
-const cases = $('Google Sheets (Read TRAIN_CASES)').all().map(i => i.json);
-const existing = $('Google Sheets (Read KM_LESSONS existing)').all().map(i => i.json);
+// From schedule: $input.first().json = {} (no auth needed — internal)
+// From webhook: $input.first().json = { headers: {...}, body: {...} }
+const src = $input.first().json;
+const isWebhook = !!src.headers;
 
-const now = new Date().toISOString();
-const rand6 = () => Math.random().toString(36).slice(2,8);
+if (isWebhook) {
+  const givenKey = String(src.headers?.['x-api-key'] || src.headers?.['X-Api-Key'] || '');
+  const expectedKey = String($env.OCR_SHARED_API_KEY || '');
+  if (!expectedKey || givenKey !== expectedKey) {
+    return [{ json: { _error: 'UNAUTHORIZED', _status: 401 } }];
+  }
+}
 
-// Helper: create lesson object
-function makeLesson(type, doc_type, vendor_tax_id, field, pattern_text, lesson_text, action, evidence_count, case_ids) {
+const body = src.body || {};
+return [{ json: {
+  include_manual: body.include_manual === true,
+  window_30d: Date.now() - 30 * 86400 * 1000,
+  window_7d: Date.now() - 7 * 86400 * 1000,
+  _config_ok: true,
+} }];
+```
+
+**IF after auth:** check `$json._error` → true path = Respond 401, false path = continue
+
+---
+
+### Code (Analyze Patterns)
+
+```javascript
+// Inputs from 2 Sheets reads (use explicit node refs)
+const rawCases = $('Google Sheets (Read TRAIN_CASES)').all().map(i => i.json);
+const rawExisting = $('Google Sheets (Read KM_LESSONS existing)').all().map(i => i.json);
+const cfg = $('Code (Auth + Config)').first().json;
+
+const now = new Date();
+const nowISO = now.toISOString();
+const rand6 = () => Math.random().toString(36).slice(2, 8);
+const w30 = cfg.window_30d;
+const w7 = cfg.window_7d;
+
+// Filter cases: skip empty rows, optional skip manual
+const cases = rawCases.filter(c => {
+  if (!c.case_id || !c.created_at || !c.doc_type) return false;
+  const ts = new Date(c.created_at).getTime();
+  if (isNaN(ts)) return false;
+  if (!cfg.include_manual && c.source === 'manual') return false;
+  return true;
+});
+
+const recent30 = cases.filter(c => new Date(c.created_at).getTime() >= w30);
+const recent7 = cases.filter(c => new Date(c.created_at).getTime() >= w7);
+
+// Existing lesson dedup key: doc_type|vendor_tax_id|pattern_keyword
+const existingKeys = new Set(
+  rawExisting
+    .filter(l => ['suggestion', 'approved'].includes(l.status))
+    .map(l => [l.doc_type || '*', l.vendor_tax_id || '*', (l.pattern_observed || '').slice(0, 30)].join('|'))
+);
+
+function makeLesson(doc_type, vendor_tax_id, field_affected, pattern_observed, lesson_text, suggested_action, evidence_count, case_ids) {
   return {
     lesson_id: `ls_${Date.now()}_${rand6()}`,
-    created_at: now,
+    created_at: nowISO,
     status: 'suggestion',
     doc_type: doc_type || '*',
     vendor_tax_id: vendor_tax_id || '*',
-    field_affected: field || '*',
-    pattern_observed: pattern_text,
+    field_affected: field_affected || '*',
+    pattern_observed,
     lesson_text,
-    suggested_action: action,
+    suggested_action,
     evidence_count,
     source_case_ids: case_ids.join(','),
     approved_by: '',
@@ -118,180 +200,172 @@ function makeLesson(type, doc_type, vendor_tax_id, field, pattern_text, lesson_t
   };
 }
 
-// Filter to last 30 days
-const cutoff30 = new Date(Date.now() - 30 * 86400 * 1000).toISOString();
-const recent = cases.filter(c => c.created_at >= cutoff30);
-const recent7d = cases.filter(c => c.created_at >= new Date(Date.now() - 7 * 86400 * 1000).toISOString());
-
 const newLessons = [];
 
-// --- PATTERN 1: Repeated field error (same root_cause_tag + vendor ≥3 cases) ---
-// Group by (doc_type, vendor_tax_id, root_cause_tag)
+// --- PATTERN 1: Repeated error pattern per vendor/doc_type (tag-based, excl. no_diff + full_ocr_failure) ---
+const EXCLUDE_TAGS = new Set(['no_diff', 'full_ocr_failure']);
 const p1Groups = {};
-for (const c of recent) {
-  if (c.root_cause_tag === 'no_diff') continue;
-  const key = [c.doc_type, c.vendor_tax_id, c.root_cause_tag].join('|');
+for (const c of recent30) {
+  if (!c.root_cause_tag || EXCLUDE_TAGS.has(c.root_cause_tag)) continue;
+  const key = [c.doc_type, c.vendor_tax_id || '*', c.root_cause_tag].join('|');
   if (!p1Groups[key]) p1Groups[key] = [];
-  p1Groups[key].push(c);
+  p1Groups[key].push(c.case_id);
 }
-for (const [key, group] of Object.entries(p1Groups)) {
-  if (group.length < 3) continue;
+for (const [key, ids] of Object.entries(p1Groups)) {
+  if (ids.length < 3) continue;
   const [doc_type, vendor_tax_id, tag] = key.split('|');
-  const caseIds = group.map(c => c.case_id);
-  // Dedup check: same doc_type + vendor + tag already exists in status=suggestion/approved
-  const dupe = existing.find(l =>
-    l.doc_type === doc_type &&
-    (l.vendor_tax_id === vendor_tax_id || l.vendor_tax_id === '*') &&
-    l.pattern_observed.includes(tag) &&
-    ['suggestion', 'approved'].includes(l.status)
-  );
-  if (dupe) continue;
+  const patternText = `repeated_error_pattern:${tag}`;
+  const dedupeKey = [doc_type, vendor_tax_id, patternText.slice(0, 30)].join('|');
+  if (existingKeys.has(dedupeKey)) continue;
   newLessons.push(makeLesson(
-    'p1', doc_type, vendor_tax_id, tag,
-    `พบ error pattern "${tag}" ซ้ำ ${group.length} ครั้ง (30 วัน) สำหรับ vendor ${vendor_tax_id} / ${doc_type}`,
-    `OCR มีปัญหา "${tag}" ซ้ำในเอกสาร ${doc_type} ของ vendor ${vendor_tax_id}`,
-    'ตรวจสอบ few-shot examples และพิจารณาสร้าง runtime rule สำหรับ field นี้',
-    group.length, caseIds
+    doc_type, vendor_tax_id, tag,
+    patternText,
+    `OCR มีปัญหา "${tag}" ซ้ำ ${ids.length} ครั้ง (30 วัน) สำหรับ ${doc_type} vendor: ${vendor_tax_id}`,
+    'ตรวจสอบ few-shot examples และพิจารณาสร้าง runtime rule สำหรับ error pattern นี้',
+    ids.length, ids
   ));
 }
 
-// --- PATTERN 2: High severity rate > 50% ใน 7 วัน ---
-// Group by doc_type
+// --- PATTERN 2: High severity rate > 50% per doc_type in 7d ---
 const p2ByType = {};
-for (const c of recent7d) {
-  if (!p2ByType[c.doc_type]) p2ByType[c.doc_type] = { total: 0, high: 0, cases: [] };
+for (const c of recent7) {
+  if (!p2ByType[c.doc_type]) p2ByType[c.doc_type] = { total: 0, high: 0, ids: [] };
   p2ByType[c.doc_type].total++;
-  if (c.severity === 'high') { p2ByType[c.doc_type].high++; p2ByType[c.doc_type].cases.push(c); }
+  if (c.severity === 'high') { p2ByType[c.doc_type].high++; p2ByType[c.doc_type].ids.push(c.case_id); }
 }
 for (const [doc_type, stat] of Object.entries(p2ByType)) {
-  if (stat.total < 3) continue; // ต้องมี data พอ
-  const rate = stat.high / stat.total;
-  if (rate <= 0.5) continue;
-  const dupe = existing.find(l =>
-    l.doc_type === doc_type &&
-    l.pattern_observed.includes('severity rate') &&
-    ['suggestion', 'approved'].includes(l.status)
-  );
-  if (dupe) continue;
+  if (stat.total < 3 || stat.high / stat.total <= 0.5) continue;
+  const pct = Math.round((stat.high / stat.total) * 100);
+  const patternText = `high_severity_rate:${pct}pct_7d`;
+  const dedupeKey = [doc_type, '*', patternText.slice(0, 30)].join('|');
+  if (existingKeys.has(dedupeKey)) continue;
   newLessons.push(makeLesson(
-    'p2', doc_type, '*', '*',
-    `High severity rate ${Math.round(rate*100)}% ใน ${doc_type} (7 วัน, ${stat.total} cases)`,
-    `เอกสาร ${doc_type} มีอัตราความผิดพลาดระดับ high สูงผิดปกติ (${Math.round(rate*100)}%)`,
+    doc_type, '*', '*',
+    patternText,
+    `เอกสาร ${doc_type} มีอัตราความผิดพลาด high severity ${pct}% ใน 7 วัน (${stat.total} cases)`,
     'ทบทวน few-shot examples และ Gemini prompt สำหรับ doc_type นี้โดยด่วน',
-    stat.high, stat.cases.map(c => c.case_id)
+    stat.high, stat.ids
   ));
 }
 
-// --- PATTERN 3: Full OCR failure ≥2 ครั้งต่อ vendor/doc_type ---
+// --- PATTERN 3: Full OCR failure ≥2 per vendor/doc_type ---
 const p3Groups = {};
-for (const c of recent) {
+for (const c of recent30) {
   if (c.root_cause_tag !== 'full_ocr_failure') continue;
-  const key = [c.doc_type, c.vendor_tax_id].join('|');
+  const key = [c.doc_type, c.vendor_tax_id || '*'].join('|');
   if (!p3Groups[key]) p3Groups[key] = [];
-  p3Groups[key].push(c);
+  p3Groups[key].push(c.case_id);
 }
-for (const [key, group] of Object.entries(p3Groups)) {
-  if (group.length < 2) continue;
+for (const [key, ids] of Object.entries(p3Groups)) {
+  if (ids.length < 2) continue;
   const [doc_type, vendor_tax_id] = key.split('|');
-  const dupe = existing.find(l =>
-    l.doc_type === doc_type &&
-    l.vendor_tax_id === vendor_tax_id &&
-    l.pattern_observed.includes('full_ocr_failure') &&
-    ['suggestion', 'approved'].includes(l.status)
-  );
-  if (dupe) continue;
+  const patternText = `full_ocr_failure:${ids.length}x`;
+  const dedupeKey = [doc_type, vendor_tax_id, patternText.slice(0, 30)].join('|');
+  if (existingKeys.has(dedupeKey)) continue;
   newLessons.push(makeLesson(
-    'p3', doc_type, vendor_tax_id, '*',
-    `Full OCR failure ${group.length} ครั้ง สำหรับ vendor ${vendor_tax_id} / ${doc_type}`,
-    `Gemini ไม่สามารถอ่านเอกสาร ${doc_type} ของ vendor ${vendor_tax_id} ได้ถึง ${group.length} ครั้ง`,
-    'ตรวจสอบคุณภาพภาพ/format เอกสาร และพิจารณาเพิ่ม vendor-specific template',
-    group.length, group.map(c => c.case_id)
+    doc_type, vendor_tax_id, '*',
+    patternText,
+    `Gemini ไม่สามารถอ่านเอกสาร ${doc_type} vendor: ${vendor_tax_id} ได้ถึง ${ids.length} ครั้ง`,
+    'ตรวจสอบคุณภาพภาพ/format เอกสาร และพิจารณาเพิ่ม vendor-specific few-shot example',
+    ids.length, ids
   ));
 }
 
-return [{ json: { new_lessons: newLessons, analyzed_at: now, total_cases: cases.length } }];
+return [{ json: { new_lessons: newLessons, analyzed_cases: cases.length, analyzed_at: nowISO } }];
 ```
 
 ---
 
-### Code (Build Telegram Notify)
+### Code (Build Telegram)
 
 ```javascript
-const src = $('Code (Analyze Patterns) Deduplicated').first().json;
+const src = $('Code (Analyze Patterns)').first().json;
 const lessons = src.new_lessons || [];
-const nowThai = () => { /* [SHARED] nowThai block */ };
+
+// [SHARED] nowThai — copy from canonical block in existing Code nodes
+const nowThai = () => {
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 let msg = `*[OCR KM] พบ ${lessons.length} lesson ใหม่ รอ Admin review* 📚\n`;
 msg += `_${nowThai()}_\n\n`;
-for (const l of lessons.slice(0, 5)) { // max 5 ใน notify
-  msg += `• *${l.doc_type}* ${l.vendor_tax_id !== '*' ? `| vendor: ${l.vendor_tax_id}` : ''}\n`;
-  msg += `  ${l.lesson_text}\n`;
-  msg += `  → ${l.suggested_action}\n`;
+for (const l of lessons.slice(0, 5)) {
+  const vendor = l.vendor_tax_id !== '*' ? ` | vendor: ${String(l.vendor_tax_id)}` : '';
+  msg += `• *${String(l.doc_type)}*${vendor}\n`;
+  msg += `  ${String(l.lesson_text)}\n`;
+  msg += `  → ${String(l.suggested_action)}\n`;
   msg += `  evidence: ${l.evidence_count} cases\n\n`;
 }
 if (lessons.length > 5) msg += `_...และอีก ${lessons.length - 5} lessons_\n`;
-msg += `\n[ดู Sheet OCR_KM_LESSONS เพื่อ approve/reject]`;
+msg += '\n[ดู Sheet OCR_KM_LESSONS เพื่อ approve/reject]';
 
 return [{ json: { telegram_text: msg } }];
 ```
 
-**Telegram node:** ใช้ `$json.telegram_text`, chatId: `{{ $env.TELEGRAM_ADMIN_CHAT_ID }}`, `continueOnFail: true`
+---
+
+### Code (Prepare Lesson Rows)
+
+Split the lessons array into individual items for Sheets append:
+
+```javascript
+const src = $('Code (Analyze Patterns)').first().json;
+return (src.new_lessons || []).map(l => ({ json: l }));
+```
 
 ---
 
-### Sheet Headers ที่ต้องสร้าง
-
-**OCR_KM_LESSONS** (row 1 = headers):
+### Sheet: OCR_KM_LESSONS Headers (row 1)
 ```
 lesson_id | created_at | status | doc_type | vendor_tax_id | field_affected | pattern_observed | lesson_text | suggested_action | evidence_count | source_case_ids | approved_by | approved_at | rule_id_ref
 ```
+(14 columns, A1:N1)
 
-**OCR_RULE_CHANGELOG** (row 1 = headers):
+**Note:** OCR_RULE_CHANGELOG tab สร้างด้วยเพื่อ ready สำหรับ T029C แต่ T029B ไม่เขียนข้อมูลลงไป — headers only:
 ```
 change_id | created_at | rule_id | change_type | changed_by | reason | lesson_id_ref | case_id_refs | before_value | after_value
 ```
 
-สร้าง tab ใน Spreadsheet `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0` ผ่าน Google Sheets API (Codex ใช้ n8n REST API — สร้าง 1-node temp workflow หรือ patch existing workflow ได้)
-
-**หรือ:** ใช้ `tmp-workflow` สร้าง headers แล้ว deactivate
-
 ---
 
-### Patch ที่จำเป็น
-
-**ไม่มี** patch ใน existing workflows สำหรับ T029B — เป็น standalone workflow ใหม่ทั้งหมด
-
----
-
-## Security Considerations (required)
+## Security Considerations
 
 > 3 คำถาม:
-> 1. มีจุดรับ input ใหม่: `Webhook (trigger)` — on-demand trigger
-> 2. ไม่มี secret ใหม่ — ใช้ `OCR_SHARED_API_KEY` + `TELEGRAM_ADMIN_CHAT_ID` ที่มีอยู่แล้ว
-> 3. Telegram message: แสดง vendor_tax_id + doc_type — acceptable (internal admin only)
+> 1. Webhook รับ input ใหม่ — x-api-key auth required
+> 2. ไม่มี secret ใหม่ — ใช้ `OCR_SHARED_API_KEY` + `TELEGRAM_ADMIN_CHAT_ID`
+> 3. Telegram message: แสดง vendor_tax_id + doc_type — acceptable (internal admin only), String() cast ทุก field
 
 | จุดเสี่ยง | Mitigation |
 |----------|-----------|
-| Webhook ไม่มี auth | ใช้ x-api-key check เช่นเดียวกับ T029A |
-| Lessons จาก poisoned training data | Dedup + human approve gate ก่อน use ใน T029C |
-| lesson_text injection ใน Telegram | ใช้ String(val) cast ทุก field ก่อน concat |
+| Webhook ไม่มี auth | x-api-key check (Code (Auth + Config) node) |
+| Lessons จาก poisoned/test data | source=manual excluded by default + human approve gate |
+| lesson_text injection | String() cast บน ทุก field ก่อน concat ใน Telegram |
 
-**Required security controls:**
-- [x] Auth บน webhook (x-api-key vs `$env.OCR_SHARED_API_KEY`)
-- [x] No runtime effect (status=suggestion เท่านั้น)
-- [x] `continueOnFail: true` บน Telegram + Sheets side calls
-- [x] Error response ไม่ส่ง internal details
+**Required controls:**
+- [x] Auth บน webhook
+- [x] No runtime effect (status=suggestion)
+- [x] `continueOnFail: true` บน Sheets + Telegram
+- [x] Error ไม่ส่ง internal details
 
 ---
 
 ## Discussion
 
-_Codex: เพิ่ม concerns / ข้อสงสัย / alternative approach ที่นี่ **ก่อน implement**_
+**Codex Discussion สรุป (2026-02-25):**
+- ✅ Timezone fixed: `0 23 * * *` UTC
+- ✅ Sheet creation: Sheets API direct (not temp workflow)
+- ✅ source=manual: excluded by default
+- ✅ P1 field_affected: ใช้ root_cause_tag value (not actual field) — acceptable ตาม scope TRAIN_CASES only
+- ✅ FIELD_DIFFS: ไม่อ่านใน T029B (defer)
+- ✅ RULE_CHANGELOG: headers only ใน T029B, data written ใน T029C
+- ✅ Dedup: inside Analyze node, no separate Deduplicate node
+- ✅ Timestamp: `new Date().getTime()` comparisons
+- ✅ P1/P3 overlap: excluded `full_ocr_failure` จาก P1
+- ✅ Error handling: `continueOnFail` → 200 graceful (ไม่ 500)
 
-Key questions to consider before implementing:
-1. n8n timezone: ตรวจสอบว่า `GENERIC_TIMEZONE` เป็น `Asia/Bangkok` ไหม — ถ้าไม่ใช่ cron `0 6 * * *` จะ fire เวลาผิด
-2. Sheet tab creation: ถ้า tab ยังไม่มี → Sheets Append จะ error — ต้องสร้าง tab + headers ก่อน
-3. TRAIN_CASES อาจมี test data จาก T029A development (source=manual) — consider filter ออกหรือไม่?
+_No open concerns — proceeding to implement_
 
 ---
 
@@ -300,21 +374,22 @@ Key questions to consider before implementing:
 ### Happy Path
 | # | Test | Method | Expected |
 |---|------|--------|----------|
-| T1 | Trigger on-demand webhook ด้วย valid key | curl POST /webhook/ocr-km-suggest + x-api-key | 200, `{"ok":true}` |
-| T2 | Pattern 1 triggers | ต้องมี ≥3 cases same vendor+doc_type+tag ใน TRAIN_CASES | 1+ lessons ใน OCR_KM_LESSONS |
-| T3 | OCR_KM_LESSONS row written correctly | อ่าน Sheet หลัง trigger | row มี lesson_id, status=suggestion, evidence_count≥3 |
-| T4 | OCR_RULE_CHANGELOG row written | อ่าน Sheet | row มี change_type=suggestion_created |
-| T5 | Telegram sent | Telegram bot | admin chat ได้ message summary |
-| T6 | Dedup works | trigger 2 ครั้งติดกัน | ไม่มี duplicate lesson ใน sheet |
-| T7 | No data → graceful | trigger เมื่อ TRAIN_CASES ว่าง | 200, `{"ok":true,"new_lessons":0}` |
+| T1 | Trigger on-demand webhook | curl POST /webhook/ocr-km-suggest + x-api-key | 200, `{"ok":true}` |
+| T2 | Pattern 1 triggers (if TRAIN_CASES has ≥3 cases same vendor+tag) | trigger | ≥1 lesson row in OCR_KM_LESSONS |
+| T3 | OCR_KM_LESSONS row structure correct | อ่าน Sheet หลัง trigger | lesson_id, status=suggestion, evidence_count filled |
+| T4 | Telegram sent | Telegram bot | admin ได้ message summary |
+| T5 | Dedup works | trigger 2 ครั้งติดกัน | ไม่มี duplicate lesson |
+| T6 | No matching pattern → graceful | trigger with empty/no-pattern cases | 200, `{"ok":true,"new_lessons":0}` |
+| T7 | Schedule trigger works | wait for 23:00 UTC OR manual test via webhook | workflow runs |
 
 ### Failure / Security / Edge Cases
 | # | Test | Expected |
 |---|------|----------|
-| T8 | Wrong API key | 401 |
-| T9 | Telegram down | `continueOnFail` — lessons still written to sheet |
-| T10 | Sheets API error | log error, 500 response but no crash |
-| T11 | All cases have root_cause_tag=no_diff | 0 lessons generated |
+| T8 | Wrong API key | 401 response |
+| T9 | Telegram down | `continueOnFail` — lessons still written to sheet, 200 |
+| T10 | Sheets write error | `continueOnFail` — workflow returns 200 with note, lesson may not persist |
+| T11 | source=manual cases only | 0 lessons generated (filtered out) |
+| T12 | include_manual=true flag | manual cases included in pattern analysis |
 
 ---
 
@@ -322,20 +397,21 @@ Key questions to consider before implementing:
 
 **Implemented:**
 - [ ] `ocr-km-suggest` workflow active
-- [ ] `Webhook (trigger)` node มี webhookId UUID
-- [ ] OCR_KM_LESSONS sheet tab สร้างแล้ว พร้อม headers ครบ
-- [ ] OCR_RULE_CHANGELOG sheet tab สร้างแล้ว พร้อม headers ครบ
-- [ ] Pattern 1, 2, 3 implemented ใน Code node
-- [ ] Dedup check implemented
-- [ ] Telegram notify implemented
+- [ ] `Webhook (trigger)` มี webhookId UUID
+- [ ] OCR_KM_LESSONS sheet tab สร้างแล้ว + headers row 1 ครบ 14 columns
+- [ ] OCR_RULE_CHANGELOG sheet tab สร้างแล้ว + headers row 1 (empty data — T029C จะเขียน)
+- [ ] Code (Analyze Patterns): P1 + P2 + P3 + dedup implemented
+- [ ] source=manual filter implemented
+- [ ] Telegram notify implemented with continueOnFail
 
 **Verified from system (required):**
 - [ ] GET /rest/workflows แสดง ocr-km-suggest, active=true
-- [ ] Webhook ตอบ 401 เมื่อไม่มี key
-- [ ] อย่างน้อย 1 lesson row ใน OCR_KM_LESSONS (ถ้า TRAIN_CASES มี data พอ)
+- [ ] Webhook 401 เมื่อ key ผิด
+- [ ] Webhook 200 เมื่อ key ถูก
+- [ ] OCR_KM_LESSONS tab exists in spreadsheet (check via Sheets API)
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — trigger on-demand → lessons written → Telegram sent
+- [ ] Exec ID: `_______` — on-demand trigger → (lessons written if data qualifies OR new_lessons=0) → response OK
 
 **Docs synced:**
 - [ ] HANDOFF.md updated
