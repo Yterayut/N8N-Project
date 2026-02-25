@@ -21,11 +21,25 @@
 
 ## Agent Roles
 
-- **Claude Code** = Planner + Manager + Executor (complex tasks) + Verifier (review Codex output)
+- **Claude Code (CC)** = Planner + Manager + Executor (complex tasks) + Verifier (review all agent output)
 - **Codex** = Executor (Async) — receives well-defined specs, executes assigned tasks
+- **GG (Gemini)** = Intelligence Layer (Async) — analyzes data, generates proposals, async only
 - Before assigning a task to Codex, must have a clear spec at `docs/collab/tasks/T0xx-*.md`
 - Codex CAN: patch n8n via REST API, read/write SQLite, run bash scripts
-- Communication: via `docs/collab/tasks/` + `docs/collab/HANDOFF.md`
+- GG CAN: long-context analysis, multimodal (PDF/image), knowledge synthesis, spec drafting
+- GG CANNOT: be in real-time OCR path, deploy to production directly, bypass CC review
+- Communication: CC↔Codex via `docs/collab/tasks/` + `HANDOFF.md` | CC↔GG via `scripts/gg/` + `docs/gg/`
+- GG Identity: `docs/collab/GG.md`
+
+### GG Roles (active)
+| Role | Script | Trigger | Output |
+|------|--------|---------|--------|
+| C — Knowledge Synthesizer | `gg-synthesize.sh` | Cron Mon 08:00 | `docs/gg/proposals/` |
+| E — Ground Truth Generator | `gg-groundtruth.sh <pdf>` | On-demand | `docs/gg/proposals/` |
+| G — Prompt Engineer | `gg-prompt-engineer.sh` | Cron daily + error spike | `docs/gg/proposals/` |
+| I — Spec Drafter | `gg-spec-draft.sh "<req>"` | On-demand | `docs/collab/tasks/DRAFT-*` |
+| J — OCR Validator | `gg-validate.sh <pdf> <json>` | After OCR batch | `docs/gg/reports/` |
+| O — Data Curator | `gg-curate.sh` | Cron Sun 23:00 | `docs/gg/reports/` |
 
 ---
 
