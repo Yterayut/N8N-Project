@@ -23,12 +23,20 @@ HANDOFF_SUMMARY=$(head -80 "$PROJECT_DIR/docs/collab/HANDOFF.md" 2>/dev/null || 
 RECENT_TASKS=$(ls "$PROJECT_DIR/docs/collab/tasks/"*.md 2>/dev/null | tail -5 | xargs cat 2>/dev/null || echo "")
 TEMPLATE=$(cat "$PROJECT_DIR/docs/collab/reviews/_TEMPLATE.md" 2>/dev/null || echo "")
 
+# โหลด spec guidelines (CC feedback สะสม — สอน GG pattern ที่ถูกต้อง)
+SPEC_GUIDELINES=$(cat "$PROJECT_DIR/docs/gg/spec-guidelines.md" 2>/dev/null || echo "")
+
 # หา task ID ถัดไป
 LAST_TASK_ID=$(ls "$PROJECT_DIR/docs/collab/tasks/T"*.md 2>/dev/null | grep -oP 'T\d+' | sort | tail -1 || echo "T031")
 NEXT_ID=$(echo "$LAST_TASK_ID" | python3 -c "import sys; t=sys.stdin.read().strip(); print(f'T{int(t[1:])+1:03d}')" 2>/dev/null || echo "T032")
 
-PROMPT="You are Claude Code (CC), the planning agent for an n8n OCR automation system.
-Your job: write a detailed implementation spec for a new task.
+PROMPT="You are GG (Gemini), the intelligence agent for an n8n OCR automation system.
+Your job: write a detailed implementation spec for a new task that Claude Code (CC) will review.
+
+## MANDATORY RULES — READ BEFORE WRITING ANYTHING
+$SPEC_GUIDELINES
+
+---
 
 ## System Context
 This is an n8n-based OCR invoice processing system with:
@@ -44,6 +52,8 @@ $HANDOFF_SUMMARY
 \"$REQUIREMENT\"
 
 ## Task: Write spec file for task ID $NEXT_ID
+
+IMPORTANT: Start your response with \`# $NEXT_ID\` immediately. No preamble. No reasoning. No \"I will...\". Pure markdown spec only.
 
 Follow this structure exactly:
 \`\`\`markdown
@@ -86,8 +96,16 @@ Follow this structure exactly:
 | T1 | | | |
 
 ## Definition of Done
-- [ ] [specific verifiable criteria]
-- [ ] HANDOFF.md updated
+
+**Implemented:**
+- [ ] [specific build criteria]
+
+**Verified:**
+- [ ] [specific test that must pass]
+- [ ] [if webhook: webhookId UUID บน webhook node (PATTERN-008)]
+
+**Docs:**
+- [ ] HANDOFF.md อัปเดต (ถ้ามี workflow ใหม่)
 
 ## Discussion
 *(for Codex pre-execution questions)*
@@ -96,7 +114,8 @@ Follow this structure exactly:
 Important:
 - Be specific enough that Codex can implement without asking questions
 - Include all n8n node names, webhook paths, sheet names that are relevant
-- Mention patterns from n8n-patterns.md if applicable"
+- Apply ALL rules from the MANDATORY RULES section above
+- When in doubt about a CLI flag or API — leave a note in Discussion instead of guessing"
 
 # Run GG
 log "Running Gemini spec drafting..."
