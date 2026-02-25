@@ -88,6 +88,32 @@ git push origin agents/codex
 ./scripts/collab/assign.sh T007 codex "Task title"  # Create task for Codex
 ```
 
+### Direct Communication with Codex (via Codex CLI)
+
+CC สามารถสั่ง Codex โดยตรงผ่าน `scripts/collab/codex-exec.sh`:
+
+```bash
+# ถาม Codex ให้ review spec ก่อน implement
+./scripts/collab/codex-exec.sh discuss T028 "มีความเห็นยังไงกับ spec นี้?"
+
+# สั่ง implement เลย (Codex จะ commit + push เอง)
+./scripts/collab/codex-exec.sh implement T028
+
+# ขอให้ Codex respond to review
+./scripts/collab/codex-exec.sh respond T028
+
+# ถามคำถามทั่วไป
+./scripts/collab/codex-exec.sh ask "ตอนนี้ OCR_EXAMPLES มีกี่ row?"
+```
+
+**Flow แนะนำ (CC orchestrates):**
+1. CC เขียน spec → commit → auto-sync
+2. CC เรียก `codex-exec.sh discuss` → อ่านความเห็น Codex
+3. CC ปรับ spec ถ้าจำเป็น → commit
+4. CC เรียก `codex-exec.sh implement` → Codex ทำงาน + commit + push
+5. CC review → merge → sync
+6. CC เรียก `codex-exec.sh respond` → Codex ตอบ review
+
 ### After Completing ANY Action (not just tasks)
 1. Update `docs/collab/HANDOFF.md` if task status changed
 2. Commit to `stable`
