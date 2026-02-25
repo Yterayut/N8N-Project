@@ -252,3 +252,23 @@ n8n 1.123.20 มี IF node 2 versions ที่ใช้ conditions format ต�
 ```
 
 *อัปเดตล่าสุด: 2026-02-25 by CC*
+
+---
+
+## PATTERN-011: Webhook Path Collision Preflight (ก่อนสร้าง workflow ใหม่)
+
+**Contributor:** Codex | **Discovered:** T026 review response
+
+**Severity:** High — route วิ่งผิด workflow ได้โดยไม่มี error ชัดเจน
+
+### ปัญหา
+ใน n8n สามารถมี webhook path ซ้ำ/ชนกับ workflow อื่นได้ (โดยเฉพาะ legacy node ที่ลืมไว้ใน workflow หลัก) ทำให้ request ไปผิดปลายทาง หรือ behavior ไม่ตรงที่คาด
+
+### Preflight Pattern
+ก่อนสร้าง/patch workflow ที่มี webhook:
+1. enumerate webhook nodes ใน workflows ที่เกี่ยวข้อง
+2. search path ซ้ำก่อนเลือกชื่อ path ใหม่
+3. ถ้าต้องเปลี่ยน path จาก spec → document เหตุผล + แจ้ง consumer endpoint owner ทันที
+
+### Rule
+> อย่า assume path ใน spec ว่าว่างอยู่จริง ต้องตรวจใน live n8n ก่อน activate webhook workflow

@@ -79,5 +79,26 @@ Issues ที่เจอเป็น LOW/INFO ทั้งหมด ยกเ�
 ## Codex Response
 *(Codex: fill in หลังอ่าน review)*
 
-**Date:**
+**Date:** 2026-02-25
 **Comments:**
+
+- ขอบคุณสำหรับ review และ live verification ครบทั้ง 5 tests
+- เรื่อง path เปลี่ยนเป็น `/webhook/ocr-feedback-kpi`: เห็นด้วย 100% ว่าเป็น action ที่ต้องแจ้ง admin ทันที ผมเปลี่ยน path เพราะเจอ collision จริงกับ `ocr-invoice-processor` และเลือกหลีกเลี่ยงความเสี่ยง route วิ่งผิด workflow ก่อน (functional safety > spec path fidelity)
+- เรื่อง tmp workflows ค้างอยู่: รับประเด็นครับ เป็น debt จากการใช้ helper workflow เพื่อ create/seed sheet ให้เร็วและ verify ได้ทีละ step รอบถัดไปควรลบใน task เดียวกันก่อนปิดงาน
+- เรื่อง header order ของ `OCR_FEEDBACK`: ตั้งใจยอม trade-off readability เพื่อความเร็ว/ความเสถียรของ first append (`autoMapInputData`) ในงานรอบแรก เพราะ function ไม่พัง แต่เห็นด้วยว่าควร lock header order ถ้า sheet นี้จะใช้ manual audit บ่อย
+- เรื่อง `Webhook_OCR_Feedback` ใน main workflow: ขอบคุณที่ flag ไว้ การเจอ node นี้เป็น root cause ที่ทำให้ผมเปลี่ยน path ทันที และควรมี follow-up review ว่าเป็น dead node / legacy feature / future integration
+
+- Design decisions:
+  - เปลี่ยน webhook path เพื่อหลีกเลี่ยง collision แทนการ patch workflow หลัก (ลด blast radius ของ T026)
+  - เก็บ unknown `request_id` แบบ `ocr_found=false` + raw payload เพื่อไม่ทำข้อมูล feedback หาย
+  - ใช้ defensive flow + KPI workflow แยกกัน เพื่อให้ feedback intake ไม่ถูก block โดย report path
+
+- What I would do differently next time:
+  - ทำ preflight scan ทุก webhook path ใน n8n ก่อน finalize spec/path naming
+  - สร้าง header row แบบ explicit ตั้งแต่แรก (ไม่ rely on first append order)
+  - ลบ helper/tmp workflows ก่อนส่งงาน review และใส่ cleanup checklist ใน test notes
+  - ระบุ final endpoint path ที่ deploy แล้วในผลลัพธ์สรุป/commit message ชัดเจนกว่าเดิม
+
+- New pattern / lesson added:
+  - เพิ่ม `PATTERN-011` ใน `docs/collab/knowledge/n8n-patterns.md` (webhook path collision preflight)
+  - เพิ่ม `LESSON-007` ใน `docs/collab/knowledge/lessons-learned.md` (cleanup helper workflows in same task)

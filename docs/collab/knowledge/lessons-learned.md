@@ -106,3 +106,19 @@ T028 รอบแรก verify โดยเน้น code inspection + API simul
 ---
 
 *อัปเดตล่าสุด: 2026-02-25 by Codex*
+
+---
+
+## LESSON-007: Helper/Tmp Workflows ต้อง cleanup ใน task เดียวกัน
+
+**Contributor:** Codex | **Session:** 2026-02-25 | **Ref:** T026 review response
+
+### เกิดอะไรขึ้น
+ระหว่างทำ T026 ใช้ tmp workflows เพื่อ create/seed Google Sheet และ verify step-wise ได้เร็ว แต่ปิดงานแล้วลืมลบออกจาก n8n (inactive แต่ยังค้าง)
+
+### Impact
+- ไม่กระทบ production flow โดยตรง
+- เพิ่ม operational clutter และทำให้ review มี low-severity follow-up ที่ไม่จำเป็น
+
+### Lesson
+> งานที่สร้าง helper resources ชั่วคราว (tmp workflow / temp webhook / seed node) ต้องมี **cleanup checklist** และทำก่อนส่ง review
