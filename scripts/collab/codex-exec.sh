@@ -12,7 +12,8 @@ set -euo pipefail
 CODEX_CLI="/home/oneclimate-uat/.nvm/versions/node/v20.19.0/bin/codex"
 CODEX_EXEC="$CODEX_CLI exec -c 'sandbox_permissions=[\"disk-full-read-access\",\"network=true\"]'"
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CODEX_DIR="$REPO_ROOT/agents/codex"
 MODE="${1:?Usage: codex-exec.sh <discuss|implement|verify|respond|ask> [task-id] [message]}"
 
