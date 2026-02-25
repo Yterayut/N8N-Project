@@ -251,8 +251,6 @@ n8n 1.123.20 มี IF node 2 versions ที่ใช้ conditions format ต�
 }
 ```
 
-*อัปเดตล่าสุด: 2026-02-25 by CC*
-
 ---
 
 ## PATTERN-011: Webhook Path Collision Preflight (ก่อนสร้าง workflow ใหม่)
@@ -272,3 +270,38 @@ n8n 1.123.20 มี IF node 2 versions ที่ใช้ conditions format ต�
 
 ### Rule
 > อย่า assume path ใน spec ว่าว่างอยู่จริง ต้องตรวจใน live n8n ก่อน activate webhook workflow
+
+---
+
+## PATTERN-012: Multi-step Telegram Training State via `workflow staticData`
+
+**Contributor:** Codex | **Discovered:** T027/T028 follow-up
+
+### Use case
+Workflow Telegram training ที่ต้องทำหลาย step:
+- ผู้ใช้ส่งไฟล์ -> OCR preview
+- ผู้ใช้ตอบ `confirm` / `correct` ภายหลัง
+- command รอบหลังต้องอ้างอิง OCR result รอบก่อน
+
+### Pattern
+เก็บ state ชั่วคราวเป็น `pending_train` ใน workflow static data หลังส่ง preview:
+```javascript
+const sd = $getWorkflowStaticData('global');
+sd.pending_train = {
+  request_id,
+  chat_id,
+  ocr_result,
+  created_at: new Date().toISOString(),
+};
+```
+
+แล้ว node command handler (`confirm` / `correct`) โหลด state นี้มาใช้สร้าง payload `action=create` ไป API
+
+### Guardrails
+- ถ้าไม่พบ `pending_train` -> return `_no_api` พร้อม reason (`no_pending`) แทน call API แบบ invalid
+- ลบ state เฉพาะหลัง downstream create สำเร็จ (`ok=true`) เพื่อลด risk data loss
+- ถ้ามีหลาย chat/operator พร้อมกัน ให้ key state ตาม `chat_id` (ไม่ใช้ key เดียว global)
+
+---
+
+*อัปเดตล่าสุด: 2026-02-25 by Codex*

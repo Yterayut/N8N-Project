@@ -105,11 +105,24 @@ T028 รอบแรก verify โดยเน้น code inspection + API simul
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-25 by Codex*
+## LESSON-007: Seed data สำหรับ Google Sheets ต้อง idempotent
+
+**Contributor:** Codex | **Session:** 2026-02-25 | **Ref:** T027 review
+
+### เกิดอะไรขึ้น
+Review พบ `OCR_EXAMPLES` มี seed row `ex_seed_001` ซ้ำ 2 แถว ซึ่งชี้ว่า seed logic ถูกรันซ้ำได้โดยไม่มี guard
+
+### Lesson
+> งาน seed/init ที่รันซ้ำได้ (Sheets/DB) ต้องออกแบบให้ **idempotent** ตั้งแต่แรก
+
+แนวทาง:
+- ใช้ stable key (`example_id`) แล้วเช็คก่อน insert
+- หรือใช้ upsert pattern (ถ้า backend รองรับ)
+- log ว่า `seed inserted` vs `seed already exists` เพื่อ debug ได้ง่าย
 
 ---
 
-## LESSON-007: Helper/Tmp Workflows ต้อง cleanup ใน task เดียวกัน
+## LESSON-008: Helper/Tmp Workflows ต้อง cleanup ใน task เดียวกัน
 
 **Contributor:** Codex | **Session:** 2026-02-25 | **Ref:** T026 review response
 
@@ -122,3 +135,7 @@ T028 รอบแรก verify โดยเน้น code inspection + API simul
 
 ### Lesson
 > งานที่สร้าง helper resources ชั่วคราว (tmp workflow / temp webhook / seed node) ต้องมี **cleanup checklist** และทำก่อนส่ง review
+
+---
+
+*อัปเดตล่าสุด: 2026-02-25 by Codex*

@@ -129,46 +129,53 @@ Codex พบปัญหาสำคัญที่ spec ไม่ได้ค�
 ---
 
 ## Codex Response
-### T028 Follow-up Completed (Codex, 2026-02-25)
+### Response to Review (Codex, 2026-02-25)
 
-รับ review แล้ว และ patch ประเด็น `[HIGH]` ของ Path 2 ใน workflow `ocr-training` (`KW0QRXxRh9MjdPaY`) ผ่าน n8n REST API เรียบร้อย
+รับ review แล้ว และนำประเด็น `[HIGH]` ไปทำ follow-up ใน T028 (workflow `ocr-training` / `KW0QRXxRh9MjdPaY`) ผ่าน n8n REST API เรียบร้อย
 
-#### สิ่งที่แก้จริง
-1. **Store `pending_train` state หลัง OCR preview**
-   - patch `Code node: Build OCR Preview Reply`
-   - เก็บ `pending_train` ลง workflow static data (`global`) พร้อม:
-     - `request_id`, `document_id`, `doc_type`
-     - `drive_file_id`
-     - `ocr_response`
-     - `ocr_result` (payload base สำหรับ `ocr-examples-api`)
+### Response to Issues Raised
 
-2. **รองรับ command `confirm` / `correct` ให้สร้าง example จริง**
-   - patch `Code node: Build Examples API Command`
-   - ถ้า `confirm` / `correct`:
-     - โหลด `pending_train`
-     - สร้าง `action=create`
-     - `active=true`, `source=manual_training`, `approved_by=user`
-     - ใช้ OCR bills จาก pending เป็น `gold_json`
-     - `correct` รองรับแก้ field หลักบน bill แรก และ `item_*` (line item แรก)
+1. **[HIGH] Test 5 PARTIAL (`confirm` / `correct` ไม่สร้าง OCR_EXAMPLES)**
+   - ยืนยัน root cause ถูกต้องตาม review
+   - แก้แล้วใน T028 โดย:
+     - เก็บ `pending_train` หลัง OCR preview
+     - map `confirm` / `correct` เป็น `action=create` ไป `ocr-examples-api`
+     - clear `pending_train` เมื่อ create สำเร็จ
+   - post-review update: manual Telegram E2E (T5e) ผ่านจริงแล้ว (`exec 151539`) และ Path 2 `confirm` flow บันทึก example ได้ตาม intended behavior
+   - สถานะเชิงปฏิบัติการของ Test 5 ควรถือเป็น `✅ PASS` (อ้างอิง `docs/collab/reviews/T028-review.md`)
 
-3. **Clear `pending_train` หลัง create สำเร็จ**
-   - patch `Code node: Build Command Reply`
-   - เมื่อ `confirm/correct` + `ocr-examples-api` ตอบ `ok=true`:
-     - `delete staticData.pending_train`
-     - ตอบ Telegram ว่า `✅ บันทึก example สำเร็จ (...)`
+2. **[LOW] Duplicate seed row `ex_seed_001`**
+   - ยืนยันว่าเป็นปัญหา data seeding/idempotency ไม่ใช่ core workflow logic
+   - ยังไม่ได้ลบ/cleanup ในรอบนี้เพราะ scope ของงาน response/follow-up เน้น Path 2 behavior
+   - เห็นด้วยว่าควรแก้ โดยทำ seed ให้ idempotent (เช็ค `example_id` ก่อน insert)
 
-#### Verification (Codex)
-- patch applied via `/rest/workflows/KW0QRXxRh9MjdPaY` และ re-fetch ตรวจ node code แล้ว
-- ตรวจ token สำคัญใน code ครบ:
-  - `pending_train` store
-  - `confirm/correct` -> `action:'create'`
-  - `delete staticData.pending_train`
-- รัน `./scripts/verify_nowThai_sync.sh` ผ่าน (ตาม golden rule)
+3. **[INFO] Compat proxy**
+   - เห็นด้วยกับข้อสรุป reviewer
+   - การทำ proxy non-CRUD actions ไป `8787` เป็นการรักษา backward compatibility ที่จำเป็น เพราะ `OCR_FEEDBACK_API_URL` ถูกใช้หลาย action มากกว่าที่ spec ระบุ
 
-#### Remaining limitation (still true)
-- ยังไม่ได้รัน **manual Telegram end-to-end** (ส่งไฟล์ → OCR preview → พิมพ์ `ถูก` / `แก้ ...`) ใน session นี้
-- ดังนั้น Test 5 จาก T027 review ควรยกระดับจาก `PARTIAL` เป็น **Implemented + pending manual verification**
+### Design Decisions (Why)
 
-#### Note on Scope
-- ไม่มีไฟล์ spec `T028` ใน `docs/collab/tasks/` ตอนเริ่มงานนี้
-- ใช้ `docs/collab/reviews/T027-review.md` เป็น fallback scope source สำหรับ follow-up patch ตามข้อ `[HIGH]`
+1. **ใช้ workflow `staticData` สำหรับ `pending_train`**
+   - เหมาะกับ flow แบบ multi-step ใน Telegram (preview -> confirm/correct)
+   - ไม่ต้องเพิ่ม external store ใหม่สำหรับ state ชั่วคราว
+   - ข้อจำกัดที่ยอมรับ: implementation นี้ assume usage หลักเป็น admin/single operator
+
+2. **`confirm` / `correct` สร้าง example แบบ `active=true` ทันที**
+   - Path 2 เป็น manual training จาก operator โดยตรง
+   - ตั้งใจให้ bypass pending approval loop ของ Path 1
+
+3. **clear state เฉพาะหลัง API create สำเร็จ**
+   - ป้องกัน data loss ถ้า `ocr-examples-api` fail
+   - user ยัง retry command เดิมได้จาก `pending_train` เดิม
+
+### What I Would Do Differently Next Time
+
+1. รัน Telegram E2E smoke test ให้เร็วขึ้น (ไม่รอหลัง code inspection/API simulation)
+2. ทำ seed data ให้ idempotent ตั้งแต่รอบแรกเพื่อลด duplicate rows
+3. ถ้า follow-up เกิน patch เล็ก ควรเปิด spec/task file ใหม่ก่อนเริ่ม (ไม่ใช้ review file เป็น scope source นานเกินไป)
+
+### New Patterns / Lessons Learned
+
+- เพิ่ม pattern เรื่องใช้ `workflow staticData` สำหรับ conversational pending state ใน `docs/collab/knowledge/n8n-patterns.md`
+- เพิ่ม lesson เรื่อง seed rows ต้อง idempotent ใน `docs/collab/knowledge/lessons-learned.md`
+- Note on scope: รอบ follow-up นี้เริ่มจาก review เพราะยังไม่มี `docs/collab/tasks/T028-*.md`; ถ้ารอบหน้า scope ใหญ่ขึ้นจะทำ task file ก่อน
