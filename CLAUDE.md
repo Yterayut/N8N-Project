@@ -128,12 +128,28 @@ CC สามารถสั่ง Codex โดยตรงผ่าน `scripts/
 5. CC review → merge → sync
 6. CC เรียก `codex-exec.sh respond` → Codex ตอบ review
 
-### Context Limit Protocol (MANDATORY)
-- **ถ้า context left < 20%:**
-  1. รัน `/forward` ทันที
-  2. **หยุดทุกงานทันที** — ห้ามทำงานต่อ
-  3. แจ้ง user ว่า forward เสร็จแล้ว
-  4. User จะเปิด session ใหม่แล้วรัน `/recap` เอง
+### Context Continuity Protocol — 3 Levels (MANDATORY)
+
+#### ระดับ 1 — Milestone Checkpoint (ทุกครั้งที่จบ milestone)
+หลังจบงานแต่ละก้อน (task เสร็จ / decision สำคัญ / spec พร้อม) ให้ CC update `.claude/FORWARD.md` ย่อๆ ทันที:
+```
+## Last Checkpoint — <time>
+- ✅ ทำอะไรเสร็จ
+- 🔄 กำลังทำอะไรอยู่
+- ⏭️ ถัดไปคือ
+```
+ไม่ต้อง full /forward — แค่ 3 บรรทัดพอ เพื่อให้ session ใหม่ resume ได้ทันที
+
+#### ระดับ 2 — Full Forward (context < 25%)
+- CC แจ้ง user ทันทีและรัน `/forward` โดยไม่ต้องรอ user สั่ง
+- **หยุดทุกงานทันทีหลัง /forward** — ห้ามเริ่มงานใหม่
+- แจ้ง user ว่า "Forward เสร็จแล้ว — กรุณาเปิด session ใหม่"
+- User เปิด session ใหม่แล้วรัน `/recap` เอง — CC ไม่ต้องสั่ง
+
+#### ระดับ 3 — Assign Execution (งาน execution ยาว)
+- งานที่ใช้เวลานาน → assign Codex หรือ GG เสมอ
+- CC ทำแค่: plan + spec + review — ไม่ execute เอง
+- Codex/GG ไม่มี context limit → งาน execution ไม่กิน CC context
 
 ### After Completing ANY Action (not just tasks)
 1. Update `docs/collab/HANDOFF.md` if task status changed
