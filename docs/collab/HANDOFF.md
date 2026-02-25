@@ -359,6 +359,11 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 09:09 | sync | all | auto-sync |
+| 2026-02-25 09:00 | sync | all | auto-sync |
+| 2026-02-25 08:26 | sync | codex | auto-sync |
+| 2026-02-25 07:45 | sync | all | auto-sync |
+| 2026-02-25 07:45 | sync | all | auto-sync |
 | 2026-02-25 06:50 | sync | all | auto-sync |
 | 2026-02-25 06:36 | sync | all | auto-sync |
 | 2026-02-25 06:34 | sync | all | auto-sync |
