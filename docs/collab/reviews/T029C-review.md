@@ -35,7 +35,7 @@
 | RUNTIME_RULES sheet | inspect spreadsheet | header + rr_test_inactive_001 row | ✅ |
 | nowThai sync | `./scripts/verify_nowThai_sync.sh` | PASS | ✅ |
 | webhookId on rules-reader | code inspection | webhookId UUID present (PATTERN-008) | ✅ |
-| flag=true path | — | **NOT TESTED** — requires env restart | ⚠️ |
+| flag=true path | T031 live smoke (forced IF=true via REST patch, no restart) | exec `151793`: IF true branch + `HTTP GET ocr-rules-reader` ran + `rules_engine='applied'`; restore exec `151800` flag=false bypass. Note: `field_default` mutation not observed because `Code (Apply Runtime Rules)` received `bills=[]` while `bills_count=3` | ✅ |
 
 ---
 
@@ -110,7 +110,7 @@ _Checklist ที่ตรวจ:_
 | flag=false = IF node (not code check) | Cleaner, no Sheets call at all | ถ้า env var ตั้ง wrong case → might not match; `.toLowerCase()` covers this |
 | Separate ocr-rules-reader workflow | Testable + replaceable แยก | HTTP latency เพิ่ม ~50-200ms ตอน flag=true |
 | continueOnFail → empty rules | Graceful degradation | ถ้า Sheets ล่มตอน flag=true → rules=[] → OCR ยังทำงาน แต่ไม่ apply rules (silent) |
-| flag=true path not E2E tested | Can't disrupt live n8n | Must test before first human enable |
+| flag=true path E2E smoke done (T031) | REST patch IF=true avoids restart | Rule-read/apply path verified; separate follow-up needed for `bills=[]` vs `bills_count` runtime payload inconsistency |
 
 ---
 
@@ -120,11 +120,11 @@ _Checklist ที่ตรวจ:_
 
 หมายเหตุ:
 - flag=false path ทำงานถูกต้อง 100% — zero risk ต่อ production ปัจจุบัน
-- flag=true path test ยังค้างอยู่ แต่ acceptable เพราะ require human enable อยู่แล้ว
+- flag=true path smoke test ถูกทำแล้วใน T031 (forced IF=true via REST patch + restore)
 - field_format incomplete แต่ไม่ crash และยังไม่มี use case จริง
 
 **ก่อน enable `OCR_RUNTIME_RULES_ENABLED=true` ในอนาคต ต้องทำ:**
-- [ ] Manual test flag=true path + verify `rules_engine: 'applied'` ใน output
+- [x] Manual test flag=true path + verify `rules_engine: 'applied'` ใน output *(T031 exec `151793`; forced IF=true via REST patch)*
 - [ ] มี ≥1 approved rule ใน RUNTIME_RULES sheet
 - [ ] Implement field_format ถ้ามี rule type นี้
 
