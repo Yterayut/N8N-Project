@@ -78,23 +78,20 @@ Claude review → merge → sync all
 ### In Progress (CC)
 _(none)_
 
-### In Progress (CC)
-_(none)_
-
 ### In Progress (Codex)
 _(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029B-patch | Fix P2/P3 dedup key (strip count from pattern_observed) | Codex | T029B review |
 | T029D | Benchmark Runner | Codex | T029A + ground truth data |
-| T029C | Runtime Rules (highest risk) | Codex | T029B-patch + T029D |
+| T029C | Runtime Rules (highest risk) | Codex | T029D |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
-| T029B | KM Suggestion — ocr-km-suggest workflow | Codex | 2026-02-25 | 7.5/10 — APPROVED WITH CONDITIONS; workflow `NkKd02QyzLRcpIJM` active; review at `docs/collab/reviews/T029B-review.md` |
+| T029B-patch | Fix P2/P3 dedup key in ocr-km-suggest | CC | 2026-02-25 | — exec 151689 success |
+| T029B | KM Suggestion — ocr-km-suggest workflow | Codex | 2026-02-25 | 7.5/10 — APPROVED; workflow `NkKd02QyzLRcpIJM` active |
 | T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
 | T027 | OCR Learning Loop Path1+Path2 | Codex | 2026-02-25 | 7.5/10 |
@@ -236,6 +233,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 16:01 | sync | all | auto-sync |
+| 2026-02-25 16:01 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
