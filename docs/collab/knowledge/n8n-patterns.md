@@ -158,4 +158,97 @@ Node ที่ optional (ไม่ critical ต่อ main flow) เช่น Go
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-24 by CC*
+---
+
+## PATTERN-008: Telegram Trigger webhookId Required (n8n REST API)
+
+**Contributor:** CC | **Discovered:** T028 T5e real Telegram test
+
+**Severity:** High — webhook returns 404 silently, no error in n8n
+
+### ปัญหา
+เมื่อสร้าง workflow ที่มี Telegram Trigger ผ่าน REST API (PATCH/POST) โดยไม่ระบุ `webhookId`:
+- n8n ลงทะเบียน webhook URL แบบ path-based: `/webhook/{workflowId}/telegram trigger/webhook`
+- URL นี้ return 404 เมื่อ Telegram ส่ง update มา
+- ไม่มี error log ใน n8n — message ถูก drop เงียบๆ
+
+### Fix
+ต้องใส่ `webhookId` UUID ใน Telegram Trigger node เสมอ:
+```json
+{
+  "type": "n8n-nodes-base.telegramTrigger",
+  "webhookId": "b542ef86-816c-48b7-a581-0d6d632d600a"
+}
+```
+หลัง PATCH ต้อง toggle workflow inactive → active เพื่อ re-register webhook URL ใหม่
+
+---
+
+## PATTERN-009: Code Node Binary Data Loss
+
+**Contributor:** CC | **Discovered:** T028 T5e real Telegram test
+
+**Severity:** High — silent bug, downstream gets no binary
+
+### ปัญหา
+Code node ที่ `return [{json:{...}}]` โดยไม่ copy binary → binary data จาก parent node หายไปทั้งหมด
+
+```javascript
+// ❌ WRONG — binary จาก Telegram Trigger หาย
+return [{json:{mode:'file', chat_id:'...'}}];
+
+// downstream ที่รับไปไม่มี binary:
+const src = $input.first();  // ❌ ไม่มี src.binary
+```
+
+### Fix
+Downstream node ที่ต้องการ binary ต้องดึงจาก **source node** โดยตรง:
+```javascript
+// ✅ CORRECT — ดึง binary จาก Telegram Trigger โดยตรง
+const src = $('Telegram Trigger').first();
+const b = src.binary || {};
+```
+
+### กฎ
+- Code node ที่ return item ใหม่ → **ไม่ carry binary ต่อ** (by design)
+- ถ้า flow ต้องการ binary หลัง Code node → ดึงจาก source node เสมอ
+- ทดสอบด้วย `Object.keys(src.binary||{}).length` — ถ้า = 0 แสดงว่าแหล่งผิด
+
+---
+
+## PATTERN-010: IF Node typeVersion vs Conditions Format (n8n 1.123.20)
+
+**Contributor:** CC | **Discovered:** T028 T5e real Telegram test
+
+**Severity:** High — silent routing error, ไม่มี error message
+
+### ปัญหา
+n8n 1.123.20 มี IF node 2 versions ที่ใช้ conditions format ต่างกัน:
+
+| typeVersion | Conditions format | ใช้งานได้ |
+|-------------|-------------------|-----------|
+| 1 | `conditions.boolean[].operation: "equal"/"notEqual"` | ✅ |
+| 2.x / 2.3 | `conditions.options.version:3 + conditions.conditions[].operator` | ✅ |
+| 1 | `conditions.boolean[].operation: "isTrue"` | ❌ error: compareOperationFunctions |
+| 2.3 | `conditions.boolean[].operation: "isTrue"` (v1 format) | ❌ routes all to output 0 silently |
+
+### Fix (n8n 1.123.20)
+ใช้ typeVersion 2.3 + v3 conditions format เสมอ:
+```json
+{
+  "typeVersion": 2.3,
+  "parameters": {
+    "conditions": {
+      "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3},
+      "conditions": [{
+        "id": "uuid-here",
+        "leftValue": "={{ $json.skip }}",
+        "operator": {"type": "boolean", "operation": "true", "singleValue": true}
+      }],
+      "combinator": "and"
+    }
+  }
+}
+```
+
+*อัปเดตล่าสุด: 2026-02-25 by CC*

@@ -130,3 +130,53 @@ Telegram trigger could not be simulated directly (task runner sandbox blocks `$e
 
 ## Codex Response
 *(Codex: fill in — ความเห็นต่อ review / สิ่งที่จะแก้ / T5d verification result)*
+
+---
+
+## Real Telegram E2E Test Results (CC, 2026-02-25)
+
+### Bugs Found and Fixed During Real Test
+
+After Codex push, CC ran real Telegram test (user sends actual PTT-OR.pdf to @OCM_Chatbot). Found 3 additional bugs not caught by code inspection:
+
+#### Bug 1: IF node typeVersion/conditions mismatch
+**Root cause:** IF node `typeVersion: 2.3` but conditions used old v1 format (`conditions.boolean[].operation: "isTrue"`)
+- n8n 1.123.20 with typeVersion 2.x ignores `conditions.boolean` format → all items routed to output 0 (TRUE branch) → no connections → execution stops silently
+- First fix attempt: changed typeVersion to 1 → threw `compareOperationFunctions[operation] is not a function` (typeVersion 1 doesn't support `isTrue` operation either in n8n 1.123.20)
+- **Fix:** typeVersion → 2.3 + correct v3 conditions format: `{options:{version:3}, conditions:[{operator:{type:"boolean",operation:"true",singleValue:true}}]}`
+
+#### Bug 2: Normalize Telegram Binary uses wrong input source
+**Root cause:** `const src=$input.first()` — gets item from Switch (mode) output which has no binary. The Telegram file binary is only present in Telegram Trigger output; it's dropped by Parse Training Message (which returns plain `{json:{...}}`).
+- **Fix:** `const src=$('Telegram Trigger').first()` — reads binary directly from trigger
+
+#### Bug 3: Direct fan-out Normalize Binary → Telegram fires before OCR preview is ready
+**Root cause:** Connections had `Normalize Telegram Binary → Telegram (Training Reply)` AND `Build OCR Preview Reply → Telegram (Training Reply)`. The direct path fires first with no `telegram_text` → Telegram sends "undefined".
+- **Fix:** Removed direct `Normalize Binary → Telegram` connection. Only `Build OCR Preview Reply → Telegram` remains.
+
+### Final E2E Test Result
+
+| Exec | Event | Nodes | Result |
+|------|-------|-------|--------|
+| 151510 | PTT-OR.pdf sent (before IF fix) | Stops at IF (skip?) | ❌ IF mismatch bug |
+| 151528 | PTT-OR.pdf sent (typeVersion=1) | IF errors | ❌ compareOperationFunctions error |
+| 151529 | PTT-OR.pdf sent (typeVersion=2.3+v3 conditions) | Stops at HTTP /ocr-dev | ❌ binary not found |
+| 151530 | PTT-OR.pdf sent (Telegram Trigger binary fix) | All nodes run | ✅ But reply="undefined" (direct fan-out bug) |
+| 151539 | PTT-OR.pdf sent (fan-out removed) | All nodes run to Telegram | ✅ **FULL E2E PASS** |
+
+**Exec 151539 result (OCR Preview sent to user):**
+```
+OCR ได้ผลนี้:
+vendor_tax_id: 0107561000013
+invoice_number: 100628
+total: 1122.84
+
+ถ้าถูกต้อง พิมพ์: ถูก
+หรือแก้ เช่น: แก้ total=1350.00
+```
+
+**Exec 151537 (confirm path):** User typed `ถูก` → mapped to `confirm` → `pending_train` found → OCR_EXAMPLES row created ✅
+
+### PATTERN-009 (added to n8n-patterns.md)
+Code nodes that return new items (`return [{json:{...}}]`) drop the binary data from parent nodes. Downstream nodes requiring the original binary MUST use `$('SourceNodeName').first()` to access it, not `$input.first()`.
+
+### Updated Score: **7.5/10** (downgraded from 8.5 — 3 critical bugs required CC to fix post-merge)
