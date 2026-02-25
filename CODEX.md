@@ -25,6 +25,19 @@
 
 ---
 
+## Direct Mode (via Codex CLI)
+
+Claude Code can invoke you directly via `scripts/collab/codex-exec.sh`. When invoked this way:
+
+- **MODE: DISCUSS** — CC asks for your opinion. Reply with analysis only. Do NOT commit.
+- **MODE: IMPLEMENT** — CC tells you to implement a task. Read spec → implement → commit → push.
+- **MODE: RESPOND** — CC asks you to respond to a code review. Fill `## Codex Response` → commit → push.
+- **MODE: ASK** — CC asks a free-form question. Reply only. Do NOT commit.
+
+When in Direct Mode, the prompt will tell you which files to read and what to do. Follow the instructions exactly.
+
+---
+
 ## Before Starting Any Work
 
 1. Read `docs/collab/HANDOFF.md` to see current status and your assigned tasks
