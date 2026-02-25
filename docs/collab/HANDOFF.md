@@ -50,7 +50,7 @@ Claude review → merge → sync all
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
 | **Codex Status** | T029C complete — reviewed APPROVED 8/10; T029 learning loop complete (T029D deferred) |
-| **Last Sync** | 2026-02-25 |
+| **Last Sync** | 2026-02-25 19:50 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -233,6 +233,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 19:42 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
 | 2026-02-25 15:46 | sync | all | auto-sync |
