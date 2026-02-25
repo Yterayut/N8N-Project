@@ -225,3 +225,45 @@ return [{ json: { authorized: true } }];
 
 ## Discussion
 *(Codex pre-execution questions ใส่ที่นี่)*
+
+Codex note before implementation:
+- Spec diagram (`Webhook -> Code -> Execute Command -> Respond`) cannot return clean `401` for T1 by itself because unauthorized requests would still continue to `Execute Command`. Implemented with an added `IF (Authorized?)` + `Respond (401)` branch while preserving the intended auth + command + JSON response flow.
+- `check_recent_errors()` draft logic assumed date-bearing log lines, but `common.sh` currently writes time-only lines (e.g. `[ERROR][HH:MM:SS] ...`). Implemented a best-effort 24h check using file mtime gate + line count.
+
+---
+
+## Codex Execution Notes (2026-02-26)
+
+### Implemented
+- Added `scripts/gg/gg-health.sh` (executable) to check Gemini CLI/API, GG scripts, storage write access, gg-data gateway, and recent error log count; outputs JSON with aggregate `ok|warn|fail`.
+- Added timeout guard (`timeout 20s`) around Gemini API ping in health script to avoid webhook hangs.
+- Created new n8n workflow `gg-health-monitor` (`BlCrCNITw9ThtfOx`) with:
+  - `Webhook (gg-health)` GET + `webhookId=2ad4c423-b055-4323-ad28-635d1832400f`
+  - `Code (Auth Validate)` using `x-api-key` vs `$env.OCR_SHARED_API_KEY` (timing-safe compare helper)
+  - `IF (Authorized?)` + `Respond (401)` branch
+  - `Execute Command (GG Health)` (`continueOnFail: true`)
+  - `Code (Parse Health JSON)` + `Respond (health JSON)`
+- Activated workflow via `POST /rest/workflows/{id}/activate` with `versionId` (this n8n build required `versionId`; `PATCH {\"active\":true}` alone did not persist active status).
+
+### Verification evidence
+- T1 (no auth): `GET /webhook/gg-health` -> `401 {"ok":false,"error":"unauthorized"}`
+- T2 (correct key): `GET /webhook/gg-health` -> `200` + valid JSON, observed `status:"ok"` with `checks.api.latency_ms: 15816`
+- T4 (JSON valid): parsed response body with `python3 -m json.tool` successfully
+- T3 (optional script missing smoke): temporarily removed execute bit from `gg-curate.sh` -> response showed `status:"warn"` and `checks.scripts.status:"warn"`; restored execute bit
+- n8n executions (workflow `BlCrCNITw9ThtfOx`): `151884` (T1), `151885` (T2), `151887` (T3 optional)
+
+### Definition of Done (Completed)
+
+**Implemented:**
+- [x] `scripts/gg/gg-health.sh` สร้างแล้ว + executable (`chmod +x`)
+- [x] n8n workflow `gg-health-monitor` active (GET /webhook/gg-health)
+- [x] webhookId UUID บน Webhook node (PATTERN-008)
+
+**Verified:**
+- [x] T1 ผ่าน (401 ไม่มี key)
+- [x] T2 ผ่าน (200 + valid JSON + status ok)
+- [x] T4 ผ่าน (JSON valid)
+
+**Docs:**
+- [x] HANDOFF.md อัปเดต workflow ID ของ `gg-health-monitor`
+- [x] `docs/collab/GG.md` เพิ่ม health check endpoint

@@ -49,8 +49,8 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T033 complete (GG webhook gateways active + auth tests + gg-curate data fetch confirmed); T029C review response filled; T032 complete (timing-safe API key compare verified in 3 workflows, 200/401 auth smoke verified); T029 learning loop complete (T029D deferred) |
-| **Last Sync** | 2026-02-25 22:52 |
+| **Codex Status** | T034 complete (`gg-health-monitor` active + auth/JSON tests passed + optional warn smoke verified); T033 complete (GG webhook gateways active + auth tests + gg-curate data fetch confirmed); T029C review response filled; T032 complete (timing-safe API key compare verified in 3 workflows, 200/401 auth smoke verified); T029 learning loop complete (T029D deferred) |
+| **Last Sync** | 2026-02-26 06:42 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -116,6 +116,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T034 | GG Agent Health Check Endpoint | Codex | 2026-02-26 | Implemented; workflow `BlCrCNITw9ThtfOx` active (`/webhook/gg-health`); T1 401 + T2 200/JSON + T4 JSON parse ✅; optional T3 warn smoke ✅ |
 | T033 | GG Data + Notify Webhooks | Codex | 2026-02-25 | Implemented; new workflows `XtaSg9pLDuPERtI8` + `YZTJwkh25isaLKHo` active; webhook auth tests T1-T6 ✅; `gg-curate.sh` confirmed live fetch (`Found 4 TRAIN_CASES`) |
 | T032 | Timing-Safe API Key Comparison | Codex | 2026-02-25 | Verified live target Code nodes already use `timingSafeEqual()` in 3 workflows (`ztJ8oCBHREUPPry6`, `jmJHPPj0OM5LcZ0n`, `dFzVzAFjdRJHbQqe`); correct-key 200 + wrong-key 401 ✅ |
 | T031 | Runtime Rules flag=true E2E Smoke Test | Codex | 2026-02-25 | flag=true branch verified (`151793`), restore verified (`151800`); rule apply blocked by runtime `bills=[]` in `Code (Apply Runtime Rules)` |

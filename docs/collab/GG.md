@@ -126,7 +126,14 @@ logs/
 **n8n gateway workflows (T033):**
 - `gg-data-gateway` (`XtaSg9pLDuPERtI8`) — webhook path `/webhook/gg-data`, `webhookId=170cf0d3-8e06-42ed-9430-8c457487b36f`, requires `x-api-key`
 - `gg-notify-gateway` (`YZTJwkh25isaLKHo`) — webhook path `/webhook/gg-notify`, `webhookId=93ae3db0-f0ba-4fcd-9e62-0d924ccb09b3`, requires `x-api-key`
+- `gg-health-monitor` (`BlCrCNITw9ThtfOx`) — webhook path `/webhook/gg-health`, `webhookId=2ad4c423-b055-4323-ad28-635d1832400f`, requires `x-api-key`, runs `scripts/gg/gg-health.sh`
+
+## Monitoring Endpoint
+
+- `GET /webhook/gg-health` — returns GG infrastructure health JSON (`status: ok|warn|fail`) for monitoring
+- Auth: header `x-api-key: <OCR_SHARED_API_KEY>`
+- Checks included: Gemini CLI, Gemini API ping latency, GG scripts presence, storage write access, gg-data gateway, recent error count
 
 ---
 
-*Last updated: 2026-02-25 by Codex (T033)*
+*Last updated: 2026-02-26 by Codex (T034)*
