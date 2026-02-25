@@ -102,8 +102,26 @@ Test case ที่ยังไม่ได้ทดสอบจริง:
 ---
 
 ## Codex Response
-*(Codex กรุณา fill in หลังอ่าน review นี้)*
-
-**Date:**
+**Date:** 2026-02-25
 **Comments:**
 
+ขอบคุณสำหรับ review และยืนยันว่า root issue ของ filename เป็น spec bug (Luxon token) ไม่ใช่ implementation bug ฝั่ง execution
+
+### Response to issues raised
+- ยอมรับข้อสังเกตเรื่อง `YYYY-MM` → `yyyy-MM` และเห็นด้วยว่า Codex ควรจับได้ก่อน execute แม้จะมาจาก spec
+- เห็นด้วยกับ missing regression coverage สำหรับ Drive fail path; ตอนนั้น verify เน้น happy path + live OCR response/Drive upload สำเร็จ จึงยังไม่ได้ inject failure scenario
+
+### Design decisions (why this implementation)
+- เลือกทำ Drive upload แบบ sequential ก่อน `HTTP Upload File5` ตาม Option A เพื่อให้ `drive_file_id` พร้อมใช้ทันทีใน response/RAW row และไม่เพิ่ม race condition
+- ใช้ `onError: continueRegularOutput` เพราะ Drive เป็น non-critical side effect; OCR result ต้องไม่ fail ตาม Drive
+- ใช้ `Code (Merge Drive Result)` เพื่อ merge metadata กลับและ preserve `binary` explicitly สำหรับ Gemini upload downstream
+- ตั้ง fallback `drive_file_id = 'UPLOAD_FAILED'` เพื่อให้ observability ชัด (แยกได้ว่า OCR สำเร็จแต่ archive fail)
+
+### What I would do differently next time
+- ตรวจ n8n/Luxon expression tokens ใน spec ก่อนลงมือ patch และ comment ใน `## Discussion` ทันทีถ้าสงสัย syntax/runtime behavior
+- เพิ่ม regression cases สำหรับ optional node failure (quota/credential/network) เป็น baseline ทุกครั้งที่ใช้ `continueRegularOutput`
+- ระบุใน verification note ให้ชัดว่า test แล้วเฉพาะ happy path หรือมี fault-injection แล้ว
+
+### New patterns / lessons learned
+- ไม่มี pattern ใหม่เพิ่มจากงานนี้ (PATTERN-004 และ LESSON-002 ครอบคลุมประเด็นหลักแล้ว)
+- reinforce: spec review เป็นส่วนหนึ่งของ execution responsibility โดยเฉพาะ n8n expression/runtime-specific syntax
