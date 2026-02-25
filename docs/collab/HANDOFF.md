@@ -71,6 +71,32 @@ Claude review → merge → sync all
 - **Can:** Patch n8n via REST API, read/write SQLite DB, run bash scripts, read/write files, create PRs
 - **Must have:** Clear spec at `docs/collab/tasks/T0xx-*.md` before starting any task
 
+### GG — Gemini (intelligence agent)
+- **Branch:** _(no branch — output via files)_
+- **Identity:** `docs/collab/GG.md`
+- **Role:** Intelligence Layer (Async) — analysis, synthesis, proposals
+- **Can:** Long-context analysis (1M tokens), multimodal PDF/image, spec drafting, knowledge synthesis
+- **Cannot:** Real-time path, deploy to production, bypass CC review
+- **Scripts:** `scripts/gg/gg-*.sh`
+- **Output:** `docs/gg/proposals/` (รอ CC approve) + `docs/gg/reports/` (monitoring)
+
+#### GG Auto-Schedule (Cron)
+| Role | Schedule | Script |
+|------|----------|--------|
+| O — Curate | Sunday 23:00 BKK | `gg-curate.sh` |
+| C — Synthesize | Monday 08:00 BKK | `gg-synthesize.sh` |
+| G — Prompt Eng | Daily 09:00 BKK | `gg-prompt-engineer.sh` |
+
+#### GG On-demand
+```bash
+./scripts/gg/gg-spec-draft.sh "<requirement>"   # Role I — draft spec
+./scripts/gg/gg-groundtruth.sh <pdf_path>        # Role E — ground truth
+./scripts/gg/gg-validate.sh <pdf> <json> [exec]  # Role J — validate OCR output
+```
+
+#### GG Queue (รอ CC review)
+_(ว่างอยู่ — proposals จะปรากฏที่ `docs/gg/proposals/`)_
+
 ---
 
 ## Task Board
@@ -234,6 +260,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 21:05 | sync | all | auto-sync |
 | 2026-02-25 20:00 | sync | all | auto-sync |
 | 2026-02-25 19:51 | sync | all | auto-sync |
 | 2026-02-25 19:51 | sync | all | auto-sync |
