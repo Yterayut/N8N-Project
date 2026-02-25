@@ -88,9 +88,11 @@ Steps:
 8. git push origin agents/codex
 9. Report what you did and test results"
 
-        echo "[codex-exec] implement $TASK_ID — Codex starting work..."
+        echo "[codex-exec] implement $TASK_ID — Codex starting work (danger-full-access for localhost)..."
         cd "$CODEX_DIR"
-        "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
+        # ใช้ -s danger-full-access เพราะ implement ต้องการ curl localhost:5678
+        # sandbox_permissions network=true ไม่ allow loopback/localhost
+        "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
         ;;
 
     respond)
