@@ -299,3 +299,67 @@ Existing workflows ที่ต้อง patch:
 - [ ] `ocr-benchmark-runner` workflow active
 - [ ] ≥5 test cases ใน OCR_BENCHMARK_FUEL
 - [ ] Benchmark result บันทึกกลับใน sheet
+
+---
+
+## Discussion (Codex, while CC limited) — Supabase as Primary / Google Sheets as Secondary
+
+**Status:** Proposal only (ยังไม่ implement)
+
+### Why this is worth doing
+- Google Sheets เหมาะกับ manual ops / visibility แต่ไม่เหมาะกับ primary store เมื่อ loop โตขึ้น (query, dedup, consistency, scale)
+- T029 loop (TRAIN_CASES / FIELD_DIFFS / LESSONS / RUNTIME_RULES / BENCHMARK) จะได้ประโยชน์มากจาก relational model + indexes + constraints
+- n8n มี Supabase node + credential พร้อมแล้ว → ทำ phased migration ได้
+
+### Target architecture (proposed)
+- **Supabase = primary transactional store**
+  - source of truth สำหรับ OCR learning loop tables
+  - query/filter/dedup/benchmark reads ทำจาก Supabase
+- **Google Sheets = secondary / human-facing**
+  - reporting, manual review, audit-friendly views, ad-hoc ops
+  - write แบบ best-effort (`continueOnFail`) ไม่ block main flow
+
+### Migration strategy (phased, low-risk)
+#### M1 — Dual-write (non-runtime tables first)
+- เริ่มจาก: `OCR_FEEDBACK`, `OCR_EXAMPLES`, `OCR_TRAIN_CASES`, `OCR_TRAIN_FIELD_DIFFS`, `OCR_KM_LESSONS`
+- Flow:
+  1. write Supabase (primary)
+  2. write Google Sheets (secondary, continueOnFail)
+- ยังไม่เปลี่ยน read path ของ main OCR
+
+#### M2 — Read cutover (learning/KM path)
+- เปลี่ยน T029A/T029B/T029D ให้อ่านจาก Supabase ก่อน
+- Google Sheets เหลือเป็น mirror/reporting
+- เพิ่ม reconciliation check (row counts / sample hashes)
+
+#### M3 — Runtime-sensitive cutover (high risk)
+- ค่อยย้าย `OCR_QUEUE` / runtime rules reads / parts of main OCR metadata path
+- ต้องมี feature flag + fail-open/fallback ชัดเจน
+- benchmark + regression gate ก่อน activate
+
+### Suggested table mapping (initial)
+- `OCR_TRAIN_CASES` -> `ocr_train_cases`
+- `OCR_TRAIN_FIELD_DIFFS` -> `ocr_train_field_diffs`
+- `OCR_KM_LESSONS` -> `ocr_km_lessons`
+- `OCR_KM_RUNTIME_RULES` -> `ocr_km_runtime_rules`
+- `OCR_RULE_CHANGELOG` -> `ocr_rule_changelog`
+- `OCR_EXAMPLES` -> `ocr_examples`
+- `OCR_FEEDBACK` -> `ocr_feedback`
+- `OCR_BENCHMARK_FUEL` -> `ocr_benchmark_fuel`
+
+### Key design requirements (important)
+- **Idempotency:** ใช้ natural keys / unique constraints (เช่น `request_id`, `case_id`, `lesson_id`, `rule_id`)
+- **Auditability:** trace `rule -> changelog -> lesson -> case/request_id`
+- **Resilience:** ถ้า Sheets write fail ต้องไม่กระทบ primary path
+- **Security:** RLS/roles, input validation, prevent poisoned data/rule injection
+- **Cutover safety:** feature flags + rollback path + explicit verify levels (`inspection` / `execution` / `E2E`)
+
+### Recommended first implementation slice (if CC agrees)
+- Start with **T029B/T029A data stores only** (KM + training logs), not `OCR_QUEUE` and not main OCR critical path
+- Keep current Sheets writes for compatibility while adding Supabase dual-write
+- Add nightly reconcile report (count mismatch / failed mirror writes)
+
+### Open questions for CC
+1. ต้องการให้ Supabase migration อยู่ใน T029 scope เลย หรือแยกเป็น T030/T031?
+2. จะใช้ Supabase Postgres tables ตรง ๆ หรือผ่าน RPC/functions สำหรับ dedup/transactions?
+3. ระดับ fallback ที่ยอมรับได้เมื่อ Supabase down คืออะไร (OCR main path continue ได้แค่ไหน)?

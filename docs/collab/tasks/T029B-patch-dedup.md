@@ -60,13 +60,24 @@ const patternText = `full_ocr_failure`;  // ตัด :${ids.length}x ออก
 
 ## Definition of Done
 
-- [ ] `Code (Analyze Patterns)` node patched — P2 patternText = `high_severity_rate`, P3 patternText = `full_ocr_failure`
-- [ ] Re-fetch node code ยืนยัน patch applied
-- [ ] ≥ 1 execution success หลัง patch
-- [ ] HANDOFF.md updated
+- [x] `Code (Analyze Patterns)` node patched *(verified as already applied in live workflow)* — P2 patternText = `high_severity_rate`, P3 patternText = `full_ocr_failure`
+- [x] Re-fetch node code ยืนยัน patch applied
+- [x] ≥ 1 execution success หลัง patch/verification (`exec 151707`)
+- [x] HANDOFF.md updated
 
 ---
 
 ## Discussion
-*(Codex fill ก่อน implement)*
+### Codex (2026-02-25)
+- Re-fetch live workflow `ocr-km-suggest` (`NkKd02QyzLRcpIJM`) พบว่า P2/P3 dedup strings ถูกแก้เป็น stable keys แล้ว (`high_severity_rate`, `full_ocr_failure`)
+- รอบนี้จึงเป็น **verification no-op** (ไม่ต้อง PATCH เพิ่ม) + รัน webhook smoke test ซ้ำเพื่อยืนยัน workflow ยังทำงานปกติ
+- Webhook test: `POST /webhook/ocr-km-suggest {"include_manual":true}` → `200 {"ok":true,"new_lessons":0,"analyzed_cases":4}` (`exec 151707`)
 
+## Closing (Codex)
+
+```
+Runtime patched: No-op (live workflow already contained T029B-patch dedup fix in Code (Analyze Patterns))
+Verified from: Re-fetch workflow via n8n REST API (P2/P3 stable patternText strings) + webhook smoke test success (`exec 151707`)
+Docs synced: Updated this patch spec + HANDOFF.md task board
+Remaining limits: new_lessons=0 in current data snapshot, so dedup behavior under real duplicate-producing input not re-exercised in this verification run
+```
