@@ -245,6 +245,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-25 14:14 | sync | all | auto-sync |
+| 2026-02-25 11:57 | sync | all | auto-sync |
+| 2026-02-25 10:57 | sync | all | auto-sync |
 | 2026-02-25 09:30 | sync | all | auto-sync |
 | 2026-02-25 09:10 | sync | all | auto-sync |
 | 2026-02-25 09:09 | sync | all | auto-sync |
