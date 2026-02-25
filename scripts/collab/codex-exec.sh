@@ -7,6 +7,10 @@
 #   ./scripts/collab/codex-exec.sh ask "<free-form question>"
 set -euo pipefail
 
+# Codex CLI binary (full path — ไม่ใช้ alias เพราะอาจ conflict กับ tmux alias)
+CODEX_CLI="/home/oneclimate-uat/.nvm/versions/node/v20.19.0/bin/codex"
+CODEX_EXEC="$CODEX_CLI exec -c 'sandbox_permissions=[\"disk-full-read-access\",\"network=true\"]'"
+
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 CODEX_DIR="$REPO_ROOT/agents/codex"
 MODE="${1:?Usage: codex-exec.sh <discuss|implement|respond|ask> [task-id] [message]}"
@@ -54,7 +58,7 @@ Reply with your analysis, concerns, and suggestions. Be concise and direct."
 
         echo "[codex-exec] discuss $TASK_ID — sending question to Codex..."
         cd "$CODEX_DIR"
-        codex exec -s danger-full-access "$PROMPT" 2>&1
+        "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
         ;;
 
     implement)
@@ -86,7 +90,7 @@ Steps:
 
         echo "[codex-exec] implement $TASK_ID — Codex starting work..."
         cd "$CODEX_DIR"
-        codex exec -s danger-full-access "$PROMPT" 2>&1
+        "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
         ;;
 
     respond)
@@ -121,7 +125,7 @@ Steps:
 
         echo "[codex-exec] respond $TASK_ID — Codex reviewing feedback..."
         cd "$CODEX_DIR"
-        codex exec -s danger-full-access "$PROMPT" 2>&1
+        "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
         ;;
 
     ask)
@@ -138,7 +142,7 @@ Reply concisely and directly."
 
         echo "[codex-exec] ask — sending question to Codex..."
         cd "$CODEX_DIR"
-        codex exec -s danger-full-access "$PROMPT" 2>&1
+        "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
         ;;
 
     *)
