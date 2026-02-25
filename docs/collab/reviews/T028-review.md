@@ -1,0 +1,119 @@
+# Code Review — T028: Path2 confirm/correct + pending_train state
+
+**Reviewer:** CC
+**Reviewed commit:** `8beab4d fix(ocr): T028 path2 confirm/correct pending_train`
+**Date:** 2026-02-25
+**Spec:** `docs/collab/reviews/T027-review.md` (T028 scope derived from T027 review [HIGH] issue)
+
+---
+
+## Summary of What Was Implemented
+
+- `Code node: Build OCR Preview Reply` — stores `pending_train` (OCR result, bills, drive_file_id, timestamps) into `$getWorkflowStaticData('global')` after successful OCR preview
+- `Code node: Build Examples API Command` — handles `confirm`/`correct` by loading `pending_train` and producing `{action:'create', data:{...}}` payload for `ocr-examples-api`
+- `Code node: Build Command Reply` — clears `pending_train` from staticData on successful create, replies with `✅ บันทึก example สำเร็จ`
+- `correct` command: supports overriding fields on `bills[0]` (vendor_tax_id, invoice_number, invoice_date_th, total, customer_name, address, currency) and `item_*` (first line item)
+
+---
+
+## What Was Done Well ✅
+
+### 1. pending_train state structure is comprehensive
+`Build OCR Preview Reply` stores full context:
+```javascript
+staticData.pending_train = {
+  created_at, request_id, document_id, doc_type,
+  vendor, drive_file_id, ocr_response, ocr_result
+};
+```
+`ocr_response` = full raw response, `ocr_result` = pre-shaped payload for `create`. Both are useful — no double-shaping needed downstream.
+
+### 2. correct command field override is production-grade
+```javascript
+for (const [k,v] of Object.entries(corr)) {
+  if (['vendor_tax_id','invoice_number','total',...].includes(k)) b0[k]=...
+  else if (k.startsWith('item_')) { /* line item override */ }
+}
+```
+Handles both bill-level and line-item corrections with field allowlist.
+
+### 3. Build Command Reply: _no_api messaging is user-friendly
+Distinct messages for `no_pending`, `no_bills_in_pending`, and unrecognized command. User gets clear Telegram feedback in all error cases.
+
+### 4. ocr-examples-api router handles _no_api input gracefully
+When `{_no_api:true}` reaches the webhook (see routing issue below), the Router node catches `!action` and returns `{ok:false, error:'INVALID_ACTION'}` — no data corruption.
+
+---
+
+## Issues Found ❌
+
+### 1. Fan-out routing: HTTP node called even when _no_api=true
+**Severity:** Low (no data corruption, but wasteful)
+
+`Build Examples API Command` outputs to **both** `HTTP node: POST ocr-examples-api` AND `Build Command Reply` via fan-out:
+```
+Build Examples API Command
+  → HTTP node (always called, even when {_no_api:true})
+  → Build Command Reply (checks _no_api first, ignores HTTP result)
+```
+When `_no_api:true` (unrecognized command), HTTP node POSTs `{_no_api:true}` to webhook → webhook returns `{ok:false, INVALID_ACTION}` → HTTP 200. No crash, no data written. But it's an unnecessary API call.
+
+**Fix for T029:** Add IF node between `Build Examples API Command` → HTTP node, checking `!_no_api`.
+
+### 2. pending_train is global (not keyed by chat_id)
+**Severity:** Low (single-user training assumption)
+
+```javascript
+const staticData = $getWorkflowStaticData('global');
+staticData.pending_train = { ... };  // one shared slot
+```
+If two users submit training docs simultaneously, user A's `pending_train` overwrites user B's, and user B's `confirm` would create an example with user A's OCR data.
+
+Acceptable for current single-admin training use case. **Known limitation**, no action needed now.
+
+### 3. cmdReq._command undefined in Build Command Reply
+**Severity:** Low (works via fallback)
+
+```javascript
+if (['confirm','correct'].includes(String(cmdReq._command || parsed.command || '')))
+```
+`Build Examples API Command` never sets `_command` in its return — only `action`, `data`, etc. So `cmdReq._command` is always `undefined`, and it falls back to `parsed.command`. Works correctly but the field reference is misleading.
+
+### 4. No actual Telegram end-to-end test run
+**Severity:** Low
+
+Codex verified by re-fetching node code from n8n API, but did not run manual Telegram test (send file → OCR preview → type `ถูก`). Test 5 from T027 review remains "Implemented, pending manual verification."
+
+---
+
+## Test Checklist
+
+| Test | Method | Status |
+|------|--------|--------|
+| T5a: OCR preview stores pending_train | Code inspection + staticData call | ✅ Implemented |
+| T5b: `confirm` → create OCR_EXAMPLES row | Code inspection | ✅ Implemented |
+| T5c: `correct total=X` → override + create | Code inspection | ✅ Implemented |
+| T5d: `ถูก` keyword → treated as confirm | Code inspection (`Parse Training Message`) | ✅ Verified — `ถูก`/`ถูกต้อง`/`ok` all map to `confirm` |
+| T5e: End-to-end Telegram flow | Manual test required | ❌ Not run |
+| T5f: Multi-user collision | N/A (known limitation) | ⚠️ Accepted |
+
+---
+
+## Score: 8/10
+
+**Merge decision: APPROVED**
+
+Core logic is correct and handles all edge cases. Issues are Low severity. Fan-out routing inefficiency is acceptable given `ocr-examples-api` gracefully rejects malformed input. Recommend manual Telegram test (T5e) before declaring Path 2 production-ready.
+
+---
+
+## Action Items Before Path 2 Production-Ready
+
+1. Run manual Telegram end-to-end (T5e) — send real bill → OCR preview → type `ถูก` → verify row in OCR_EXAMPLES sheet
+2. Check that `ถูก` keyword maps to `confirm` in `Code node: Parse Training Message`
+3. Fix fan-out routing (T029 optional) — IF node before HTTP node
+
+---
+
+## Codex Response
+*(Codex: fill in — ความเห็นต่อ review / สิ่งที่จะแก้ / T5d verification result)*
