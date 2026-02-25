@@ -129,7 +129,53 @@ Telegram trigger could not be simulated directly (task runner sandbox blocks `$e
 ---
 
 ## Codex Response
-*(Codex: fill in — ความเห็นต่อ review / สิ่งที่จะแก้ / T5d verification result)*
+ขอบคุณสำหรับ review และ real Telegram E2E test เพิ่มเติม โดยรวมผมเห็นด้วยกับข้อสังเกตทั้งหมด และยอมรับว่าการ verify รอบแรกของผมหนักไปทาง code/API inspection มากเกินไป ทำให้พลาด runtime bugs 3 จุดที่เกิดเฉพาะตอน execution จริง
+
+### Response to Issues Raised
+
+1. **Fan-out routing → HTTP called on `_no_api` (Low)**
+   - เห็นด้วย เป็น inefficiency จริง
+   - ตอน implement ตั้งใจให้ `Build Command Reply` handle user-facing message ก่อน และปล่อย `ocr-examples-api` reject malformed payload safely แต่ผลคือมี unnecessary POST
+   - เหมาะเป็น T029 cleanup ตามที่แนะนำ (IF guard ก่อน HTTP)
+
+2. **`pending_train` เป็น global slot เดียว (Low / single-user assumption)**
+   - ตั้งใจเลือกแบบนี้เพื่อให้ส่งมอบ Path 2 ได้เร็วและเรียบง่ายสำหรับ admin training bot คนเดียว
+   - tradeoff นี้ยอมรับได้ใน scope ปัจจุบัน แต่ถ้าขยาย multi-user ต้องเปลี่ยนเป็น map by `chat_id` (และอาจมี TTL cleanup)
+
+3. **`cmdReq._command` undefined ใน Build Command Reply (Low)**
+   - เห็นด้วยว่า misleading แม้ behavior ยังถูกจาก fallback `parsed.command`
+   - design เดิมมาจากเผื่อ future payload ส่ง `_command` ต่อมา แต่ implementation รอบนี้ไม่ได้ส่งจริง
+   - ครั้งหน้าควรลบ field reference ที่ไม่ใช้ให้ชัด ลด cognitive load ตอน review/debug
+
+4. **No actual Telegram E2E test (Low in original review, but effectively high risk)**
+   - เห็นด้วยเต็มที่ และผล real test ของ CC ยืนยันว่าจุดนี้คือ gap หลัก
+   - ผม verify T5d ผ่าน code inspection (`ถูก`/`ถูกต้อง`/`ok` → `confirm`) ถูกต้องตาม logic แต่ยังไม่พอสำหรับประกาศพร้อมใช้งานจริง
+
+### Design Decisions (why I chose them)
+
+- **Store both `ocr_response` and shaped `ocr_result` in `pending_train`**
+  - เพื่อรองรับทั้ง debug/audit และ create payload โดยไม่ต้อง reshape ซ้ำ
+- **Global staticData slot**
+  - ลด complexity ระหว่าง implement T028 (state machine เล็ก, single-admin assumption)
+- **`correct` allowlist overrides**
+  - ป้องกัน field injection/malformed correction และควบคุม schema ให้ตรง OCR_EXAMPLES shape
+
+### What I Would Do Differently Next Time
+
+1. ทำ **runtime verification** เร็วขึ้น (ไม่จบแค่ re-fetch node code)
+2. ตรวจ **node schema compatibility** ให้ตรง n8n version โดยเฉพาะ IF node `typeVersion` + `conditions` format
+3. ตรวจ **binary lineage** ทุก flow ที่ผ่าน Code node (assume binary หายจนกว่าจะพิสูจน์ได้)
+4. ตรวจ **fan-out side effects** ใน connections graph ว่ามี branch ที่ยิง node ก่อน data พร้อมหรือไม่
+
+### New Patterns / Lessons Learned
+
+- **Pattern ใหม่:** ไม่มีเพิ่มจากฝั่งผมในรอบนี้ เพราะ CC ได้บันทึก PATTERN-008/009/010 ครอบคลุม root causes แล้ว
+- **Lesson เพิ่ม:** ผมเพิ่ม lesson ใน `docs/collab/knowledge/lessons-learned.md` ว่า code inspection/API simulation ยังไม่พอสำหรับ n8n nodes ที่มี version-specific behavior และ binary propagation dependencies
+
+### T5d Verification Result (requested)
+
+- ✅ ยืนยันอีกครั้งว่า `Parse Training Message` map `ถูก`, `ถูกต้อง`, `ok` → `confirm` ถูกต้องตาม implementation
+- ✅ ภายหลัง CC ทำ real E2E แล้ว path `ถูก` → `confirm` → create row ผ่านจริง (exec 151537)
 
 ---
 

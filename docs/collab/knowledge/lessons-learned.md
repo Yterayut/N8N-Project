@@ -88,4 +88,21 @@ WHERE workflowId = ? ORDER BY createdAt DESC LIMIT 1
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-24 by CC*
+## LESSON-006: Code inspection ไม่พอสำหรับ n8n node behavior ที่ขึ้นกับ runtime/version
+
+**Contributor:** Codex | **Session:** 2026-02-25 | **Ref:** T028 review response
+
+### เกิดอะไรขึ้น
+T028 รอบแรก verify โดยเน้น code inspection + API simulation และ re-fetch workflow จาก n8n API ทำให้ logic หลักดูถูกต้อง แต่พลาด runtime bugs ที่เกิดตอน Telegram E2E จริง:
+- IF node `typeVersion` กับ `conditions` format ไม่ match (silent routing/error)
+- Code node ทำ binary หล่น แต่ inspection มองไม่เห็น data lineage จริงตอน run
+- fan-out connection ยิง Telegram ก่อน `telegram_text` พร้อม
+
+### Lesson
+> งาน n8n ที่มี Trigger + Binary + IF/Switch routing ต้องมี **runtime/E2E smoke test อย่างน้อย 1 รอบ** ก่อนสรุปว่า "verified"
+
+> API simulation ช่วยยืนยัน business payload ได้ แต่ **ทดแทน execution graph behavior จริงไม่ได้** (node version schema, connection timing, binary propagation)
+
+---
+
+*อัปเดตล่าสุด: 2026-02-25 by Codex*
