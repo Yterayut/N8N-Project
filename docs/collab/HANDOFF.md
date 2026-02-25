@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T029B complete — pending CC review |
+| **Codex Status** | T029C complete — reviewed APPROVED 8/10; T029 learning loop complete (T029D deferred) |
 | **Last Sync** | 2026-02-25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
@@ -84,12 +84,13 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029D | Benchmark Runner | Codex | T029A + ground truth data |
+| T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test documents in GDrive (not available) |
+| T030 | Supabase migration (proposal ready) | — | Codex proposal in T029-architecture.md Discussion |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
-| T029C | Runtime Rules (Dynamic Rules Integration) | Codex | 2026-02-25 | Implemented; workflows `up1n75qEhbsXswii` + `dFzVzAFjdRJHbQqe`; rules-reader 401/200 verified; E2E exec `151755` (flag=false path) |
+| T029C | Runtime Rules (Dynamic Rules Integration) | Codex | 2026-02-25 | **8/10 APPROVED**; +3 nodes main OCR; `ocr-rules-reader` active; exec 151755 flag=false ✅; review: `docs/collab/reviews/T029C-review.md` |
 | T029B | KM Suggestion — LESSONS + CHANGELOG | Codex | 2026-02-25 | Implemented; workflow `NkKd02QyzLRcpIJM` active; webhook 401/200 verified; E2E exec `151678` |
 | T029A | OCR KM Logger (TRAIN_CASES + FIELD_DIFFS) | Codex | 2026-02-25 | 7/10 — reviewed, APPROVED; workflow `jmJHPPj0OM5LcZ0n` active |
 | T028 | ocr-training Path 2 confirm/correct | Codex+CC | 2026-02-25 | 7.5/10 — T5e E2E PASSED exec 151539 |
