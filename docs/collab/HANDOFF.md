@@ -84,6 +84,7 @@ _(none)_
 ### Completed
 | ID | Task | Owner | Completed | Notes |
 |----|------|-------|-----------|-------|
+| T029A | OCR KM Logger: Logging Phase | Codex | 2026-02-25 | Created `ocr-km-logger` (`jmJHPPj0OM5LcZ0n`), patched `ocr-feedback-receiver` + `ocr-training`; verified km-log webhook + feedback→km logging; fixed pre-existing wrong KM tab headers by clearing tabs + autoMap append |
 | T001 | Audit improve.md vs live workflow | Claude Code | 2026-02-23 | All 8 P0/P1 issues confirmed OPEN |
 | T002 | Regression test matrix | Codex | 2026-02-23 | 18 scenarios, 5 sections, merged to stable |
 | T003 | Fix round3 + allHeaders + MIME + URL + file limit | Claude Code | 2026-02-23 | 6 nodes patched, commit c556967 |
