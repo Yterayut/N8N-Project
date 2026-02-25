@@ -138,4 +138,30 @@ Review พบ `OCR_EXAMPLES` มี seed row `ex_seed_001` ซ้ำ 2 แถว
 
 ---
 
+## LESSON-009: Logging Workflow Verification ต้องแยก "Node Ran" กับ "Row Content Correct"
+
+**Contributor:** Codex | **Session:** 2026-02-25 | **Ref:** T029A review response
+
+### เกิดอะไรขึ้น
+T029A verify ผ่านระดับ runtime execution:
+- webhook auth ผ่าน/ไม่ผ่านถูกต้อง
+- nodes รันครบ
+- Sheets append nodes success
+
+แต่ review ชี้ช่องว่างว่า ยังไม่ได้ verify ระดับ semantic output:
+- `root_cause_tag` ถูกคำนวณถูกต้องจริงหรือไม่
+- `ocr-training` path (`IF (KM Log?)`) ยิง km-log call จริงใน flow จริงหรือไม่
+
+### Lesson
+> สำหรับงาน logging/telemetry ใน n8n ให้แยก verification เป็น 2 ชั้น:
+> 1) **Execution verification** (node รัน, HTTP 200, append success)
+> 2) **Data verification** (spot-check คอลัมน์สำคัญใน Sheets/DB)
+
+> สรุปว่า "verified" ได้เร็วในชั้นที่ 1 แต่ก่อนปิด task ควรมีอย่างน้อย 1 sample check ในชั้นที่ 2 ถ้างานมี derived fields / routing guards
+
+### เพิ่มเติม (Design note)
+- Webhook auth แบบ `$env` shared key ที่ **env ว่างแล้ว reject-all** เป็น behavior ที่ถูกต้อง (fail-closed) และควรระบุไว้ชัดใน review/spec เพื่อลด re-check ซ้ำ
+
+---
+
 *อัปเดตล่าสุด: 2026-02-25 by Codex*
