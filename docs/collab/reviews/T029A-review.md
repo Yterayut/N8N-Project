@@ -133,20 +133,35 @@ T029A is live and functional. Minor verification gaps acceptable given the low-r
 ## Codex Response
 *(Codex fill ใน section นี้หลังอ่าน review — ใช้ `codex-exec.sh respond T029A`)*
 
-**Date:**
+**Date:** 2026-02-25
 
 ### Response to Issues Raised
+- **Issue 1 (env key validation):** Agreed with the review outcome. The webhook auth is intentionally fail-closed (`missing/empty expected key => reject all`). I added a lessons-learned note so this behavior is explicit and not re-litigated later.
+- **Issue 2 (`IF (KM Log?)` in ocr-training not E2E verified):** Agreed. T029A verification proved logger webhook behavior and patch presence, but not the confirm/correct Telegram runtime path. That was a verification-scope tradeoff for this phase and should be closed in T029A+1 / T029B validation.
+- **Issue 3 (`root_cause_tag` logic not column-verified):** Agreed. I verified execution success and node graph behavior, but not row-level semantic correctness in Sheets. This is a verification depth gap, not a disagreement on the implementation.
+- **Issue 4:** Confirmed resolved. `onError: continueRegularOutput` is the intended n8n fail-soft behavior for side calls.
 
 ### Design Decisions Explained
+- **Separate logger workflow (`ocr-km-logger`):** Isolates KM logging logic for safer iteration and independent testing (auth, diff computation, Sheets append) without increasing risk in the main OCR flows.
+- **Small side-call patches in both producer workflows:** Captures both feedback and training sources while minimizing invasive changes to existing business logic. Side calls are fail-soft so user-facing flows continue.
+- **`TRAIN_CASES` primary, `FIELD_DIFFS` best-effort:** A missing summary row is a functional logging failure; missing per-field rows reduce analytics quality but preserve the main event.
+- **Explicit node references in multi-input Code nodes:** Prevents silent `$json` overwrite issues from mixed inputs.
+- **Env-backed shared API key auth:** Simple internal auth with safe default behavior (reject-all if unset).
 
 ### What I Would Do Differently Next Time
+- Split verification into explicit tiers before sign-off: path E2E, then storage semantic checks (spot-check key columns).
+- Add a lightweight post-run validation step for logging tasks that checks row contents, not only "node executed".
+- Run one real upstream branch test whenever adding/changing an `IF`/`Switch` guard in an existing workflow.
 
 ### New Patterns / Lessons Learned
+- Added a lesson to `docs/collab/knowledge/lessons-learned.md` on:
+  - fail-closed env-key webhook auth as an intentional design choice
+  - distinguishing node-run verification from row-content verification for logging workflows
 
 ### Closing Template
 ```
-Runtime patched:    [workflow IDs + nodes ที่เปลี่ยน]
-Verified from:      [exec ID / SQLite query / API response]
-Docs synced:        [HANDOFF / reviews / knowledge]
-Remaining limits:   [known limitations ที่ยอมรับ]
+Runtime patched:    `jmJHPPj0OM5LcZ0n` (new `ocr-km-logger`), `ztJ8oCBHREUPPry6` (`HTTP (POST ocr-km-log)`), `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`, `IF (KM Log?)`, `HTTP (POST ocr-km-log training)`)
+Verified from:      n8n exec `151644` (standalone webhook E2E), exec `151645` (auth reject), n8n REST API re-fetch of all 3 workflows
+Docs synced:        `docs/collab/reviews/T029A-review.md`, `docs/collab/knowledge/lessons-learned.md`
+Remaining limits:   confirm/correct Telegram path E2E not run yet; `root_cause_tag` not spot-checked in sheet rows during T029A verification
 ```
