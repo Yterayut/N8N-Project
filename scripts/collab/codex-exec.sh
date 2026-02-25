@@ -3,6 +3,7 @@
 # Usage:
 #   ./scripts/collab/codex-exec.sh discuss <task-id> "<question>"
 #   ./scripts/collab/codex-exec.sh implement <task-id>
+#   ./scripts/collab/codex-exec.sh verify <task-id>
 #   ./scripts/collab/codex-exec.sh respond <task-id>
 #   ./scripts/collab/codex-exec.sh ask "<free-form question>"
 set -euo pipefail
@@ -13,7 +14,7 @@ CODEX_EXEC="$CODEX_CLI exec -c 'sandbox_permissions=[\"disk-full-read-access\",\
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 CODEX_DIR="$REPO_ROOT/agents/codex"
-MODE="${1:?Usage: codex-exec.sh <discuss|implement|respond|ask> [task-id] [message]}"
+MODE="${1:?Usage: codex-exec.sh <discuss|implement|verify|respond|ask> [task-id] [message]}"
 
 # Sync before work
 echo "[codex-exec] Syncing agents/codex with stable..."
@@ -82,16 +83,55 @@ Steps:
 2. Read Discussion section — if you have concerns, note them but proceed
 3. Implement the task as described in the spec
 4. Run any tests specified in the spec
+
+PRE-SUBMIT CHECKLIST (verify before commit — do NOT skip):
+- [ ] continueOnFail: true on ALL side-system calls (Sheets, Drive, Telegram, HTTP)
+- [ ] Use \$('NodeName').first().json.field (NOT \$json) for any multi-input node reads
+- [ ] Every REST-created webhook node has a webhookId UUID field (PATTERN-008)
+- [ ] Auth check (x-api-key vs OCR_SHARED_API_KEY) on every new webhook endpoint
+- [ ] No hardcoded credentials, API keys, or passwords anywhere
+- [ ] Binary data through Code nodes: verify binary lineage not broken (PATTERN-009)
+- [ ] Closing Template filled in spec file before commit
+
 5. Update docs/collab/HANDOFF.md — move task to Completed
 6. git add the relevant files (NOT .env or credentials)
 7. git commit with descriptive message: feat($TASK_ID): <summary>
 8. git push origin agents/codex
-9. Report what you did and test results"
+9. Report what you did and test results (include exec ID if E2E ran)"
 
         echo "[codex-exec] implement $TASK_ID — Codex starting work (danger-full-access for localhost)..."
         cd "$CODEX_DIR"
         # ใช้ -s danger-full-access เพราะ implement ต้องการ curl localhost:5678
         # sandbox_permissions network=true ไม่ allow loopback/localhost
+        "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+        ;;
+
+    verify)
+        TASK_ID="${2:?Usage: codex-exec.sh verify <task-id>}"
+        SPEC_FILE=$(find_spec "$TASK_ID")
+
+        PROMPT="$PREAMBLE
+
+MODE: VERIFY (read-only system check — do NOT implement, do NOT commit)
+
+Claude Code asks you to verify the live system state after implementing $TASK_ID.
+$([ -n "$SPEC_FILE" ] && echo "Spec file for reference: $SPEC_FILE" || echo "No spec file found for $TASK_ID")
+
+Steps:
+1. Read the spec Definition of Done section
+2. For each DoD item, check the live system (n8n REST API, SQLite, Sheets) — do NOT rely on code inspection alone
+3. Run: curl -s http://127.0.0.1:5678/rest/workflows | jq '[.data[] | {id,name,active}]'
+4. For each new workflow, check: is it active? does the webhook route respond (HTTP 200/401)?
+5. For each patched node, verify via: GET /rest/workflows/{id} and inspect the node parameters
+6. For any new Sheets tab: verify at least 1 row was written with correct columns
+7. Output a verification table:
+   | DoD Item | Method | Result | Evidence |
+   |----------|--------|--------|----------|
+   with PASS / FAIL / SKIP (+ reason) per row
+8. If any FAIL → describe exact fix needed (do NOT fix yourself — report to CC)"
+
+        echo "[codex-exec] verify $TASK_ID — Codex checking live system state..."
+        cd "$CODEX_DIR"
         "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
         ;;
 
@@ -148,11 +188,12 @@ Reply concisely and directly."
         ;;
 
     *)
-        echo "Usage: codex-exec.sh <discuss|implement|respond|ask> [task-id] [message]"
+        echo "Usage: codex-exec.sh <discuss|implement|verify|respond|ask> [task-id] [message]"
         echo ""
         echo "Modes:"
         echo "  discuss   <task-id> <question>  — Ask Codex for opinion on a task (no commit)"
         echo "  implement <task-id>             — Tell Codex to implement a task (commit+push)"
+        echo "  verify    <task-id>             — Codex checks live system state after implement (no commit)"
         echo "  respond   <task-id>             — Tell Codex to respond to CC's review (commit+push)"
         echo "  ask       <question>            — Ask Codex a free-form question (no commit)"
         exit 1
