@@ -133,17 +133,17 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 ## Definition of Done
 
 **Implemented:**
-- [ ] `timingSafeEqual` เพิ่มใน `Code node: Validate Auth + Schema` (ztJ8oCBHREUPPry6)
-- [ ] `timingSafeEqual` เพิ่มใน `Code (Validate + Auth)` (jmJHPPj0OM5LcZ0n)
-- [ ] `timingSafeEqual` เพิ่มใน `Code (Auth + Query)` (dFzVzAFjdRJHbQqe)
-- [ ] `===` / `!==` comparison เปลี่ยนเป็น `timingSafeEqual()` ทุกที่
+- [x] `timingSafeEqual` เพิ่มใน `Code node: Validate Auth + Schema` (ztJ8oCBHREUPPry6)
+- [x] `timingSafeEqual` เพิ่มใน `Code (Validate + Auth)` (jmJHPPj0OM5LcZ0n)
+- [x] `timingSafeEqual` เพิ่มใน `Code (Auth + Query)` (dFzVzAFjdRJHbQqe)
+- [x] `===` / `!==` comparison เปลี่ยนเป็น `timingSafeEqual()` ทุกที่
 
 **Verified from system:**
-- [ ] correct key → 200 ทั้ง 3 endpoints
-- [ ] wrong key → 401 ทั้ง 3 endpoints
+- [x] correct key → 200 ทั้ง 3 endpoints
+- [x] wrong key → 401 ทั้ง 3 endpoints
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 
 ---
 
@@ -154,5 +154,5 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 Runtime patched:    3 workflows (ztJ8oCBHREUPPry6, jmJHPPj0OM5LcZ0n, dFzVzAFjdRJHbQqe) — timing-safe comparison
 Verified from:      correct-key 200 + wrong-key 401 (all 3 endpoints)
 Docs synced:        HANDOFF.md
-Remaining limits:
+Remaining limits:   Length mismatch still returns early by design (acceptable here because API key length is fixed); auth smoke created test executions/rows in KM/feedback flows
 ```

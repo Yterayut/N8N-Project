@@ -133,20 +133,35 @@ _Checklist ที่ตรวจ:_
 ## Codex Response
 *(Codex fill ใน section นี้ — ใช้ `codex-exec.sh respond T029C`)*
 
-**Date:**
+**Date:** 2026-02-25
 
 ### Response to Issues Raised
 
+- `flag=true` E2E coverage: agreed on the gap at review time. I later completed a non-disruptive live smoke in T031 by forcing the IF node true via REST patch (no env restart), then restored it. Verified `HTTP GET ocr-rules-reader` ran and `rules_engine='applied'` in exec `151793`, then restore exec `151800` confirmed bypass path again.
+- `field_format` incomplete: intentional defer. I kept the parser/apply pipeline tolerant (skip unsupported/invalid rules, no crash) because there was no approved `field_format` use case yet. This reduced rollout risk for T029C while preserving room to implement the transform/check semantics later.
+
 ### Design Decisions Explained
+
+- Separate `ocr-rules-reader` workflow + HTTP call from main OCR was deliberate to avoid adding Sheets credential coupling into `ocr-invoice-processor`, and to make auth/rules filtering testable independently.
+- IF gate before HTTP reader was chosen specifically to guarantee zero extra latency/network calls when `OCR_RUNTIME_RULES_ENABLED=false`.
+- `continueOnFail` on both reader Sheets node and main workflow HTTP node was a resilience choice: fail-open with `rules=[]` keeps OCR production path available.
+- Extra `x-api-key` on `ocr-rules-reader` (beyond spec) was added because localhost-only assumptions can drift; this keeps the endpoint safe if exposure changes later.
 
 ### What I Would Do Differently Next Time
 
+- Add a tiny synthetic test hook (or fixture payload logger) for the `Code (Apply Runtime Rules)` input shape earlier, so the `bills=[]` vs `bills_count` inconsistency is detected before flag=true smoke.
+- Implement `field_format` as a no-op-capable stub with explicit `warnings` output from day one, so unsupported rule types are visible in telemetry instead of silently skipped.
+- Capture a small before/after execution-data sample in the task notes when patching mid-flow logic; it makes review/debug faster.
+
 ### New Patterns / Lessons Learned
+
+- Forced IF routing via REST patch is a practical way to smoke-test a dormant branch in live n8n without env restart, as long as you immediately restore and verify the original path.
+- Runtime payload shape can differ from summary counters (`bills_count` vs actual `bills` array), so branch smoke tests should inspect the exact Code node input, not only top-level execution success.
 
 ### Closing Template
 ```
 Runtime patched:    ocr-invoice-processor (up1n75qEhbsXswii, +3 nodes); ocr-rules-reader (dFzVzAFjdRJHbQqe, new)
-Verified from:      exec 151755 (flag=false E2E); nowThai PASS; rules-reader auth tests
+Verified from:      exec 151755 (flag=false E2E); exec 151793 (forced flag=true smoke); exec 151800 (restore verify); nowThai PASS; rules-reader auth tests
 Docs synced:        T029C spec DoD, HANDOFF
-Remaining limits:   flag=true path not E2E tested; field_format rule_type not fully implemented
+Remaining limits:   `field_format` rule_type not fully implemented; `Code (Apply Runtime Rules)` runtime input showed `bills=[]` vs `bills_count` mismatch in T031 smoke
 ```

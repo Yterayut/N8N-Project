@@ -157,19 +157,23 @@ return [{ json: { telegram_text: telegramText, chat_id: $env.TELEGRAM_OCR_CHAT_I
 ## Definition of Done
 
 **Implemented:**
-- [ ] `gg-data-gateway` workflow active (GET /webhook/gg-data)
-- [ ] `gg-notify-gateway` workflow active (POST /webhook/gg-notify)
-- [ ] webhookId UUID บนทั้งสอง webhook nodes (PATTERN-008)
+- [x] `gg-data-gateway` workflow active (GET /webhook/gg-data)
+- [x] `gg-notify-gateway` workflow active (POST /webhook/gg-notify)
+- [x] webhookId UUID บนทั้งสอง webhook nodes (PATTERN-008)
 
 **Verified:**
-- [ ] T1-T6 ผ่านทั้งหมด
-- [ ] `./scripts/gg/gg-curate.sh` รันแล้วเห็น log ว่าดึงข้อมูลได้ (ไม่ใช่ error fallback)
+- [x] T1-T6 ผ่านทั้งหมด
+- [x] `./scripts/gg/gg-curate.sh` รันแล้วเห็น log ว่าดึงข้อมูลได้ (ไม่ใช่ error fallback)
 
 **Docs:**
-- [ ] HANDOFF.md workflow IDs อัปเดต
-- [ ] `docs/collab/GG.md` Data Sources section อัปเดต webhook IDs
+- [x] HANDOFF.md workflow IDs อัปเดต
+- [x] `docs/collab/GG.md` Data Sources section อัปเดต webhook IDs
 
 ---
 
 ## Discussion
 *(Codex pre-execution questions ใส่ที่นี่)*
+
+Post-implementation note (Codex):
+- `POST /rest/workflows` on this n8n build required `active` in payload (`SQLITE_CONSTRAINT ... workflow_entity.active`); created with `active:false` then activated via `PATCH /rest/workflows/{id}` with `{\"active\":true}`.
+- `gg-curate.sh` verification showed live gateway usage (`Found 4 TRAIN_CASES`) before the script moved on to Gemini analysis (external step).

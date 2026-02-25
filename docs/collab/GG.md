@@ -123,6 +123,10 @@ logs/
 | OCR_FEEDBACK | Google Sheets (tab: OCR_FEEDBACK) | n8n webhook GET /webhook/gg-data |
 | Invoice PDFs | Google Drive / local tmp | path argument |
 
+**n8n gateway workflows (T033):**
+- `gg-data-gateway` (`XtaSg9pLDuPERtI8`) — webhook path `/webhook/gg-data`, `webhookId=170cf0d3-8e06-42ed-9430-8c457487b36f`, requires `x-api-key`
+- `gg-notify-gateway` (`YZTJwkh25isaLKHo`) — webhook path `/webhook/gg-notify`, `webhookId=93ae3db0-f0ba-4fcd-9e62-0d924ccb09b3`, requires `x-api-key`
+
 ---
 
-*Last updated: 2026-02-25 by CC*
+*Last updated: 2026-02-25 by Codex (T033)*
