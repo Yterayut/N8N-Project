@@ -1,86 +1,116 @@
-# Forward Handoff — 2026-02-25
+# Forward Handoff — 2026-02-26
 
 ## Where We Are
 - Branch: `stable`
-- Last commit: `29fb8ae` review(T029C): CC review score 8/10 APPROVED + HANDOFF updated
-- Phase: **T029 OCR Closed Learning Loop — COMPLETE** (T029A/B/C done, T029D deferred)
+- Last commit: `33f471a` docs(retro): session retrospective 2026-02-26-3agent-gap-closing
+- Phase: **3-Agent Gap Closing COMPLETE** — T033/T032/T029C merged, T034 done, 8 gap changes in
 
 ## What Was Accomplished This Session
 
-- ✅ T029B review (7.5/10 APPROVED WITH CONDITIONS) — `docs/collab/reviews/T029B-review.md`
-- ✅ T029B-patch (CC) — fix P2/P3 dedup key, strip count/pct from patternText — exec 151689
-- ✅ T029C spec finalized — IF gate architecture + ocr-rules-reader (post Codex discuss)
-- ✅ T029C implement (Codex) — commit `971f51d` — 3 new nodes main OCR + ocr-rules-reader workflow
-- ✅ T029C review (8/10 APPROVED) — `docs/collab/reviews/T029C-review.md`
-- ✅ Supabase migration proposal committed as T030 draft — `T029-architecture.md Discussion`
-- ✅ OCR_EXAMPLES ex_seed_001 duplicate deactivated — 6 active examples, no dups
+- ✅ Merged Codex T033+T032+T029C from `agents/codex` → `stable` (`c95080b`)
+- ✅ Live tests passed: T033 webhooks (gg-data-gateway + gg-notify-gateway), T032 timing-safe auth, T029C response
+- ✅ GG Spec Feedback Loop installed — `docs/gg/feedback/T034-feedback.md` + `docs/gg/spec-guidelines.md` (10 rules)
+- ✅ T034 spec rewritten by CC (6 issues found in GG draft — internal reasoning, wrong auth, missing webhookId, wrong CLI flags, DoD format, missing Risk)
+- ✅ T034 (GG Health Monitor) assigned + completed by Codex — `gg-health-monitor` workflow `BlCrCNITw9ThtfOx` active
+- ✅ `scripts/gg/gg-health.sh` created by Codex — checks CLI, API (timeout 20s), scripts, storage, data gateway
+- ✅ `codex-exec.sh` REPO_ROOT bug fixed (2 attempts) — now uses `git rev-parse --git-common-dir` for worktree-aware detection
+- ✅ 8 gap-closing changes committed (`b45c256`):
+  1. `codex_notify()` in codex-exec.sh — Telegram after implement/verify/respond
+  2. Dependency check in codex-exec.sh — warn if prerequisite not complete
+  3. GG proposals/reports awareness in codex-exec.sh preamble
+  4. Approval Status template in `common.sh` `save_proposal()`
+  5. `gg-spec-draft.sh` loads n8n-patterns + lessons-learned + CC feedback
+  6. Merge Approval section in `_TEMPLATE.md`
+  7. CODEX.md updated — GG awareness + notification note
+  8. `spec-guidelines.md` — n8n patterns reference
+- ✅ Session retrospective saved — `docs/collab/retrospectives/2026-02-26-3agent-gap-closing.md`
 
 ## Current State of Live System
 
-| Workflow | ID | Status | หมายเหตุ |
-|----------|----|--------|---------|
-| ocr-invoice-processor | `up1n75qEhbsXswii` | Active, 114 nodes | +3 runtime rules nodes (flag=false) |
-| ocr-rules-reader | `dFzVzAFjdRJHbQqe` | Active | GET /webhook/ocr-rules, auth x-api-key |
-| ocr-km-logger | `jmJHPPj0OM5LcZ0n` | Active | logs TRAIN_CASES + FIELD_DIFFS |
-| ocr-km-suggest | `NkKd02QyzLRcpIJM` | Active, 16 nodes | daily 06:00 Bangkok, dedup fixed |
-| ocr-feedback-receiver | `ztJ8oCBHREUPPry6` | Active | → km-logger + learning-path1 |
-| ocr-examples-api | `LzYmwkdRfOxbCrwB` | Active | 6 active examples, no dups |
+| Workflow | ID | Status |
+|----------|----|--------|
+| ocr-invoice-processor | `up1n75qEhbsXswii` | Active, 114 nodes |
+| gg-data-gateway | `XtaSg9pLDuPERtI8` | Active — GET /webhook/gg-data |
+| gg-notify-gateway | `YZTJwkh25isaLKHo` | Active — POST /webhook/gg-notify |
+| gg-health-monitor | `BlCrCNITw9ThtfOx` | Active — GET /webhook/gg-health |
+| ocr-rules-reader | `dFzVzAFjdRJHbQqe` | Active — flag=false (safe) |
+| ocr-km-logger | `jmJHPPj0OM5LcZ0n` | Active |
+| ocr-km-suggest | `NkKd02QyzLRcpIJM` | Active — daily 06:00 BKK |
+| ocr-feedback-receiver | `ztJ8oCBHREUPPry6` | Active |
 
 ## What To Do Next (In Order)
 
-1. **Codex respond to T029C review** — `./scripts/collab/codex-exec.sh respond T029C` — Codex ควรอ่าน review + ตอบ
-2. **Commit uncommitted HANDOFF.md** — `git add docs/collab/HANDOFF.md && git commit -m "chore: sync" && ./scripts/collab/sync.sh all`
-3. **T030 Supabase decision** — อ่าน `docs/collab/tasks/T029-architecture.md ## Discussion` → decide: implement M1 dual-write หรือรอก่อน
-4. **T029D** — รอจนมี test documents ใน GDrive (≥5 files/doc_type + ground_truth JSON)
-5. **flag=true manual test** — ก่อน enable `OCR_RUNTIME_RULES_ENABLED=true` ต้อง test path นี้ก่อน (ดู T029C-review.md)
+1. **Commit HANDOFF.md** — `git add docs/collab/HANDOFF.md && git commit -m "chore: sync handoff" && ./scripts/collab/sync.sh all`
+2. **Write T034 Code Review** — `docs/collab/reviews/T034-review.md` จาก `_TEMPLATE.md` — Codex ต้องการ review เพื่อ fill Codex Response
+3. **Test Codex notification** — `./scripts/collab/codex-exec.sh ask "ping"` → ดู Telegram ว่ามี notification
+4. **Review GG curation report** — `docs/gg/reports/2026-02-25-curation.md` — 1 case recommended FLAG/REMOVE รอ CC decision
+5. **Test gg-spec-draft.sh round 2** — `./scripts/gg/gg-spec-draft.sh "test requirement"` → verify guidelines inject ทำงาน
+6. **bills=[] investigation** — ก่อน enable `OCR_RUNTIME_RULES_ENABLED=true` ต้องสืบสวน data lineage issue
 
 ## Pending Tasks (from HANDOFF.md)
 
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
+| T034 review | CC write Code Review for T034 | CC | T034 done ✅ |
 | T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test docs in GDrive |
 | T030 | Supabase migration (proposal ready) | — | CC decision on scope |
-| T029C respond | Codex respond to review | Codex | T029C review done ✅ |
 
 ## Uncommitted Changes
 
-- `M docs/collab/HANDOFF.md` — sync log entries added by auto-sync hook, minor updates
+- `M docs/collab/HANDOFF.md` — needs commit + sync
 
 ## Context That Took Time To Build (Don't Lose)
 
-### T029C Architecture
-- IF node (not code check) เป็น gate ก่อน Sheets/HTTP call — guarantee flag=false = zero network call
-- ocr-rules-reader แยก workflow (GET /webhook/ocr-rules) — testable อิสระจาก main OCR
-- Connection path: `Code (Normalize + Validate)` → `IF (Runtime Rules Enabled?)` → true: HTTP reader → `Code (Apply Runtime Rules)` → `If (Need Re-ask)` | false: direct → `If (Need Re-ask)`
-- flag=false = pure pass-through ไม่มี audit fields เพิ่ม
-- field_format rule_type ยัง NOT fully implemented (placeholder) — `field_default` + `skip_validation` ทำงานได้
+### GG Spec Feedback Loop (NEW this session)
+- GG ยังไม่สมบูรณ์ — T034 draft มี 6 issues (internal reasoning ใน output, wrong auth, missing webhookId, wrong flags, DoD format, missing Risk)
+- **2-layer feedback**: per-spec `docs/gg/feedback/T0xx-feedback.md` + living `docs/gg/spec-guidelines.md` (10 rules)
+- `gg-spec-draft.sh` now injects: spec-guidelines + n8n-patterns + lessons-learned + all feedback files
+- **Next GG spec test**: รัน `gg-spec-draft.sh "test"` → ดูว่า output เริ่มด้วย `# T0xx` ทันที ไม่มี preamble
 
-### Codex Session Pattern
-- Codex interactive session (`codex` tmux) มักติดเมื่อพยายามรัน `codex-exec.sh` จาก within CLI
-- วิธีถูก: รัน `./scripts/collab/codex-exec.sh implement T0xx 2>&1 | tee /log` จาก **bash shell** (dev tmux) ไม่ใช่จาก codex interactive
-- Codex sandbox blocks git commit — CC ต้อง merge agents/codex แล้ว commit เสมอ
+### codex-exec.sh REPO_ROOT Detection
+- Fix: `git rev-parse --git-common-dir` → absolute path สำหรับ worktree, `.git` สำหรับ main repo
+- Pattern: `case "$_GIT_COMMON" in /*) REPO_ROOT="$(dirname "$_GIT_COMMON")" ;; *) REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)" ;; esac`
+- เหตุผล: ถ้ารันจาก worktree `agents/codex/` → git-common-dir = `/path/to/main-repo/.git` → dirname = main repo ✅
 
-### OCR Learning Loop State
-- TRAIN_CASES ปัจจุบัน 7 rows (source=manual) — pattern analysis excluded by default
-- Real feedback data เพิ่งเริ่ม (admin ทดสอบ invoice_number correction วันนี้) — ต้องรอ ≥3 cases ต่อ pattern ก่อน lesson จะ generate
-- OCR_KM_RUNTIME_RULES sheet ว่างอยู่ (แค่ seed inactive row) — feature flag OFF
+### Codex Notification (NEW this session)
+- `codex_notify()` ใน codex-exec.sh — POST ไป `/webhook/gg-notify` พร้อม role=Codex
+- รัน auto หลัง implement/verify/respond modes
+- **ยังไม่ได้ test จริง** — ต้องทดสอบว่า Telegram รับได้
 
-### Supabase
-- `Google Sheets to Supabase` workflow (`newlJxGvIuRXSkw6`) เป็นคนละโปรเจ็ค — ห้ามยุ่ง
-- T030 proposal อยู่ใน `docs/collab/tasks/T029-architecture.md ## Discussion` — Codex เขียนไว้ pending CC decision
+### CODEX.md Gitignore Pattern
+- `agents/` directory ถูก gitignore ใน stable — commit CODEX.md ต้องทำใน worktree แล้ว merge:
+  ```bash
+  git -C agents/codex add CODEX.md && git -C agents/codex commit -m "..."
+  git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
+  ```
+
+### Codex Push Failure (ongoing)
+- `git push origin agents/codex` failed — no GitHub credentials in shell
+- Workaround: CC merge manually `git -C agents/codex ...` + sync
+- Fix needed: GITHUB_TOKEN in .env + token-based remote URL
+
+### GG Curation Report Pending
+- `docs/gg/reports/2026-02-25-curation.md` — generated during T033 verification
+- 1 case recommended FLAG/REMOVE — CC ยังไม่ได้ review
 
 ## Commands To Run First
 
 ```bash
-# 1. Commit uncommitted HANDOFF
-git add docs/collab/HANDOFF.md && git commit -m "chore: sync log" && ./scripts/collab/sync.sh all
+# 1. Commit uncommitted HANDOFF.md
+git add docs/collab/HANDOFF.md && git commit -m "chore: sync handoff 2026-02-26" && ./scripts/collab/sync.sh all
 
-# 2. Check if Codex responded to T029C review
-cat docs/collab/reviews/T029C-review.md | grep -A 10 "## Codex Response"
+# 2. Write T034 review (new file from template)
+cat docs/collab/reviews/_TEMPLATE.md  # read template first
 
-# 3. Check live system health
-curl -s -b cookie.txt http://localhost:5678/rest/workflows | python3 -c "import sys,json; r=json.load(sys.stdin); print('Active:', sum(1 for w in r.get('data',[]) if w.get('active')))"
+# 3. Test Codex notification
+./scripts/collab/codex-exec.sh ask "ping" 2>&1 | tail -5
+# Then check Telegram
 
-# 4. ถ้าต้องการทำ T030 — อ่าน proposal ก่อน
-cat docs/collab/tasks/T029-architecture.md | grep -A 60 "## Discussion"
+# 4. Review GG curation report
+cat docs/gg/reports/2026-02-25-curation.md
 ```
+
+## Last Checkpoint — 07:30
+- ✅ 8 gap-closing changes done + retrospective saved
+- ✅ FORWARD.md written (this file)
+- ⏭️ Commit HANDOFF.md → write T034 review → test Codex notification
