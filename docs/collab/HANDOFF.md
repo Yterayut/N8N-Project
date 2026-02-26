@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T036 System Health Report + T029D Ground Truth |
+| **Phase** | T029D Ground Truth Spot-check + Benchmark Runner |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T036 DONE (3 workflows created: system-daily-health-report, system-health-ondemand, system-error-monitor) — รอ CC review + merge; T035 complete (bills=[] fixed, flag=true) |
+| **Codex Status** | T036 MERGED ✅ (review 8/10, merged to stable); รอ Codex respond T036 review |
 | **GG Status** | Ground truth batch 21/21 complete → `docs/gg/proposals/2026-02-26-groundtruth-*.json` — รอ CC spot-check |
-| **Last Sync** | 2026-02-26 12:15 |
+| **Last Sync** | 2026-02-26 12:45 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -106,20 +106,23 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
+_(none)_
+
+### Pending (Codex)
 | ID | Task | Status |
 |----|------|--------|
-| T036 | System Health Report (3 workflows) | ✅ Codex done — **รอ CC review + merge** |
+| T036 respond | Codex respond to T036 review | รอ Codex อ่าน + fill `## Codex Response` ใน `docs/collab/reviews/T036-review.md` |
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029D | Benchmark Runner | Codex | GG ground truth 21/21 ✅ ready (`docs/gg/proposals/2026-02-26-groundtruth-*.json`) — CC ต้อง spot-check + populate OCR_BENCHMARK_FUEL sheet |
-| T030 | Supabase migration (proposal ready) | — | Codex proposal in T029-architecture.md Discussion |
+| T029D | Benchmark Runner | Codex | CC spot-check GG ground truth 3-5 files → populate OCR_BENCHMARK_FUEL sheet ก่อน assign |
+| T030 | Supabase migration (proposal ready) | — | Deferred |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
-| T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | Implemented; new workflows active: `ImhtvE0MgWPQBn63` (`system-daily-health-report`), `jtwhukQgRmJAEMkP` (`system-health-ondemand`), `WRuU2CglWAYjxOQ5` (`system-error-monitor`); T1 daily manual run exec `152079` ✅, T3 `/health` simulated Telegram webhook exec `152085` ✅, T4 error spike alert exec `152090` ✅, T5 cooldown logic validated via injected `staticData` exec `152092` ✅ (manual `/run` API did not persist staticData between runs); report currently flags real issue: `gg-data?sheet=OCR_EXAMPLES` returns 200 + empty body |
+| T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | **MERGED 8/10** — workflows: `ImhtvE0MgWPQBn63`, `jtwhukQgRmJAEMkP`, `WRuU2CglWAYjxOQ5` active; T1/T3/T4/T5 ✅; review: `docs/collab/reviews/T036-review.md` |
 | T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | 2026-02-26 | Implemented; live workflow `up1n75qEhbsXswii` patched via REST; `verify_nowThai_sync.sh` ✅; `/webhook/ocr-dev` smoke `bills_count=1`; exec `151920` confirms `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran and preserved `bills`; `rules_engine=no_rules` (no active `OCR_KM_RUNTIME_RULES` rows) |
 | T034 review | T034 Code Review + Codex Response + Merge Approval | CC+Codex | 2026-02-26 | CLOSED — LESSON-011 added; review loop complete |
 | T034 | GG Agent Health Check Endpoint | Codex | 2026-02-26 | Implemented; workflow `BlCrCNITw9ThtfOx` active (`/webhook/gg-health`); T1 401 + T2 200/JSON + T4 JSON parse ✅; optional T3 warn smoke ✅ |
@@ -269,6 +272,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 12:35 | sync | all | auto-sync |
+| 2026-02-26 12:35 | sync | all | auto-sync |
 | 2026-02-26 12:34 | sync | all | auto-sync |
 | 2026-02-26 12:23 | sync | all | auto-sync |
 | 2026-02-26 12:14 | sync | all | auto-sync |
