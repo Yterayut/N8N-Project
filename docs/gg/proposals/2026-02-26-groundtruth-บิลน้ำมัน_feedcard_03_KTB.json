@@ -1,0 +1,143 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:09:48",
+  "source_file": "บิลน้ำมัน_feedcard_03_KTB.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": null,
+    "invoice_date": null,
+    "vendor_name": "ธนาคารกรุงไทย จำกัด (มหาชน)",
+    "vendor_tax_id": "0107537000882",
+    "vendor_address": "35 ถนนสุขุมวิท แขวงคลองเตยเหนือ เขตวัฒนา กรุงเทพฯ 10110",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": null,
+    "subtotal": 32110.0,
+    "vat_rate": "0%",
+    "vat_amount": 0.0,
+    "total_amount": 32110.0,
+    "currency": "THB",
+    "payment_method": "Fleet Card",
+    "line_items": [
+      {
+        "description": "PTTST.C YANNAWA BANGKOK (Card: ...1365)",
+        "quantity": 62.52,
+        "unit_price": 31.99,
+        "amount": 2000.0
+      },
+      {
+        "description": "PTTST.C YANNAWA BANGKOK (Card: ...1365)",
+        "quantity": 62.52,
+        "unit_price": 31.99,
+        "amount": 2000.0
+      },
+      {
+        "description": "PTTST.D S.M.W. SERVICE COPATHUMTHANI (Card: ...1365)",
+        "quantity": 62.52,
+        "unit_price": 31.99,
+        "amount": 2000.0
+      },
+      {
+        "description": "PTTST.C YANNAWA BANGKOK (Card: ...1365)",
+        "quantity": 62.52,
+        "unit_price": 31.99,
+        "amount": 2000.0
+      },
+      {
+        "description": "BANGCHAK RUAYMAHASUB PETRAYUTTHAYA (Card: ...1365)",
+        "quantity": 53.07,
+        "unit_price": 32.03,
+        "amount": 1700.0
+      },
+      {
+        "description": "PTTST.C THUNGKHRU BANGKOK (Card: ...1365)",
+        "quantity": 56.58,
+        "unit_price": 31.99,
+        "amount": 1810.0
+      },
+      {
+        "description": "PTTST.C THUNGKHRU BANGKOK (Card: ...1365)",
+        "quantity": 64.083,
+        "unit_price": 31.99,
+        "amount": 2050.0
+      },
+      {
+        "description": "PTTST.D SCG PRAWET CO.,LTBANGKOK (Card: ...1365)",
+        "quantity": 64.71,
+        "unit_price": 31.99,
+        "amount": 2070.0
+      },
+      {
+        "description": "PTTST.C THUNGKHRU BANGKOK (Card: ...1365)",
+        "quantity": 67.521,
+        "unit_price": 31.99,
+        "amount": 2160.0
+      },
+      {
+        "description": "PTTST.D ALL GREAT ENERGY BANGKOK (Card: ...8458)",
+        "quantity": 46.17,
+        "unit_price": 32.49,
+        "amount": 1500.0
+      },
+      {
+        "description": "PTTST.D SCG PRAWET CO.,LTBANGKOK (Card: ...8458)",
+        "quantity": 53.14,
+        "unit_price": 31.99,
+        "amount": 1700.0
+      },
+      {
+        "description": "PTTST.D SCG PRAWET CO.,LTBANGKOK (Card: ...8458)",
+        "quantity": 46.89,
+        "unit_price": 31.99,
+        "amount": 1500.0
+      },
+      {
+        "description": "PTTST.C THANON PRACHACHUEBANGKOK (Card: ...0278)",
+        "quantity": 58.143,
+        "unit_price": 31.99,
+        "amount": 1860.0
+      },
+      {
+        "description": "PTTST.C THANON PRACHACHUEBANGKOK (Card: ...0278)",
+        "quantity": 54.089,
+        "unit_price": 30.69,
+        "amount": 1660.0
+      },
+      {
+        "description": "PTTST.D REST AREA CO.,LTDBANGKOK (Card: ...0278)",
+        "quantity": 43.66,
+        "unit_price": 30.69,
+        "amount": 1340.0
+      },
+      {
+        "description": "PTTST.D 3 NPP CO.,LTD BANGKOK (Card: ...8423)",
+        "quantity": 43.804,
+        "unit_price": 33.33,
+        "amount": 1460.0
+      },
+      {
+        "description": "PTTST.D 3 NPP CO.,LTD BANGKOK (Card: ...8423)",
+        "quantity": 39.963,
+        "unit_price": 32.53,
+        "amount": 1300.0
+      }
+    ]
+  },
+  "extraction_notes": "This is page 4 of a 7-page statement. The 'total_amount' listed is the sum of subtotals appearing on this page (10,000.00 + 9,790.00 + 4,700.00 + 4,860.00 + 2,760.00 = 32,110.00). Note that the first subtotal (10,000.00) includes a transaction of 2,000.00 THB not visible on this page (likely on page 3), as indicated by the Litre total (312.600) vs visible sum (250.080). VAT is explicitly stated as 0.00 in the summary box. Invoice number and date are not present on this specific page.",
+  "human_review_required_fields": [
+    "invoice_number",
+    "invoice_date",
+    "buyer_tax_id"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:09:48 by GG*

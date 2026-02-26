@@ -1,0 +1,52 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:01:18",
+  "source_file": "Example ritta bill.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "other",
+    "invoice_number": "4/68",
+    "invoice_date": "2025-04-28",
+    "vendor_name": "RITTA CO., LTD.",
+    "vendor_tax_id": null,
+    "vendor_address": null,
+    "buyer_name": "นายเพชรรัตน์ เพชรดี",
+    "buyer_tax_id": null,
+    "subtotal": 7565.0,
+    "vat_rate": null,
+    "vat_amount": null,
+    "total_amount": 7565.0,
+    "currency": "THB",
+    "payment_method": "โอนเงินเข้าบัญชี (Bank Transfer)",
+    "line_items": [
+      {
+        "description": "ค่าน้ำมัน",
+        "quantity": 1,
+        "unit_price": 6290.0,
+        "amount": 6290.0
+      },
+      {
+        "description": "ค่าที่จอดรถ",
+        "quantity": 1,
+        "unit_price": 1275.0,
+        "amount": 1275.0
+      }
+    ]
+  },
+  "extraction_notes": "The document is a 'Payment Voucher' (ใบสำคัญจ่าย) which acts as a summary cover sheet for multiple expenses. The file contains 10 pages total, including the summary, fuel reports, and various individual fuel receipts. The extraction focused on the primary summary page. The year 2568 (Thai BE) corresponds to 2025. Vendor Tax ID for Ritta Co., Ltd. is visible on subsequent pages (0105530054829) but not on the primary voucher header.",
+  "human_review_required_fields": [
+    "vendor_tax_id",
+    "vendor_address"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:01:18 by GG*

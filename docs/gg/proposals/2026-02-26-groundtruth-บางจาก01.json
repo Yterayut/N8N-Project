@@ -1,0 +1,43 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:06:50",
+  "source_file": "บางจาก01.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "25102921008460",
+    "invoice_date": "2025-04-17",
+    "vendor_name": "บริษัท บางจากกรีนเนท จำกัด",
+    "vendor_tax_id": "0105536080112",
+    "vendor_address": "2098 อาคารเอ็มทาวเวอร์ ชั้น 17 ถ.สุขุมวิท แขวงพระโขนงใต้ เขตพระโขนง กรุงเทพมหานคร 10260 (สาขาที่ออกใบกำกับภาษีคือสาขาที่ 00458: 10292-รามอินทรา กม.9 ขาออก(85-87))",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 1401.87,
+    "vat_rate": "7%",
+    "vat_amount": 98.13,
+    "total_amount": 1500.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "GASOHOL 95S EVO",
+        "quantity": 45.593,
+        "unit_price": 32.9,
+        "amount": 1500.0
+      }
+    ]
+  },
+  "extraction_notes": "The document is a combined Tax Invoice and Receipt (ใบกำกับภาษี/ใบเสร็จรับเงิน). It contains two identical copies. The total amount 1,500.00 is inclusive of VAT. The subtotal 1,401.87 plus VAT 98.13 equals the total exactly. Vendor address includes both the headquarters and the specific branch (00458) where the transaction occurred. Vehicle plate number 2ขฆ-3201 is also present on the receipt but not mapped to a specific JSON field in the schema.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:06:50 by GG*

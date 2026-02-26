@@ -1,0 +1,45 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:05:37",
+  "source_file": "shell.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "01-1241-000020340",
+    "invoice_date": "2025-01-30",
+    "vendor_name": "บจก.มหานคร ปิโตรเลียมพาร์ค สาขา 1",
+    "vendor_tax_id": "0305563000017",
+    "vendor_address": "220 ม.2 ต.หนองจะบก อ.เมืองนครราชสีมา จ.นครราชสีมา 30000",
+    "buyer_name": "บริษัท ฤทธา จำกัด (สำนักงานใหญ่)",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 1074.77,
+    "vat_rate": "7%",
+    "vat_amount": 75.23,
+    "total_amount": 1150.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "01 - FuelSave G95",
+        "quantity": 31.34,
+        "unit_price": 36.69,
+        "amount": 1150.0
+      }
+    ]
+  },
+  "extraction_notes": "Item 2 in the document ('Shell Go+ +668****7208') was excluded from line_items as it represents a loyalty card entry without quantity or price. License plate number 'ขญ1075กทม' was present but not mapped as there is no designated field.",
+  "human_review_required_fields": [
+    "payment_method"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:05:37 by GG*

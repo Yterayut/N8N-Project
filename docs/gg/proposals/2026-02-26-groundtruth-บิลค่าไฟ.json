@@ -1,0 +1,53 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:07:54",
+  "source_file": "บิลค่าไฟ.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "AB305802100286",
+    "invoice_date": "2023-02-10",
+    "vendor_name": "การไฟฟ้าส่วนภูมิภาค จังหวัดอุดรธานี (สาขาที่ 00092)",
+    "vendor_tax_id": "0994000165501",
+    "vendor_address": "เลขที่ 92 ถนนศรีชมชื่น ตำบลหมากแข้ง อำเภอเมืองอุดรธานี จังหวัดอุดรธานี 41000",
+    "buyer_name": "บริษัท ศุภาลัย จำกัด (มหาชน)",
+    "buyer_tax_id": "0107535000303",
+    "subtotal": 24.62,
+    "vat_rate": "7%",
+    "vat_amount": 1.72,
+    "total_amount": 26.34,
+    "currency": "THB",
+    "payment_method": "QR Payment",
+    "line_items": [
+      {
+        "description": "ค่าไฟฟ้าฐาน",
+        "quantity": 1,
+        "unit_price": 24.62,
+        "amount": 24.62
+      },
+      {
+        "description": "ค่า FT 0.3672 บาท/หน่วย",
+        "quantity": 0,
+        "unit_price": 0.3672,
+        "amount": 0.0
+      }
+    ]
+  },
+  "extraction_notes": "The file contains 5 separate receipts (Meter 27 to 31). Extracted data reflects the first receipt (Meter 27). Thai Buddhist Era year 2566 converted to 2023.",
+  "human_review_required_fields": [
+    "vendor_name",
+    "vendor_address",
+    "buyer_name"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:07:54 by GG*

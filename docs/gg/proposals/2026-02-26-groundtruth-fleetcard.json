@@ -1,0 +1,107 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:02:18",
+  "source_file": "fleetcard.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "other",
+    "invoice_number": "2000000000135835",
+    "invoice_date": "2024-02-01",
+    "vendor_name": "บมจ. ปตท. น้ำมัน และการค้าปลีก / ธนาคารกสิกรไทย",
+    "vendor_tax_id": "0107561000013",
+    "vendor_address": "400/22 ถนนพหลโยธิน แขวงสามเสนใน เขตพญาไท กรุงเทพฯ 10400",
+    "buyer_name": "บจก. พ.สหะสร้าง โครงการบ่อขยะส่งสินค้า",
+    "buyer_tax_id": null,
+    "subtotal": 12093.46,
+    "vat_rate": "7%",
+    "vat_amount": 846.54,
+    "total_amount": 12940.0,
+    "currency": "THB",
+    "payment_method": "Fleet Card",
+    "line_items": [
+      {
+        "description": "GASOHOL E20 (Plate No. 3กฆ 5751)",
+        "quantity": 30.59,
+        "unit_price": 32.69,
+        "amount": 1000.0
+      },
+      {
+        "description": "GASOHOL E20 (Plate No. 3กฆ 5751)",
+        "quantity": 33.64,
+        "unit_price": 32.698,
+        "amount": 1100.0
+      },
+      {
+        "description": "GASOHOL E20 (Plate No. 3กฆ 5751)",
+        "quantity": 29.595,
+        "unit_price": 33.79,
+        "amount": 1000.0
+      },
+      {
+        "description": "GASOHOL E20 (Plate No. 3กฆ 5751)",
+        "quantity": 28.744,
+        "unit_price": 34.79,
+        "amount": 1000.0
+      },
+      {
+        "description": "GASOHOL E20 (Plate No. 3กน 1661)",
+        "quantity": 29.23,
+        "unit_price": 33.19,
+        "amount": 970.0
+      },
+      {
+        "description": "GASOHOL E20 (Plate No. 3กน 1661)",
+        "quantity": 29.585,
+        "unit_price": 33.79,
+        "amount": 1000.0
+      },
+      {
+        "description": "DIESEL B7 (Plate No. 3กฆ 8726)",
+        "quantity": 51.122,
+        "unit_price": 29.93,
+        "amount": 1530.0
+      },
+      {
+        "description": "DIESEL B7 (Plate No. 3กฆ 8726)",
+        "quantity": 50.344,
+        "unit_price": 29.99,
+        "amount": 1510.0
+      },
+      {
+        "description": "DIESEL B7 (Plate No. 3กฆ 8726)",
+        "quantity": 51.016,
+        "unit_price": 29.99,
+        "amount": 1530.0
+      },
+      {
+        "description": "DIESEL B7 (Plate No. 3กฆ 8726)",
+        "quantity": 43.013,
+        "unit_price": 29.99,
+        "amount": 1290.0
+      },
+      {
+        "description": "DIESEL B7 (Plate No. 3กฆ 8726)",
+        "quantity": 33.678,
+        "unit_price": 29.99,
+        "amount": 1010.0
+      }
+    ]
+  },
+  "extraction_notes": "This document is a Fleet Card Transaction Report (Page 2 of 17). The total_amount is calculated as the sum of all individual card totals on this page (4,100 + 1,970 + 6,870 = 12,940.00). Subtotal and VAT are derived from the aggregated totals for each card. Vendor Tax ID (0107561000013) is extracted from the line item merchant details for PTT stations. The buyer address contains some handwritten-style Thai fonts which may require verification.",
+  "human_review_required_fields": [
+    "buyer_address",
+    "invoice_number",
+    "vendor_tax_id"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:02:18 by GG*

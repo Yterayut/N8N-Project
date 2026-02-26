@@ -1,0 +1,49 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:03:34",
+  "source_file": "gas.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "1262/63081",
+    "invoice_date": "2025-04-09",
+    "vendor_name": "บริษัท แฟมิลี่ แก๊ส ซิสเต็ม จำกัด (สำนักงานใหญ่)",
+    "vendor_tax_id": "0135552006240",
+    "vendor_address": "238 ถนนรามอินทรา แขวงคันนายาว เขตคันนายาว กรุงเทพฯ 10230",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "buyer_address": "300 ถ. ร่มเกล้า แขวงคลองสามประเวศ เขตลาดกระบัง กรุงเทพมหานคร 10520",
+    "subtotal": 802.8,
+    "vat_rate": "7%",
+    "vat_amount": 56.2,
+    "total_amount": 859.0,
+    "currency": "THB",
+    "payment_method": "cash",
+    "line_items": [
+      {
+        "description": "แก๊สรถยนต์ LPG",
+        "quantity": 55.35,
+        "unit_price": 15.52,
+        "amount": 859.0
+      }
+    ]
+  },
+  "extraction_notes": "Invoice date '09/04/68' interpreted as Buddhist Era 2568 (2025-04-09). Invoice number includes both Book No. (เล่มที่) 1262 and No. (เลขที่) 63081. Buyer details and date are handwritten. The line item amount (859.00) is the VAT-inclusive total for that line. Payment method inferred as 'cash' from 'บิลเงินสด'.",
+  "human_review_required_fields": [
+    "invoice_date",
+    "buyer_name",
+    "buyer_address",
+    "buyer_tax_id"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:03:34 by GG*

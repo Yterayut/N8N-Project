@@ -1,0 +1,131 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T13:24:44",
+  "source_file": "บิลน้ำมัน_feedcard_04_kbank.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "other",
+    "invoice_number": "3000000000045975",
+    "invoice_date": "2025-05-01",
+    "vendor_name": "บริษัท ปตท. น้ำมันและการค้าปลีก จำกัด (มหาชน)",
+    "vendor_tax_id": "0105561001707",
+    "vendor_address": "555/2 ถนนวิภาวดีรังสิต แขวงจตุจักร เขตจตุจักร กรุงเทพมหานคร 10900",
+    "buyer_name": null,
+    "buyer_tax_id": null,
+    "subtotal": 13077.09,
+    "vat_rate": "7%",
+    "vat_amount": 915.4,
+    "total_amount": 13992.49,
+    "currency": "THB",
+    "payment_method": "Fleet Card",
+    "line_items": [
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 20.72,
+        "unit_price": 27.038,
+        "amount": 560.22
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 18.277,
+        "unit_price": 27.404,
+        "amount": 500.87
+      },
+      {
+        "description": "HSD - บจก. ด่านช้าง พลังงาน",
+        "quantity": 21.465,
+        "unit_price": 27.03,
+        "amount": 580.2
+      },
+      {
+        "description": "HSD - บจก. ด่านช้าง พลังงาน",
+        "quantity": 34.543,
+        "unit_price": 27.033,
+        "amount": 933.79
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 43.772,
+        "unit_price": 27.03,
+        "amount": 1183.15
+      },
+      {
+        "description": "HSD - บจก. ด่านช้าง พลังงาน",
+        "quantity": 38.773,
+        "unit_price": 27.03,
+        "amount": 1048.02
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 17.122,
+        "unit_price": 27.03,
+        "amount": 462.81
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 27.682,
+        "unit_price": 27.03,
+        "amount": 748.23
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 37.496,
+        "unit_price": 27.03,
+        "amount": 1013.51
+      },
+      {
+        "description": "HSD - บจก. รวยยิ่งรวย 2022",
+        "quantity": 42.321,
+        "unit_price": 27.03,
+        "amount": 1143.93
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 19.046,
+        "unit_price": 27.03,
+        "amount": 514.82
+      },
+      {
+        "description": "HSD - บจก. ด่านช้าง พลังงาน",
+        "quantity": 34.896,
+        "unit_price": 27.03,
+        "amount": 943.24
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 35.372,
+        "unit_price": 27.03,
+        "amount": 956.11
+      },
+      {
+        "description": "HSD - บจก. เอ็ม แอนด์ พี",
+        "quantity": 44.694,
+        "unit_price": 27.03,
+        "amount": 1208.07
+      },
+      {
+        "description": "HSD - บจก. เติมดี พลังงาน",
+        "quantity": 44.229,
+        "unit_price": 27.03,
+        "amount": 1195.52
+      }
+    ]
+  },
+  "extraction_notes": "The document is a 'Fleet Card Transaction Report' (Page 5 of 10) issued by KASIKORNBANK and PTT Oil and Retail (OR). The invoice_number provided is the Account Number. The subtotal, vat_amount, and total_amount fields are calculated based on the 15 transactions visible on this page. The vendor details are extracted from the PTT/OR header.",
+  "human_review_required_fields": [
+    "buyer_name",
+    "buyer_tax_id",
+    "total_amount"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T13:24:44 by GG*

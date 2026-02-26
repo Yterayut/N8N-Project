@@ -1,0 +1,57 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:16:44",
+  "source_file": "สยามแก๊ส.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "TI3292501-00029",
+    "invoice_date": "2025-01-07",
+    "vendor_name": "บมจ. สยามแก๊ส แอนด์ ปิโตรเคมีคัลส์",
+    "vendor_tax_id": "0107548000650",
+    "vendor_address": "109 ถนนประเสริฐมนูญกิจ แขวงจรเข้บัว เขตลาดพร้าว กรุงเทพมหานคร10230",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 560.75,
+    "vat_rate": "7%",
+    "vat_amount": 39.25,
+    "total_amount": 600.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "LPG 38.05L, 15.77B/L",
+        "quantity": 38.05,
+        "unit_price": 15.77,
+        "amount": 600.0
+      },
+      {
+        "description": "น้ำดื่ม 9.0L, 10.0B/L",
+        "quantity": 9.0,
+        "unit_price": 10.0,
+        "amount": 90.0
+      },
+      {
+        "description": "เติมแก๊ส200บาท เลือกรับน้ำดื่ม3ขวด",
+        "quantity": 1.0,
+        "unit_price": -90.0,
+        "amount": -90.0
+      }
+    ]
+  },
+  "extraction_notes": "Invoice date '07/01/2568' converted from Buddhist Era to Gregorian (2025). Vendor branch is '00043 (เกษตร นวมินทร์)'. Buyer section includes vehicle registration '1กง-6987'. Payment method is not explicitly stated on the document.",
+  "human_review_required_fields": [
+    "payment_method"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:16:44 by GG*

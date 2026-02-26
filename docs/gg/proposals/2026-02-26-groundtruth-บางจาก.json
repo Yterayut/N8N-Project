@@ -1,0 +1,57 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:07:25",
+  "source_file": "บางจาก.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "TI2501-00108",
+    "invoice_date": "2025-01-07",
+    "vendor_name": "บริษัท สยามสุขสวัสดิ์ จำกัด",
+    "vendor_tax_id": "0115555015410",
+    "vendor_address": "109 ถ.ประเสริฐมนูกิจ แขวงจรเข้บัว เขตลาดพร้าว กรุงเทพมหานคร 10230 Tel.065-3181354",
+    "buyer_name": "บริษัท ฤทธา จำกัด (สำนักงานใหญ่)",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 934.58,
+    "vat_rate": "7%",
+    "vat_amount": 65.42,
+    "total_amount": 1000.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "Gasohol 91 28.066L,35.63B/L",
+        "quantity": 28.066,
+        "unit_price": 35.63,
+        "amount": 1000.0
+      },
+      {
+        "description": "น้ำแถม 1.5 ลิตร 1.0L,0.0B/L",
+        "quantity": 1.0,
+        "unit_price": 0.0,
+        "amount": 0.0
+      },
+      {
+        "description": "เติมน้ำมัน 900 บาท แถมน้ำ 1 ขวด",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 0.0
+      }
+    ]
+  },
+  "extraction_notes": "Date converted from Buddhist Era 2568 to Gregorian 2025. Vendor address includes branch information (สาขาที่ 00003). The 'เติมน้ำมัน 900 บาท แถมน้ำ 1 ขวด' is a promotional item with zero amount.",
+  "human_review_required_fields": [
+    "line_items"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:07:25 by GG*

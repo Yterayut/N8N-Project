@@ -1,0 +1,47 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:05:07",
+  "source_file": "PTT-เขียนมือ.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "306428",
+    "invoice_date": "2025-04-09",
+    "vendor_name": "บริษัท เอส ซี จี ประเวศ จำกัด",
+    "vendor_tax_id": "0135553012766",
+    "vendor_address": "953 ถนนอ่อนนุช แขวงประเวศ เขตประเวศ กรุงเทพฯ 10250",
+    "buyer_name": "บริษัท ฤทธา จำกัด (สำนักงานใหญ่)",
+    "buyer_tax_id": "0105530054829",
+    "buyer_address": "เลขที่ 300 ถนนร่มเกล้า แขวงคลองสามประเวศ เขตลาดกระบัง กรุงเทพฯ 10520",
+    "subtotal": 373.83,
+    "vat_rate": "7%",
+    "vat_amount": 26.17,
+    "total_amount": 400.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "แก๊ส LPG",
+        "quantity": 25.76,
+        "unit_price": 15.53,
+        "amount": 400.0
+      }
+    ]
+  },
+  "extraction_notes": "Handwritten date 9/4/68 interpreted as 9 April 2568 BE (2025 AD). Buyer tax ID 0105530054829 was handwritten in the item description area but belongs to Ritta Co., Ltd. Total amount is handwritten as 400, which includes VAT.",
+  "human_review_required_fields": [
+    "invoice_date",
+    "buyer_tax_id"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:05:07 by GG*

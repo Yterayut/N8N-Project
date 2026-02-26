@@ -1,0 +1,55 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:13:16",
+  "source_file": "ใบแจ้งค่าไฟ_02.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "invoice",
+    "invoice_number": "มท5306.4/131009724020",
+    "invoice_date": "2024-01-24",
+    "vendor_name": "การไฟฟ้าส่วนภูมิภาคอำเภอแม่สาย",
+    "vendor_tax_id": null,
+    "vendor_address": "การไฟฟ้าส่วนภูมิภาคอำเภอแม่สาย",
+    "buyer_name": "มูลนิธิแม่ฟ้าหลวง(งานไม้ตัดดอก)",
+    "buyer_tax_id": null,
+    "subtotal": 335.06,
+    "vat_rate": "7%",
+    "vat_amount": 23.45,
+    "total_amount": 358.51,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "ค่าพลังงานไฟฟ้า (Energy Charge)",
+        "quantity": 76.0,
+        "unit_price": null,
+        "amount": 284.87
+      },
+      {
+        "description": "ค่าบริการ (Service Fee)",
+        "quantity": 1.0,
+        "unit_price": 20.0,
+        "amount": 20.0
+      },
+      {
+        "description": "ค่า Ft (Fuel Adjustment Charge)",
+        "quantity": 76.0,
+        "unit_price": 0.3972,
+        "amount": 30.19
+      }
+    ]
+  },
+  "extraction_notes": "The invoice date (24 มกราคม 2567) was converted from the Thai Buddhist Era to the Gregorian calendar (2024-01-24). The vendor tax ID is not explicitly printed on this specific notification document, though it is a standard Provincial Electricity Authority (PEA) invoice. The subtotal (335.06) is the sum of base energy, service fees, and Ft charges before VAT.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:13:16 by GG*

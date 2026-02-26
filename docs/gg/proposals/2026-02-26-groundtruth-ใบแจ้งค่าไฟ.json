@@ -1,0 +1,72 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:15:50",
+  "source_file": "ใบแจ้งค่าไฟ.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "invoice",
+    "invoice_number": "23480954736",
+    "invoice_date": "2025-02-28",
+    "vendor_name": "การไฟฟ้านครหลวงเขตบางพลี",
+    "vendor_tax_id": null,
+    "vendor_address": null,
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": null,
+    "subtotal": 42302.54,
+    "vat_rate": "7%",
+    "vat_amount": 2961.18,
+    "total_amount": 45263.72,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "ค่าพลังงานไฟฟ้า",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 26126.9
+      },
+      {
+        "description": "ความต้องการพลังไฟฟ้า",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 13293.0
+      },
+      {
+        "description": "ค่าเพาเวอร์แฟคเตอร์",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 0.0
+      },
+      {
+        "description": "ค่าบริการ",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 312.24
+      },
+      {
+        "description": "ค่าไฟฟ้าผันแปร (Ft)",
+        "quantity": 7000,
+        "unit_price": 0.3672,
+        "amount": 2570.4
+      }
+    ]
+  },
+  "extraction_notes": "The document does not explicitly state an invoice date, so the Meter Reading Date (28/02/68) was used and converted to Christian Era (2025-02-28). Vendor Tax ID, Vendor Address, and Buyer Tax ID are not visible on the provided segment of the document.",
+  "human_review_required_fields": [
+    "invoice_date",
+    "vendor_tax_id",
+    "vendor_address",
+    "buyer_tax_id"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:15:50 by GG*

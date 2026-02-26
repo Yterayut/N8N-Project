@@ -1,0 +1,162 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:13:50",
+  "source_file": "ใบแจ้งค่าไฟ_03.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "other",
+    "invoice_number": "5300007/2567",
+    "invoice_date": "2024-01-24",
+    "vendor_name": "การไฟฟ้าส่วนภูมิภาค",
+    "vendor_tax_id": null,
+    "vendor_address": null,
+    "buyer_name": "มูลนิธิแม่ฟ้าหลวง (งามได้ไม่ดอก)",
+    "buyer_tax_id": null,
+    "subtotal": 72430.0,
+    "vat_rate": "7%",
+    "vat_amount": 5070.1,
+    "total_amount": 77500.1,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "มูลนิธิ แม่ฟ้าหลวง (งามได้ไม่ดอก)",
+        "quantity": 76.0,
+        "unit_price": null,
+        "amount": 335.06
+      },
+      {
+        "description": "มูลนิธิ แม่ฟ้าหลวง (โครงการพัฒนาดอยตุง)",
+        "quantity": 374.0,
+        "unit_price": null,
+        "amount": 1613.22
+      },
+      {
+        "description": "มูลนิธิ แม่ฟ้าหลวง",
+        "quantity": 529.0,
+        "unit_price": null,
+        "amount": 2347.87
+      },
+      {
+        "description": "ศูนย์ส่งเสริมการเกษตร (คตก. พน.ดอยแม่สะเพาะ)",
+        "quantity": 110.0,
+        "unit_price": null,
+        "amount": 791.97
+      },
+      {
+        "description": "ศูนย์ส่งเสริมการเกษตร (คตก.)",
+        "quantity": 119.0,
+        "unit_price": null,
+        "amount": 457.13
+      },
+      {
+        "description": "อาคารโรงงานโครงการพัฒนาดอยตุง(ผลิตภัณฑ์ไม้)",
+        "quantity": 6501.88,
+        "unit_price": null,
+        "amount": 22221.28
+      },
+      {
+        "description": "ศูนย์ส่งเสริมฯชุดอุตสาหกรรมในครอบครัวฯ",
+        "quantity": 306.0,
+        "unit_price": null,
+        "amount": 1530.76
+      },
+      {
+        "description": "งานเก็บตัวอย่างยาสูบ 115 (ฝ่ายเกษตร)",
+        "quantity": 24.48,
+        "unit_price": null,
+        "amount": 409.71
+      },
+      {
+        "description": "อาคารโรงงานโครงการพัฒนาดอยตุง(ผลิตภัณฑ์ไม้)",
+        "quantity": 0.0,
+        "unit_price": null,
+        "amount": 312.24
+      },
+      {
+        "description": "มูลนิธิ แม่ฟ้าหลวง (บ้านกระเหรี่ยง)",
+        "quantity": 38.0,
+        "unit_price": null,
+        "amount": 172.07
+      },
+      {
+        "description": "มูลนิธิ แม่ฟ้าหลวง (งานชุมชน-ภูเขาสตาร์เทล)",
+        "quantity": 69.0,
+        "unit_price": null,
+        "amount": 305.05
+      },
+      {
+        "description": "โครงการทดลองการเจียระไนพลอย",
+        "quantity": 14.28,
+        "unit_price": null,
+        "amount": 369.11
+      },
+      {
+        "description": "โรงปูนเล็ก กบ.15(101)",
+        "quantity": 0.0,
+        "unit_price": null,
+        "amount": 312.24
+      },
+      {
+        "description": "บ้านพัก พตท.สถานีเพาะเลี้ยงสัตว์ดอยตุง",
+        "quantity": 392.0,
+        "unit_price": null,
+        "amount": 1689.27
+      },
+      {
+        "description": "โรงเพาะเลี้ยงเนื้อเยื่อ (คตก.)",
+        "quantity": 3514.92,
+        "unit_price": null,
+        "amount": 14309.01
+      },
+      {
+        "description": "ศูนย์ส่งเสริมและผลิตข้าวเขา คตก.",
+        "quantity": 404.0,
+        "unit_price": null,
+        "amount": 1741.89
+      },
+      {
+        "description": "ศูนย์เพาะพันธุ์กล้าไม้ดอยช้างมูบ",
+        "quantity": 1149.54,
+        "unit_price": null,
+        "amount": 4890.31
+      },
+      {
+        "description": "โครงการกุหลาบพันปีดอยช้างมูบ",
+        "quantity": 55.08,
+        "unit_price": null,
+        "amount": 531.57
+      },
+      {
+        "description": "โรงสูบน้ำประปาไฟฟ้าโครงการพัฒนาดอยตุง",
+        "quantity": 3134.0,
+        "unit_price": null,
+        "amount": 17488.32
+      },
+      {
+        "description": "สนง. ศทพ.พ..(โครงการเพาะเลี้ยงและขยายพันธุ์",
+        "quantity": 136.0,
+        "unit_price": null,
+        "amount": 592.41
+      }
+    ]
+  },
+  "extraction_notes": "This document is a summary report of multiple electricity bills from the Provincial Electricity Authority (PEA). Subtotal, VAT, and Total amount are taken from the aggregate row at the bottom. Line item amounts correspond to the 'Amount before tax' (จำนวนเงินไม่รวมภาษี) for each listed account. The invoice number reflects the document reference 'มท 5300007/2567'.",
+  "human_review_required_fields": [
+    "subtotal",
+    "vat_amount",
+    "total_amount",
+    "line_items"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:13:50 by GG*

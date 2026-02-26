@@ -1,0 +1,46 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:08:28",
+  "source_file": "บิลน้ำมัน 3 Bill.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "TIO000016809001207",
+    "invoice_date": "2025-09-22",
+    "vendor_name": "บริษัท เอส ซี จี ประเวศ จำกัด",
+    "vendor_tax_id": "0135553012766",
+    "vendor_address": "953 ถนนอ่อนนุช แขวงประเวศ เขตประเวศ กรุงเทพมหานคร 10250",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 1495.33,
+    "vat_rate": "7%",
+    "vat_amount": 104.67,
+    "total_amount": 1600.0,
+    "currency": "THB",
+    "payment_method": "Credit Card (Master card ending 0076)",
+    "line_items": [
+      {
+        "description": "ผลิตภัณฑ์ GASOHOL 95, B33.00",
+        "quantity": 48.48,
+        "unit_price": 33.0,
+        "amount": 1600.0
+      }
+    ]
+  },
+  "extraction_notes": "The file contains 3 separate invoices. I have extracted the most complete and clear one (the computer-generated tax invoice at the bottom). The other two are manual receipts (No. 304751 for 650.00 THB and No. 304734 for 970.00 THB) from the same vendor and buyer. Dates are converted from Thai Buddhist Era (2568) to Gregorian (2025).",
+  "human_review_required_fields": [
+    "line_items (verify if amount should be inclusive or exclusive of VAT for ground truth standards)",
+    "doc_type (verify if manual receipts should be extracted separately)"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:08:28 by GG*

@@ -1,0 +1,45 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:43:21",
+  "source_file": "caltex.pdf",
+  "requires_human_review": true,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "TI2501-00720",
+    "invoice_date": "2025-01-25",
+    "vendor_name": "บริษัท ธีระนิต1989 กรุ๊ป จำกัด",
+    "vendor_tax_id": "0105564172883",
+    "vendor_address": "720 ถนนศรีนครินทร์ แขวงพัฒนาการ เขตสวนหลวง กรุงเทพมหานคร 10250 Tel.0805456669/0839946669",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 934.58,
+    "vat_rate": "7%",
+    "vat_amount": 65.42,
+    "total_amount": 1000.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "P-DIESEL",
+        "quantity": 21.191,
+        "unit_price": 47.19,
+        "amount": 1000.0
+      }
+    ]
+  },
+  "extraction_notes": "The PDF file contains 4 pages with different invoices (Caltex, Susco, Siam Suksawat, and Siam Gas). This ground truth represents the first page (Caltex). The invoice date 25/01/2568 is in Buddhist Era, converted to 2025-01-25. Buyer address found on document: 300 ถนนร่มเกล้า แขวงคลองสามประเวศ เขตลาดกระบัง กรุงเทพมหานคร 10520.",
+  "human_review_required_fields": [
+    "payment_method"
+  ]
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:43:21 by GG*

@@ -1,0 +1,43 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:06:20",
+  "source_file": "susco.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "426010043912",
+    "invoice_date": "2025-01-02",
+    "vendor_name": "บริษัท ซัสโก้ จำกัด (มหาชน)",
+    "vendor_tax_id": "0107536000064",
+    "vendor_address": "สาขาที่ออกใบกำกับภาษี 00378 ทับช้าง 139 ถนนราษฎร์บูรณะ แขวงบางปะกอก เขตราษฎร์บูรณะ กรุงเทพมหานคร 10140",
+    "buyer_name": "บริษัท ฤทธา จำกัด (สำนักงานใหญ่)",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 850.47,
+    "vat_rate": "7%",
+    "vat_amount": 59.53,
+    "total_amount": 910.0,
+    "currency": "THB",
+    "payment_method": "เงินสด",
+    "line_items": [
+      {
+        "description": "GAS 91",
+        "quantity": 25.327,
+        "unit_price": 35.93,
+        "amount": 910.0
+      }
+    ]
+  },
+  "extraction_notes": "The document is a combined Receipt and Tax Invoice. The line item amount (910.00) is shown as the total inclusive of VAT on the document. The subtotal (ราคาสินค้า) is clearly separated as 850.47. License plate number mentioned is 3 ขพ 5747.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:06:20 by GG*

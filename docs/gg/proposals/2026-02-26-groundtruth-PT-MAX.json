@@ -1,0 +1,49 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:04:09",
+  "source_file": "PT-MAX.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "T15211L2269A-2504-000140",
+    "invoice_date": "2025-04-08",
+    "vendor_name": "บริษัท โอลิมปัส ออยล์ จำกัด (สำนักงานใหญ่)",
+    "vendor_tax_id": "0105555130588",
+    "vendor_address": "90 อาคาร จีดับเบิ้ลยู ทาวเวอร์เอ ชั้น 24 ถนนรัชดาภิเษก แขวงห้วยขวาง เขตห้วยขวาง กรุงเทพมหานคร 10310 สาขา 00030 สวนหลวง2",
+    "buyer_name": "บจ. ฤทธา (สำนักงานใหญ่)",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 654.21,
+    "vat_rate": "7%",
+    "vat_amount": 45.79,
+    "total_amount": 700.0,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "PT MAX LPG",
+        "quantity": 43.78,
+        "unit_price": 15.99,
+        "amount": 700.0
+      },
+      {
+        "description": "แถม น้ำดื่มฟรี",
+        "quantity": 2.0,
+        "unit_price": 0.0,
+        "amount": 0.0
+      }
+    ]
+  },
+  "extraction_notes": "The invoice notes the cancellation of an abbreviated tax invoice AB5211L2269A-2504-002101. The buyer's address is included: เลขที่ 300 ถนน ร่มเกล้า แขวง คลองสามประเวศ เขต ลาดกระบัง จังหวัด กรุงเทพมหานคร 10520.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:04:09 by GG*

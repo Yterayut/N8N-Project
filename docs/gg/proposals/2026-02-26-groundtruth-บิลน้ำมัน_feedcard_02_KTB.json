@@ -1,0 +1,109 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:09:09",
+  "source_file": "บิลน้ำมัน_feedcard_02_KTB.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "F000000112174",
+    "invoice_date": "2025-04-30",
+    "vendor_name": "ธนาคารกรุงไทย จำกัด (มหาชน)",
+    "vendor_tax_id": "0107537000882",
+    "vendor_address": "35 ถนนสุขุมวิท แขวงคลองเตยเหนือ เขตวัฒนา กรุงเทพฯ 10110",
+    "buyer_name": "บริษัท ฤทธา จำกัด",
+    "buyer_tax_id": "0105530054829",
+    "subtotal": 198243.4,
+    "vat_rate": "null",
+    "vat_amount": 0.0,
+    "total_amount": 198243.4,
+    "currency": "THB",
+    "payment_method": "Fleet Card / Debit Account",
+    "line_items": [
+      {
+        "description": "5043-6770-1001-5074 | 01/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 40.05,
+        "unit_price": 32.4594,
+        "amount": 1300.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 07/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 46.93,
+        "unit_price": 31.9625,
+        "amount": 1500.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 09/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 37.55,
+        "unit_price": 31.9574,
+        "amount": 1200.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 11/04/25 | PTTRM_SPK BANGNA KM.25 SAMUTPRAKAN",
+        "quantity": 31.26,
+        "unit_price": 31.9898,
+        "amount": 1000.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 18/04/25 | PTTST.D S.CHAROENLERT SERPATHUMTHANI",
+        "quantity": 46.89,
+        "unit_price": 31.9898,
+        "amount": 1500.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 22/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 46.93,
+        "unit_price": 31.9625,
+        "amount": 1500.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 24/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 53.19,
+        "unit_price": 31.9609,
+        "amount": 1700.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 28/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 46.93,
+        "unit_price": 31.9625,
+        "amount": 1500.0
+      },
+      {
+        "description": "5043-6770-1001-5074 | 30/04/25 | PTTST.D PHUECHSUWAN PETROCHONBURI",
+        "quantity": 46.93,
+        "unit_price": 31.9625,
+        "amount": 1500.0
+      },
+      {
+        "description": "5043-6770-1046-6483 | 01/04/25 | PTTST.C THE PERMANENT SECBANGKOK",
+        "quantity": 76.947,
+        "unit_price": 32.4899,
+        "amount": 2500.0
+      },
+      {
+        "description": "5043-6770-1046-6483 | 04/04/25 | PTTST.C THE PERMANENT SECBANGKOK",
+        "quantity": 78.149,
+        "unit_price": 31.9902,
+        "amount": 2500.0
+      },
+      {
+        "description": "5043-6770-1046-6483 | 07/04/25 | PTTST.C THE PERMANENT SECBANGKOK",
+        "quantity": 78.149,
+        "unit_price": 31.9902,
+        "amount": 2500.0
+      }
+    ]
+  },
+  "extraction_notes": "The document is a 7-page Fleet Card statement. Extraction includes all visible line items from Page 1. The total amount reflects the balance for the entire statement period. The invoice date 30/04/25 is interpreted as 2025-04-30 (BE 2568). VAT amount is 0.00 as indicated in the summary for bank fees; fuel taxes are typically handled at the point of sale, but this document serves as a summary tax invoice for the account.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:09:09 by GG*

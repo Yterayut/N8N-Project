@@ -1,0 +1,55 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:15:11",
+  "source_file": "ใบแจ้งค่าไฟ_04.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "invoice",
+    "invoice_number": "840809393233",
+    "invoice_date": "2024-02-02",
+    "vendor_name": "การไฟฟ้าส่วนภูมิภาค",
+    "vendor_tax_id": null,
+    "vendor_address": "การไฟฟ้าส่วนภูมิภาคอำเภอแม่สาย โทร. 0-5373-1714",
+    "buyer_name": "ศูนย์บำบัดยาเสพติดและฟื้นฟูคุณภาพชีวิต",
+    "buyer_tax_id": null,
+    "subtotal": 5158.94,
+    "vat_rate": "7%",
+    "vat_amount": 361.13,
+    "total_amount": 5520.07,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "ค่าพลังงานไฟฟ้า (Energy Charge 1217.12 หน่วย)",
+        "quantity": 1217.12,
+        "unit_price": 3.5849,
+        "amount": 4363.26
+      },
+      {
+        "description": "ค่าบริการรายเดือน (Service Charge)",
+        "quantity": 1,
+        "unit_price": 312.24,
+        "amount": 312.24
+      },
+      {
+        "description": "ค่า Ft (0.3972 บาท/หน่วย)",
+        "quantity": 1217.12,
+        "unit_price": 0.3972,
+        "amount": 483.44
+      }
+    ]
+  },
+  "extraction_notes": "The document is a 'Smart Invoice' (bill notification), which explicitly states it is not a receipt or tax invoice. Vendor Tax ID and Buyer Tax ID are not provided on this notification. The date was converted from the Buddhist Era (2567) to the Common Era (2024). Subtotal includes the Based Amount (Energy + Service) and the Ft charge.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:15:11 by GG*

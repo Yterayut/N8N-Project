@@ -1,0 +1,50 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-02-26T12:04:36",
+  "source_file": "PTT-OR.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "tax_invoice",
+    "invoice_number": "100628",
+    "invoice_date": "2025-05-19",
+    "vendor_name": "บริษัท ปตท. น้ำมันและการค้าปลีก จำกัด (มหาชน)",
+    "vendor_tax_id": "0107561000013",
+    "vendor_address": "สาขาที่ 00063 สถานีบริการสาขา สันกำแพง ที่อยู่ 209 หมู่ที่ 8 ตำบลต้นเปา อำเภอสันกำแพง จังหวัดเชียงใหม่ 50130",
+    "buyer_name": "บริษัท อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน)",
+    "buyer_tax_id": "0107544000094",
+    "buyer_address": "1768 อาคารไทยซัมมิททาวเวอร์ ชั้น 10-12 และชั้นไอที ถนนเพชรบุรีตัดใหม่ แขวงบางกะปิ เขตห้วยขวาง กรุงเทพมหานคร 10310",
+    "subtotal": 1049.38,
+    "vat_rate": "7%",
+    "vat_amount": 73.46,
+    "total_amount": 1122.84,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "ผลิตภัณฑ์ GASOHOL 91, B33.21",
+        "quantity": 34.327,
+        "unit_price": 33.21,
+        "amount": 1140.0
+      },
+      {
+        "description": "โปรเบนซินและแก๊สโซฮอล์ ลด 50 สต./ลิตร",
+        "quantity": 34.327,
+        "unit_price": -0.5,
+        "amount": -17.16
+      }
+    ]
+  },
+  "extraction_notes": "The date on the invoice is in Buddhist Era (2568), converted to 2025. The vendor address includes the branch details (Branch 00063). The discount is calculated as 0.50 THB per liter based on the quantity. Total matches the sum of line items (1140.00 - 17.16 = 1122.84).",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-02-26T12:04:36 by GG*
