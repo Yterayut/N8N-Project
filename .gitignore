@@ -3,19 +3,45 @@
 .env.dev
 .env.local
 .env.test
+.env.prod
+.env.backup*
+.env.bak*
+.env.current
+.env.restore
 !.env.example
-.n8n
-backups/
-logs/
 .env.facebook_tokens
 
 # OS and editor files
 .DS_Store
 .vscode/
+._*
+
+# Editor swap files
+*.swp
+*.swo
 
 # ngrok/cache/tmp
 .cache/
 *.log
+
+# n8n data directories (never commit these)
+.n8n/
+.n8n-dev/
+.n8n-dev.bak*/
+.n8n-dev.backup*/
+.n8n-dev.corrupt*/
+.n8n-dev.prev*/
+.n8n-dev.stage*/
+
+# SQLite databases
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite.bak*
+
+# Backup files
+backups/
+logs/
 
 # Agent worktrees
 agents/
