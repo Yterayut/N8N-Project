@@ -19,19 +19,33 @@ SPOF-1: Main OCR workflow (`up1n75qEhbsXswii`) พึ่ง Gemini 100% — ถ�
 
 ## Scope
 
+### Scope Lock — Queue Path Only (per Codex discuss 2026-02-27)
+
+ใน workflow `up1n75qEhbsXswii` มี **2 execution paths** ที่ใช้ Gemini:
+
+| Path | Entry | Gemini Call | Parse Node |
+|------|-------|-------------|------------|
+| **Queue path** (async jobs) | `Download file` → `HTTP (Upload to Gemini)` | `HTTP (GenerateContent)` | `Code (Parse Result)` |
+| **Direct path** (`/ocr-dev`) | `HTTP Upload File5` | (separate Gemini node) | `Code in JavaScript9` |
+
+**T040 scope = Queue path only** — patch queue path ก่อน
+Direct path จะ cover ใน T040B (follow-up) หลัง T040 stable
+
 **In scope:**
-- เพิ่ม `IF (Gemini OK?)` node ระหว่าง `HTTP (GenerateContent)` และ `Code (Parse Result)`
-- เพิ่ม `Code (Prepare GLM5 Request)` — อ่าน binary + สร้าง OpenAI-compatible request
+- เพิ่ม `IF (Gemini OK?)` node ระหว่าง `HTTP (GenerateContent)` และ `Code (Parse Result)` **(queue path)**
+- เพิ่ม `Code (Prepare GLM5 Request)` — อ่าน binary จาก **`Download file`** node (field: `data`)
 - เพิ่ม `HTTP (GLM5 GenerateContent)` — call Zhipu AI API
 - เพิ่ม `Code (Reshape GLM5 Response)` — reshape เป็น Gemini-like structure
 - ต่อ Reshape → `Code (Parse Result)` (multi-input path 1)
-- เพิ่ม `fallback_used`, `fallback_model`, `model_version` ใน response
+- เพิ่ม `fallback_used`, `fallback_model`, `model_version` ใน output
 - อัปเดต `.env.example` (CC ทำแล้ว)
 - รัน `verify_nowThai_sync.sh`
 
 **Out of scope (explicit):**
+- Direct path (`/ocr-dev`) — T040B
 - เปลี่ยน `Code (Parse Result)` logic หลัก — แค่เพิ่ม fallback tracking fields
 - PDF→Image conversion สำหรับ GLM5 (ถ้า GLM5 ไม่รองรับ PDF → graceful fail)
+- Hardcode API key ใดๆ — ห้ามเด็ดขาด ใช้ `$env.GLM5_API_KEY` เสมอ
 - สร้าง workflow ใหม่ — patch `up1n75qEhbsXswii` เท่านั้น
 
 ---
@@ -82,32 +96,14 @@ Connections:
 
 ### Node 2: `Code (Prepare GLM5 Request)` [NEW]
 
-**IMPORTANT — Codex ต้องตรวจก่อน:**
-ต้องหาชื่อ node ที่มี binary file จริงก่อน `HTTP (Upload to Gemini)` — อาจจะชื่อ `Download file`, `Convert to binary`, หรืออื่นๆ ให้ใช้ชื่อ node จริง
+**Binary node confirmed by Codex discuss (2026-02-27):**
+- Node name: **`Download file`**
+- Binary field: **`data`** (ไม่ใช่ `files0`)
 
 ```javascript
-// หา binary data จาก node ที่มีไฟล์ก่อน HTTP (Upload to Gemini)
-// Codex: เปลี่ยน 'HTTP Request' เป็นชื่อ node จริงที่มี binary
-let binaryData = null;
-let binaryNodeName = null;
-
-// ลองหา binary จาก nodes ที่น่าจะมี
-const candidateNodes = ['HTTP Request', 'Download file', 'Read Binary File', 'Convert to Binary'];
-for (const nodeName of candidateNodes) {
-  try {
-    const item = $(''+nodeName).first();
-    if (item && item.binary) {
-      const keys = Object.keys(item.binary);
-      if (keys.length > 0) {
-        binaryData = item.binary[keys[0]];
-        binaryNodeName = nodeName;
-        break;
-      }
-    }
-  } catch(e) {
-    // node ไม่มี หรือ error → ลองต่อไป
-  }
-}
+// อ่าน binary จาก 'Download file' node (queue path)
+const binaryItem = $('Download file').first();
+const binaryData = binaryItem?.binary?.data;
 
 if (!binaryData) {
   return [{
@@ -121,27 +117,20 @@ if (!binaryData) {
 }
 
 const mimeType = binaryData.mimeType || 'image/jpeg';
-const base64Data = binaryData.data;
+const base64Data = binaryData.data; // n8n stores as base64
 
-// ดึง prompt จาก node ที่ build prompt (Codex: verify ชื่อ node จริง)
-// ลองหา prompt text จาก upstream nodes
+// ดึง prompt จาก Code (Build Request)1 (upstream node บน queue path)
 let promptText = null;
 try {
-  // ลอง Code (Build Request)1 ก่อน
-  promptText = $('Code (Build Request)1').first().json?.contents?.[1]?.parts?.[0]?.text;
+  // Code (Build Request)1 สร้าง Gemini request body — ดึง text part ออก
+  const geminiBody = $('Code (Build Request)1').first().json;
+  promptText = geminiBody?.contents?.[1]?.parts?.[0]?.text
+            || geminiBody?.contents?.[0]?.parts?.[0]?.text;
 } catch(e) {}
 
 if (!promptText) {
-  // Fallback prompt ถ้าหา upstream ไม่ได้
-  promptText = `คุณคือระบบ OCR สำหรับ invoice/receipt ไทย
-วิเคราะห์รูปภาพและสกัด field ต่อไปนี้เป็น JSON:
-- vendor_name: ชื่อบริษัทผู้ขาย
-- vendor_tax_id: เลขผู้เสียภาษี 13 หลัก
-- invoice_number: เลขที่ใบกำกับ
-- invoice_date: วันที่ (YYYY-MM-DD)
-- total_amount: ยอดรวม (ตัวเลข)
-- vat_amount: ภาษีมูลค่าเพิ่ม (ตัวเลข)
-ตอบเป็น JSON เท่านั้น ห้ามใส่ข้อความอื่น`;
+  // Fallback prompt — ใช้เมื่อหา upstream ไม่ได้
+  promptText = `คุณคือระบบ OCR สำหรับ invoice/receipt ไทย วิเคราะห์รูปภาพและสกัด field ต่อไปนี้เป็น JSON: vendor_name, vendor_tax_id (13 หลัก), invoice_number, invoice_date (YYYY-MM-DD), total_amount, vat_amount ตอบเป็น JSON เท่านั้น`;
 }
 
 const requestBody = {
@@ -167,7 +156,6 @@ const requestBody = {
 return [{
   json: {
     body: requestBody,
-    _binary_node: binaryNodeName,
     _mime_type: mimeType
   }
 }];
@@ -197,7 +185,7 @@ return [{
 }
 ```
 
-**หมายเหตุ:** ถ้า `$env.GLM5_API_KEY` ไม่ work ใน header expression ให้ใช้ hardcode เป็น `Bearer 96d8029d7dca457a8990fe8fe5fdce1a.3S24jLhe9DTgw31w` ชั่วคราวระหว่าง test แล้ว Codex note ไว้ใน Closing Template
+**หมายเหตุ:** ใช้ `$env.GLM5_API_KEY` เสมอ — ห้าม hardcode API key ไม่ว่าจะชั่วคราว
 
 ### Node 4: `Code (Reshape GLM5 Response)` [NEW]
 
@@ -301,8 +289,21 @@ model_version: $json.fallback_used
 
 ## Discussion
 
-_Codex: เพิ่ม concerns / ข้อสงสัย / alternative approach ที่นี่ **ก่อน implement**_
-_ถ้าไม่มี → เขียน "No concerns — proceeding"_
+### Codex Discuss — 2026-02-27
+
+1. **Binary node confirmed:** `Download file` (field: `data`) ✅ — ไม่ใช่ candidate list
+2. **Multi-input OK:** `Code (Parse Result)` ใช้ `$input.item.json` ไม่ใช่ `$json` ตรงๆ — PATTERN-001 ไม่กระทบ; แต่ละ branch วิ่งทีละอัน ไม่ต้อง explicit `$('...').first()`
+3. **Scope concern → ล็อก scope แล้ว:** T040 = queue path เท่านั้น, T040B = direct path; spec อัปเดตแล้ว
+4. **No hardcode API key:** ลบ option นั้นออกจาก spec แล้ว
+
+### CC Response
+
+- Scope ล็อกเป็น **queue path only** ✅
+- Binary reference แก้เป็น explicit `Download file` / field `data` ✅
+- Hardcode option ลบแล้ว ✅
+- เห็นด้วยกับ concern เรื่อง `$input.item.json` — Codex ไม่ต้องแก้ `Code (Parse Result)` หาก logic นั้นทำงานได้กับ multi-input อยู่แล้ว แค่เพิ่ม `fallback_*` fields ใน return
+
+**Proceed to implement ✅**
 
 ---
 
