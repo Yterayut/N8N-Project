@@ -97,7 +97,7 @@ git -C agents/codex log --oneline -5
 git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
 ```
 
-## Last Checkpoint — 12:50
-- ✅ T036 merged, GG ground truth 21/21 fixed (caltex re-run, shell tax_id แก้), T029D spec เสร็จ + assign Codex
-- 🔄 Codex กำลัง implement T029D (`tmux session codex`) — รอ review
-- ⏭️ รอ Codex T029D เสร็จ → review + merge | Codex ยังไม่ respond T036 review
+## Last Checkpoint — 13:14
+- ✅ S1+S2+S3 hotfix LIVE: `timingSafeEqual()` ใน Validate Feedback, `continueOnFail=True` 8 nodes, PATTERN-001 comment; smoke ✅; HANDOFF committed
+- 🔄 Codex กำลัง implement T029D (`tmux session codex`) — รอ review + merge
+- ⏭️ รอ Codex T029D + T036 respond review; next sprint: M1 (extract dup code paths), M2 (validation_trace)
