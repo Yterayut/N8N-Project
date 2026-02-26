@@ -329,26 +329,26 @@ model_version: $json.fallback_used
 > Codex: อย่า mark Done ถ้ายังไม่ครบทุก checkbox
 
 **Implemented:**
-- [ ] `IF (Gemini OK?)` node เพิ่มแล้ว — แยก TRUE/FALSE path ถูกต้อง
-- [ ] `Code (Prepare GLM5 Request)` เพิ่มแล้ว — binary อ่านได้จาก upstream
-- [ ] `HTTP (GLM5 GenerateContent)` เพิ่มแล้ว — `continueOnFail: true`
-- [ ] `Code (Reshape GLM5 Response)` เพิ่มแล้ว — output Gemini-like structure
-- [ ] `Code (Parse Result)` มี `fallback_used`, `fallback_model`, `model_version`
-- [ ] Connection เดิม `HTTP (GenerateContent)` → `Code (Parse Result)` ถูกตัดออก
-- [ ] Connection ใหม่ทั้งหมดครบ
+- [x] `IF (Gemini OK?)` node เพิ่มแล้ว — แยก TRUE/FALSE path ถูกต้อง
+- [x] `Code (Prepare GLM5 Request)` เพิ่มแล้ว — binary อ่านได้จาก upstream
+- [x] `HTTP (GLM5 GenerateContent)` เพิ่มแล้ว — `continueOnFail: true`
+- [x] `Code (Reshape GLM5 Response)` เพิ่มแล้ว — output Gemini-like structure
+- [x] `Code (Parse Result)` มี `fallback_used`, `fallback_model`, `model_version`
+- [x] Connection เดิม `HTTP (GenerateContent)` → `Code (Parse Result)` ถูกตัดออก
+- [x] Connection ใหม่ทั้งหมดครบ
 
 **Verified from system (required):**
-- [ ] T1 Exec ID: `_______` — Gemini OK, `fallback_used=false`
-- [ ] T2 Exec ID: `_______` — GLM5 fallback succeed, `fallback_used=true`
-- [ ] T3 Exec ID: `_______` — both fail, graceful error
-- [ ] `verify_nowThai_sync.sh` ผ่าน
+- [x] T1 Exec ID: `153473` — Gemini OK, `fallback_used=false`
+- [ ] T2 Exec ID: `153475` — expected GLM5 fallback succeed, but got GLM5 401 (`fallback_status=failed`)
+- [x] T3 Exec ID: `153475` — both fail, graceful error (`status=error`, `fallback_status=failed`)
+- [x] `verify_nowThai_sync.sh` ผ่าน
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — full happy path (Gemini OK, no fallback)
-- [ ] Exec ID: `_______` — fallback path (GLM5 used)
+- [x] Exec ID: `153473` — full happy path (Gemini OK, no fallback)
+- [ ] Exec ID: `153475` — fallback path reached but GLM5 failed with 401 (`fallback_used=true`, `fallback_status=failed`)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 - [ ] Review file created (CC จะทำ)
 
 ---
@@ -361,4 +361,25 @@ Runtime patched:
 Verified from:
 Docs synced:
 Remaining limits:
+```
+
+```
+Runtime patched:
+- Live workflow `up1n75qEhbsXswii` patched via n8n REST API (queue path only)
+- Added nodes: `IF (Gemini OK?)`, `Code (Prepare GLM5 Request)`, `HTTP (GLM5 GenerateContent)`, `Code (Reshape GLM5 Response)`
+- Rewired queue path: `HTTP (GenerateContent)` -> `IF (Gemini OK?)` -> (`Code (Parse Result)` or GLM5 branch -> `Code (Parse Result)`)
+- Updated `Code (Parse Result)` output with `fallback_used`, `fallback_model`, `fallback_status`, `model_version`
+
+Verified from:
+- Exec `153473` (manual run via Schedule Trigger path to `Code  Set Done`): Gemini path success, `fallback_used=false`, `model_version=gemini-2.5-flash`, `bills_count=1`
+- Exec `153475` (forced Gemini invalid + image): fallback branch executed (`Code (Prepare GLM5 Request)` + `HTTP (GLM5 GenerateContent)` + `Code (Reshape GLM5 Response)`), final `fallback_used=true`, `fallback_status=failed`
+- Exec `153477` (forced Gemini invalid + PDF): graceful error retained (`fallback_used=true`, `fallback_status=failed`, `status=error`)
+- `./scripts/verify_nowThai_sync.sh` passed
+
+Docs synced:
+- `docs/collab/tasks/T040-glm5-fallback.md`
+- `docs/collab/HANDOFF.md`
+
+Remaining limits:
+- GLM5 runtime credential currently returns `401` (`令牌已过期或验证不正确`) from provider, so fallback success test (T2) is blocked until valid `GLM5_API_KEY` is configured.
 ```
