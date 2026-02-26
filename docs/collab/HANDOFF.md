@@ -39,7 +39,7 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: _(none)_
+### งานที่ assigned ตอนนี้: T036 (Codex เสร็จ — รอ CC review)
 
 ---
 
@@ -47,10 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
+| **Phase** | T036 System Health Report + T029D Ground Truth |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T035 complete (fixed `bills=[]` bug in main OCR `Code (Apply Runtime Rules)` via REST patch; flag enabled in `.env`; n8n restart required to load env; exec `151920` confirmed runtime-rules branch runs + `bills_count=1`, `rules_engine=no_rules` due no active sheet rules); T034 complete (`gg-health-monitor` active + auth/JSON tests passed + optional warn smoke verified); T033 complete (GG webhook gateways active + auth tests + gg-curate data fetch confirmed); T029C review response filled; T032 complete (timing-safe API key compare verified in 3 workflows, 200/401 auth smoke verified); T029 learning loop complete (T029D deferred) |
-| **Last Sync** | 2026-02-26 09:00 |
+| **Codex Status** | T036 DONE (3 workflows created: system-daily-health-report, system-health-ondemand, system-error-monitor) — รอ CC review + merge; T035 complete (bills=[] fixed, flag=true) |
+| **GG Status** | Ground truth batch 21/21 complete → `docs/gg/proposals/2026-02-26-groundtruth-*.json` — รอ CC spot-check |
+| **Last Sync** | 2026-02-26 12:15 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -105,12 +106,14 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Status |
+|----|------|--------|
+| T036 | System Health Report (3 workflows) | ✅ Codex done — **รอ CC review + merge** |
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test documents in GDrive (not available) |
+| T029D | Benchmark Runner | Codex | GG ground truth 21/21 ✅ ready (`docs/gg/proposals/2026-02-26-groundtruth-*.json`) — CC ต้อง spot-check + populate OCR_BENCHMARK_FUEL sheet |
 | T030 | Supabase migration (proposal ready) | — | Codex proposal in T029-architecture.md Discussion |
 
 ### Recently Completed
@@ -265,6 +268,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 12:14 | sync | all | auto-sync |
 | 2026-02-26 08:48 | sync | all | auto-sync |
 | 2026-02-26 08:48 | sync | all | auto-sync |
 | 2026-02-26 08:48 | sync | all | auto-sync |
