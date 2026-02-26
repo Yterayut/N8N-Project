@@ -108,19 +108,44 @@ n8n โหลด env ตอน start — ถ้า flag อ่านจาก `$
 ## Definition of Done
 
 **Implemented:**
-- [ ] `Code (Apply Runtime Rules)` ใน workflow `up1n75qEhbsXswii` อ่าน bills จาก `base.raw_json` แล้ว
-- [ ] `verify_nowThai_sync.sh` ผ่าน (Golden Rule)
+- [x] `Code (Apply Runtime Rules)` ใน workflow `up1n75qEhbsXswii` อ่าน bills จาก `base.raw_json` แล้ว
+- [x] `verify_nowThai_sync.sh` ผ่าน (Golden Rule)
 
 **Verified:**
-- [ ] T2 ผ่าน (code ใหม่อยู่ใน node จริง)
-- [ ] T3 ผ่าน (OCR response มี runtime_rules evidence)
-- [ ] T5 ผ่าน หรือ flag=false restore ถ้า T3 fail
+- [x] T2 ผ่าน (code ใหม่อยู่ใน node จริง)
+- [x] T3 ผ่าน (execution evidence: `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran in exec `151920`; response schema on `/webhook/ocr-dev` does not expose runtime_rules fields directly)
+- [x] T5 ผ่าน หรือ flag=false restore ถ้า T3 fail *(N/A: T3 passed, no restore needed)*
 
 **Docs:**
-- [ ] `.env` อัปเดต `OCR_RUNTIME_RULES_ENABLED=true` (หลัง T3 ผ่าน)
-- [ ] HANDOFF.md อัปเดต — T035 complete + flag status
+- [x] `.env` อัปเดต `OCR_RUNTIME_RULES_ENABLED=true` (หลัง T3 ผ่าน)
+- [x] HANDOFF.md อัปเดต — T035 complete + flag status
 
 ---
 
 ## Discussion
 *(Codex pre-execution questions ใส่ที่นี่)*
+
+### Codex notes (post-exec)
+- Spec path says `POST /webhook/ocr`, but live server route is `POST /webhook/ocr-dev` (`/webhook/ocr` returned 404 during smoke).
+- T4 prerequisite not met on live data during execution: `OCR_KM_RUNTIME_RULES` via `gg-data` returned `rows=15`, `active=0`, `post_normalize=0`.
+
+---
+
+## Execution Notes (Codex, 2026-02-26)
+
+### Implemented
+- Patched live workflow `ocr-invoice-processor` (`up1n75qEhbsXswii`) node `Code (Apply Runtime Rules)` via n8n REST API to parse `base.raw_json` and recover `bills`
+- Re-fetched workflow and verified patched code contains `base.raw_json` / `parsed.bills`
+- Ran `./scripts/verify_nowThai_sync.sh` (pass)
+- Updated local `.env`: `OCR_RUNTIME_RULES_ENABLED=true`
+- Restarted local n8n process so runtime loaded updated `.env` (file edit alone did not flip branch until restart)
+
+### Verification
+- Baseline OCR smoke (`/webhook/ocr-dev`, pre-flag): `HTTP 202`, `bills_count=1`, `request_id=1772070825797-ecfc5d1bb4c6`
+- Post-flag OCR smoke (`/webhook/ocr-dev`, after restart): `HTTP 202`, `bills_count=1`, `request_id=1772071100965-c364a9d9eb521`
+- Matching n8n execution: `151920`
+- Runtime evidence from execution `151920`:
+  - `IF (Runtime Rules Enabled?)` routed to enabled branch (output 0)
+  - `Code (Apply Runtime Rules)` executed
+  - Node output preserved `bills_count=1` and `bills.length=1` (fix validated; no more `bills=[]`)
+  - `rules_engine='no_rules'`, `rules_applied=[]`, `rules_skipped=[]` (engine ran, but no active matching rules)

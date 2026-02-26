@@ -49,8 +49,8 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | T029 OCR Closed Learning Loop (4 sub-phases) |
 | **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T034 complete (`gg-health-monitor` active + auth/JSON tests passed + optional warn smoke verified); T033 complete (GG webhook gateways active + auth tests + gg-curate data fetch confirmed); T029C review response filled; T032 complete (timing-safe API key compare verified in 3 workflows, 200/401 auth smoke verified); T029 learning loop complete (T029D deferred) |
-| **Last Sync** | 2026-02-26 06:42 |
+| **Codex Status** | T035 complete (fixed `bills=[]` bug in main OCR `Code (Apply Runtime Rules)` via REST patch; flag enabled in `.env`; n8n restart required to load env; exec `151920` confirmed runtime-rules branch runs + `bills_count=1`, `rules_engine=no_rules` due no active sheet rules); T034 complete (`gg-health-monitor` active + auth/JSON tests passed + optional warn smoke verified); T033 complete (GG webhook gateways active + auth tests + gg-curate data fetch confirmed); T029C review response filled; T032 complete (timing-safe API key compare verified in 3 workflows, 200/401 auth smoke verified); T029 learning loop complete (T029D deferred) |
+| **Last Sync** | 2026-02-26 09:00 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -110,13 +110,13 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | spec ready at `docs/collab/tasks/T035-*.md` |
 | T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test documents in GDrive (not available) |
 | T030 | Supabase migration (proposal ready) | — | Codex proposal in T029-architecture.md Discussion |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | 2026-02-26 | Implemented; live workflow `up1n75qEhbsXswii` patched via REST; `verify_nowThai_sync.sh` ✅; `/webhook/ocr-dev` smoke `bills_count=1`; exec `151920` confirms `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran and preserved `bills`; `rules_engine=no_rules` (no active `OCR_KM_RUNTIME_RULES` rows) |
 | T034 review | T034 Code Review + Codex Response + Merge Approval | CC+Codex | 2026-02-26 | CLOSED — LESSON-011 added; review loop complete |
 | T034 | GG Agent Health Check Endpoint | Codex | 2026-02-26 | Implemented; workflow `BlCrCNITw9ThtfOx` active (`/webhook/gg-health`); T1 401 + T2 200/JSON + T4 JSON parse ✅; optional T3 warn smoke ✅ |
 | T033 | GG Data + Notify Webhooks | Codex | 2026-02-25 | Implemented; new workflows `XtaSg9pLDuPERtI8` + `YZTJwkh25isaLKHo` active; webhook auth tests T1-T6 ✅; `gg-curate.sh` confirmed live fetch (`Found 4 TRAIN_CASES`) |
@@ -265,6 +265,10 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 08:48 | sync | all | auto-sync |
+| 2026-02-26 08:48 | sync | all | auto-sync |
+| 2026-02-26 08:48 | sync | all | auto-sync |
+| 2026-02-26 08:48 | sync | all | auto-sync |
 | 2026-02-26 08:44 | sync | all | auto-sync |
 | 2026-02-26 08:44 | sync | all | auto-sync |
 | 2026-02-26 08:44 | sync | all | auto-sync |
