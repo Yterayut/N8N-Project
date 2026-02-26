@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T029D Ground Truth Spot-check + Benchmark Runner |
-| **Active Agent** | Claude Code (stable) |
-| **Codex Status** | T036 MERGED ✅ (review 8/10, merged to stable); รอ Codex respond T036 review |
-| **GG Status** | Ground truth batch 21/21 complete → `docs/gg/proposals/2026-02-26-groundtruth-*.json` — รอ CC spot-check |
-| **Last Sync** | 2026-02-26 12:45 |
+| **Phase** | T029D Benchmark Runner (Codex) + S1+S2+S3 hotfix LIVE |
+| **Active Agent** | Codex (T029D) |
+| **Codex Status** | T036 MERGED ✅ (review 8/10); T029D 🔄 กำลัง implement; รอ Codex respond T036 review |
+| **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
+| **Last Sync** | 2026-02-26 13:07 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -123,6 +123,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| S1+S2+S3 | OCR Security + Resilience Hotfix (live patch) | CC | 2026-02-26 | LIVE ✅ — S1: `timingSafeEqual()` ใน `Code (Validate Feedback Payload)` (main OCR `up1n75qEhbsXswii`); S2: `continueOnFail=True` บน 8 nodes (Telegram + Sheets + ocr-rules-reader); S3: PATTERN-001 comment; smoke wrong-key→UNAUTHORIZED ✅ correct-key→INVALID_SCHEMA ✅; `verify_nowThai_sync.sh` ✅; plan: `docs/ocr/tech-debt-plan-2026-02-26.md` |
 | T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | **MERGED 8/10** — workflows: `ImhtvE0MgWPQBn63`, `jtwhukQgRmJAEMkP`, `WRuU2CglWAYjxOQ5` active; T1/T3/T4/T5 ✅; review: `docs/collab/reviews/T036-review.md` |
 | T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | 2026-02-26 | Implemented; live workflow `up1n75qEhbsXswii` patched via REST; `verify_nowThai_sync.sh` ✅; `/webhook/ocr-dev` smoke `bills_count=1`; exec `151920` confirms `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran and preserved `bills`; `rules_engine=no_rules` (no active `OCR_KM_RUNTIME_RULES` rows) |
 | T034 review | T034 Code Review + Codex Response + Merge Approval | CC+Codex | 2026-02-26 | CLOSED — LESSON-011 added; review loop complete |
@@ -273,6 +274,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 13:07 | sync | all | auto-sync |
+| 2026-02-26 12:49 | sync | all | auto-sync |
 | 2026-02-26 12:48 | sync | all | auto-sync |
 | 2026-02-26 12:44 | sync | all | auto-sync |
 | 2026-02-26 12:36 | sync | all | auto-sync |
