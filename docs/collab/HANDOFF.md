@@ -116,6 +116,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | Implemented; new workflows active: `ImhtvE0MgWPQBn63` (`system-daily-health-report`), `jtwhukQgRmJAEMkP` (`system-health-ondemand`), `WRuU2CglWAYjxOQ5` (`system-error-monitor`); T1 daily manual run exec `152079` ✅, T3 `/health` simulated Telegram webhook exec `152085` ✅, T4 error spike alert exec `152090` ✅, T5 cooldown logic validated via injected `staticData` exec `152092` ✅ (manual `/run` API did not persist staticData between runs); report currently flags real issue: `gg-data?sheet=OCR_EXAMPLES` returns 200 + empty body |
 | T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | 2026-02-26 | Implemented; live workflow `up1n75qEhbsXswii` patched via REST; `verify_nowThai_sync.sh` ✅; `/webhook/ocr-dev` smoke `bills_count=1`; exec `151920` confirms `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran and preserved `bills`; `rules_engine=no_rules` (no active `OCR_KM_RUNTIME_RULES` rows) |
 | T034 review | T034 Code Review + Codex Response + Merge Approval | CC+Codex | 2026-02-26 | CLOSED — LESSON-011 added; review loop complete |
 | T034 | GG Agent Health Check Endpoint | Codex | 2026-02-26 | Implemented; workflow `BlCrCNITw9ThtfOx` active (`/webhook/gg-health`); T1 401 + T2 200/JSON + T4 JSON parse ✅; optional T3 warn smoke ✅ |

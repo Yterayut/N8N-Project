@@ -311,19 +311,19 @@ staticData.last_alert_at = now;
 ## Definition of Done
 
 **Implemented:**
-- [ ] `system-daily-health-report` active, cron 00:30 UTC
-- [ ] `system-health-ondemand` active, Telegram Trigger set up
-- [ ] `system-error-monitor` active, cron */30 */30
+- [x] `system-daily-health-report` active, cron 00:30 UTC
+- [x] `system-health-ondemand` active, Telegram Trigger set up
+- [x] `system-error-monitor` active, cron `*/30 * * * *` *(spec DoD line had typo `*/30 */30`)*
 
 **Verified:**
-- [ ] T1 ผ่าน (manual trigger → Telegram received)
-- [ ] T2 ผ่าน (message format ถูกต้อง)
-- [ ] T3 ผ่าน (/health → bot ตอบ)
-- [ ] T4 ผ่าน (error spike → alert)
-- [ ] T5 ผ่าน (cooldown ทำงาน)
+- [x] T1 ผ่าน (manual trigger → Telegram received)
+- [ ] T2 ผ่าน (message format all OK) — **not pass in current live state** because `GG Data (OCR_EXAMPLES)` endpoint returns HTTP 200 with empty body and live 24h errors > 0, so report correctly renders red/issue state
+- [x] T3 ผ่าน (`/health` → bot ตอบ) *(simulated Telegram webhook with valid Telegram secret header)*
+- [x] T4 ผ่าน (error spike → alert)
+- [x] T5 ผ่าน (cooldown logic works) *(manual `/run` API does not persist `workflow staticData`; validated by injected `workflowData.staticData.global.last_alert_at` in second run → Telegram alert node did not run)*
 
 **Docs:**
-- [ ] HANDOFF.md อัปเดต T036 complete + workflow IDs ใหม่
+- [x] HANDOFF.md อัปเดต T036 complete + workflow IDs ใหม่
 
 ---
 
@@ -338,3 +338,30 @@ staticData.last_alert_at = now;
 
 ## Discussion
 *(Codex pre-execution questions ใส่ที่นี่)*
+
+- 2026-02-26 (Codex): `EXPECTED_ACTIVE` ใน spec ระบุ 13 workflows (ชุดปัจจุบัน) แต่ task นี้จะสร้างเพิ่มอีก 3 workflows ทำให้จำนวน active รวมกลายเป็น 16 ถ้านับ workflow monitoring ใหม่ด้วย จึงจะ implement แบบ **ตรวจ baseline 13 รายการตาม spec เท่านั้น** (ไม่ self-reference monitoring workflows เพื่อเลี่ยง false-positive ระหว่าง rollout/maintenance)
+- 2026-02-26 (Codex): DoD บรรทัด `system-error-monitor active, cron */30 */30` น่าจะเป็น typo; จะ implement ตาม Node Specs คือ cron `*/30 * * * *`
+- 2026-02-26 (Codex): `HTTP: Get Workflows` ตาม spec ไม่สามารถอ่าน `/rest/workflows` ได้ด้วย Basic Auth header เพียงอย่างเดียวบน n8n build นี้ (REST API ต้องใช้ session cookie `POST /rest/login`); implemented **SQLite fallback (`workflow_entity`)** for active workflow baseline count while retaining the spec HTTP node (report labels source as `sqlite fallback` when used)
+- 2026-02-26 (Codex): `HTTP Request` node output for JSON array responses (`gg-data`) is itemized as multiple items (one row per item) rather than a single top-level array JSON in `.first().json`; `Code: Build Report` implemented with `$('Node').all().map(i=>i.json)` to parse row counts correctly
+
+## Codex Execution Notes (2026-02-26)
+
+### Implemented (via n8n REST API)
+- Created and activated workflow `system-daily-health-report` (`ImhtvE0MgWPQBn63`)
+- Created and activated workflow `system-health-ondemand` (`jtwhukQgRmJAEMkP`)
+- Created and activated workflow `system-error-monitor` (`WRuU2CglWAYjxOQ5`)
+- Added `Telegram Trigger.webhookId` UUID on on-demand workflow (PATTERN-008)
+- Set `continueOnFail: true` on all new HTTP/Telegram/Execute Command nodes used for side-system interactions
+- Implemented report/alert Code nodes using explicit node references (`$('NodeName').first()/all()`) for multi-input safety (PATTERN-001)
+- Implemented error-monitor cooldown in `Code: Build Alert` using workflow static data (`global.last_alert_at`)
+
+### Runtime Notes / Spec Drift
+- `GG Data (OCR_EXAMPLES)` currently returns `HTTP 200` with **empty body** in this environment (both `curl` and workflow HTTP node), so health reports correctly flag it as an issue
+- `HTTP: Get Workflows` REST call cannot authenticate with Basic Auth header alone on this n8n build; report uses SQLite fallback for baseline active workflow count and annotates message as `(sqlite fallback)`
+- Manual `POST /rest/workflows/{id}/run` executions do not persist workflow static data between runs (affects cooldown test if done purely with manual runs)
+
+### Verification Evidence
+- T1 Daily manual run: execution `152079` → Telegram send node success; report text generated and sent
+- T3 On-demand `/health`: execution `152085` (simulated Telegram webhook with correct secret header) → Telegram reply node success
+- T4 Error spike alert: execution `152090` → alert sent (`Errors: 14`)
+- T5 Cooldown logic: execution `152091` (manual run again) showed manual API static-data persistence limitation; execution `152092` (manual run with injected `workflowData.staticData.global.last_alert_at`) skipped `Telegram: Send Alert` as expected
