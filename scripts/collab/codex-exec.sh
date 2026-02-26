@@ -135,7 +135,7 @@ PRE-SUBMIT CHECKLIST (verify before commit — do NOT skip):
 9. Report what you did and test results (include exec ID if E2E ran)"
 
         # Change 2: Dependency check ก่อนเริ่ม
-        DEPS=$(grep -iE "^\*\*Depends on:\*\*|^Depends on:" "$SPEC_FILE" 2>/dev/null | grep -oP 'T\d+' | tr '\n' ' ')
+        DEPS=$(grep -iE "^\*\*Depends on:\*\*|^Depends on:" "$SPEC_FILE" 2>/dev/null | grep -oP 'T\d+' | tr '\n' ' ' || true)
         for dep in $DEPS; do
           if ! grep -qiE "${dep}.*(complet|done)|✅.*${dep}" "$REPO_ROOT/docs/collab/HANDOFF.md" 2>/dev/null; then
             echo "[WARN] Dependency $dep may not be completed — verify HANDOFF.md before proceeding"
@@ -146,7 +146,15 @@ PRE-SUBMIT CHECKLIST (verify before commit — do NOT skip):
         cd "$CODEX_DIR"
         # ใช้ -s danger-full-access เพราะ implement ต้องการ curl localhost:5678
         # sandbox_permissions network=true ไม่ allow loopback/localhost
-        "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+        # ถ้าอยู่ใน tmux ($TMUX set) → unset ชั่วคราว เพื่อให้ Codex CLI start ได้
+        if [ -n "${TMUX:-}" ]; then
+          SAVED_TMUX="$TMUX"
+          unset TMUX
+          "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+          export TMUX="$SAVED_TMUX"
+        else
+          "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+        fi
         # Change 1: Notify CC เมื่อ Codex เสร็จงาน
         codex_notify "$TASK_ID" "implement complete"
         ;;
