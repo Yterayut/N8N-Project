@@ -106,7 +106,7 @@ const avg = scored.length ? scored.reduce((s,r) => s + r.accuracy, 0) / scored.l
 
 ## Discussion
 
-_Codex: เพิ่ม concerns ที่นี่ก่อน implement_
+- 2026-02-26 (Codex, pre-check): live sheet row `bm_sgas01` no longer uses `.json`; current `input_file_path` is `/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/file/สยามแก๊ส.pdf` and notes already say spec listed `.json` but source PDF is used. Proceeding with generic `.json` skip handling in runner, but `bm_sgas01` itself is no longer a skip candidate on live data.
 
 ---
 
@@ -125,18 +125,18 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 ## Definition of Done
 
 **Implemented:**
-- [ ] vat_amount: ตรวจ key จริง + แก้ mapping หรือลบออก
-- [ ] http_0 → result=`transport_fail`, accuracy=null
-- [ ] bm_sgas01 → result=`skip`
-- [ ] avg คำนวณจาก `ocr_scored` เท่านั้น
+- [x] vat_amount: ตรวจ key จริง + แก้ mapping หรือลบออก
+- [x] http_0 → result=`transport_fail`, accuracy=null
+- [x] `.json` fixture → `skip` logic added (live `bm_sgas01` row is already PDF; not exercised)
+- [x] avg คำนวณจาก `ocr_scored` เท่านั้น
 
 **Verified:**
-- [ ] Re-run exec ID: `_______` — avg_accuracy > 60%
-- [ ] Sheet: transport_fail/skip rows ไม่มี accuracy value
+- [x] Re-run exec ID: `152579` — avg_accuracy > 60% (`75.52%`)
+- [x] Sheet: transport_fail rows ไม่มี accuracy value (`skip` rows none in live batch)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
-- [ ] Review file: `docs/collab/reviews/T029D-review.md` (update Remaining limits)
+- [x] HANDOFF.md updated
+- [x] Review file: `docs/collab/reviews/T029D-review.md` (update Remaining limits)
 
 ---
 
@@ -145,7 +145,22 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 
 ```
 Runtime patched:
+  ocr-benchmark-runner (`vkIBCzSBUDVZH5kQ`) via n8n REST API
+  - Compare node: `transport_fail` + `skip` result classes, `accuracy=null` for unscored rows
+  - Summary node: avg accuracy computed from scored rows only; reports `transport_fail_count`/`skip_count`
+  - Prepare/Parse/Execute nodes: generic `.json` fixture skip detection path
+  - Sheet update row: writes `last_run_http_code`, `last_run_curl_exit_code`, blank accuracy for unscored rows
+  - VAT mismatch mitigation: auto-remove `vat_amount` from `fields_to_check` when OCR output schema lacks VAT field; writes updated `fields_to_check` back to sheet
 Verified from:
+  - OCR payload schema sample (main OCR exec `152555`): `bills[0]` has no VAT field (`vat_amount`/`vat`/`tax_amount`)
+  - Targeted benchmark run `152572` (`bm_sgas01`): score improved to 75% after `vat_amount` removal (row is PDF on live sheet)
+  - Full benchmark rerun `152579`: `total=20`, `ocr_scored_count=16`, `transport_fail_count=4`, `skip_count=0`, `avg_accuracy_v2_pct=75.52`
+  - Execution-data spot check (`152579`): `transport_fail` rows (`bm_ritta01`, `bm_fleet01`, `bm_feed03`, `bm_elec04`) have `accuracy=null` / sheet update emits blank `last_run_accuracy`
 Docs synced:
+  - `docs/collab/tasks/T029D-fix-benchmark-accuracy.md`
+  - `docs/collab/reviews/T029D-review.md`
+  - `docs/collab/HANDOFF.md`
 Remaining limits:
+  - `bm_sgas01` skip expectation in spec/review is stale on live sheet (row already switched to PDF before this task), so `skip_count=0` in exec `152579`
+  - `.json` skip path is implemented generically but not exercised by current live 20-row batch
 ```

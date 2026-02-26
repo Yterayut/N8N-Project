@@ -121,6 +121,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T029D-fix | Benchmark Accuracy Fix (`vat_amount` + `http_0` diagnostics) | Codex | 2026-02-26 | Implemented via n8n REST on workflow `vkIBCzSBUDVZH5kQ`; OCR schema sample exec `152555` confirms no VAT field; full rerun exec `152579` => `total=20`, `ocr_scored=16`, `transport_fail=4`, `skip=0`, `avg_accuracy=75.52%` (up from 49.67%); transport_fail rows no accuracy ✅; live `bm_sgas01` row already PDF (`สยามแก๊ส.pdf`) so `.json` skip path added generically but not exercised |
 | T029D | OCR Benchmark Runner | Codex | 2026-02-26 | Implemented via n8n REST; workflow `vkIBCzSBUDVZH5kQ` active (`/webhook/ocr-benchmark`); webhook auth + `webhookId` ✅; side-system `continueOnFail`/`onError=continueRegularOutput` ✅; benchmark sheet tab `OCR_BENCHMARK_FUEL` seeded 20 rows (1 malformed GG JSON skipped); tests: unauthorized 401 ✅, filtered tax_invoice exec `152265` ✅, targeted bm_shell01 exec `152355` pass ✅, full run exec `152362` ✅ (20 rows updated); spec `docs/collab/tasks/T029D-benchmark.md` closing template filled |
 | S1+S2+S3 | OCR Security + Resilience Hotfix (live patch) | CC | 2026-02-26 | LIVE ✅ — S1: `timingSafeEqual()` ใน `Code (Validate Feedback Payload)` (main OCR `up1n75qEhbsXswii`); S2: `continueOnFail=True` บน 8 nodes (Telegram + Sheets + ocr-rules-reader); S3: PATTERN-001 comment; smoke wrong-key→UNAUTHORIZED ✅ correct-key→INVALID_SCHEMA ✅; `verify_nowThai_sync.sh` ✅; plan: `docs/ocr/tech-debt-plan-2026-02-26.md` |
 | T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | **MERGED 8/10** — workflows: `ImhtvE0MgWPQBn63`, `jtwhukQgRmJAEMkP`, `WRuU2CglWAYjxOQ5` active; T1/T3/T4/T5 ✅; review: `docs/collab/reviews/T036-review.md` |
@@ -273,6 +274,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 16:32 | sync | all | auto-sync |
 | 2026-02-26 16:31 | sync | all | auto-sync |
 | 2026-02-26 16:29 | sync | all | auto-sync |
 | 2026-02-26 16:28 | sync | all | auto-sync |

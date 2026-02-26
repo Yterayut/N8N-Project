@@ -194,7 +194,8 @@ Verified from:
 Docs synced:
   `docs/collab/reviews/T029D-review.md`, `docs/collab/knowledge/lessons-learned.md`
 Remaining limits:
-  T029D follow-up implementation still needed for `vat_amount` normalization, `http_0` diagnostics, and `bm_sgas01` skip handling
+  Follow-up T029D-fix implemented on 2026-02-26 (Codex): `vat_amount` handling fixed via schema-aware field removal, `http_0` rows now `transport_fail` with unscored accuracy, summary reports `transport_fail_count`
+  Spec drift: live `bm_sgas01` sheet row had already been switched from `.json` to PDF (`สยามแก๊ส.pdf`) before T029D-fix execution, so no live row exercised the new `.json` skip path (`skip_count=0` on rerun exec `152579`)
 ```
 
 ---
@@ -206,4 +207,4 @@ Remaining limits:
 - [x] No further action required — follow-up items tracked as T029D-fix (next assign)
 
 **Date merged:** 2026-02-26
-**Notes:** CLOSED — review loop complete. Follow-up: vat_amount fix + http_0 diagnostics + bm_sgas01 skip
+**Notes:** CLOSED — review loop complete. Follow-up T029D-fix executed (see spec `T029D-fix-benchmark-accuracy.md`); `.json` skip logic added generically, but `bm_sgas01` was already PDF on live sheet at execution time
