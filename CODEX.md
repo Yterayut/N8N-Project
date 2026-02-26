@@ -54,6 +54,9 @@ When in Direct Mode, the prompt will tell you which files to read and what to do
 - Create/update documentation and specs
 - Review code changes and write test cases
 - Update HANDOFF.md after completing tasks
+- **อ่าน `docs/gg/proposals/`** เมื่อ task เกี่ยวกับ GG output หรือ OCR rules
+- **อ่าน `docs/gg/spec-guidelines.md`** เมื่อ implement task ที่ GG draft spec ให้
+- **CC จะรับ Telegram notification อัตโนมัติ** เมื่อ codex-exec.sh เสร็จ (ผ่าน gg-notify webhook)
 
 ### DO NOT
 - Edit workflow JSON files directly (`exports/`, `workflow*.json`) — use REST API always
