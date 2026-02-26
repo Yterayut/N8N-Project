@@ -37,7 +37,7 @@ codex_notify() {
   curl -sf -X POST "$N8N_BASE/webhook/gg-notify" \
     -H "Content-Type: application/json" \
     -H "x-api-key: ${OCR_SHARED_API_KEY:-}" \
-    -d "{\"role\":\"Codex\",\"message\":\"[$task_id] $status\\n$last_commit\"}" \
+    -d "{\"role\":\"Codex\",\"message\":\"[$task_id] $status\\n$last_commit\\n\\nCC กำลัง review อัตโนมัติ — ยุทไม่ต้องทำอะไร\"}" \
     >/dev/null 2>&1 || echo "[codex-exec] notify skipped (webhook not ready)"
 }
 
