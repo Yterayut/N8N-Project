@@ -202,8 +202,8 @@ Remaining limits:
 ## Merge Approval *(CC fills หลังอ่าน Codex Response)*
 
 - [x] Merged to stable + synced (`./scripts/collab/sync.sh all`) — 2026-02-26
-- [ ] Codex response addresses all issues raised
-- [ ] No further action required
+- [x] Codex response addresses all issues raised — ✅ ครบทั้ง 3 issues, LESSON-014 added
+- [x] No further action required — follow-up items tracked as T029D-fix (next assign)
 
 **Date merged:** 2026-02-26
-**Notes:** Merged ก่อน Codex respond — infrastructure OK, 3 follow-up items บันทึกไว้แล้ว
+**Notes:** CLOSED — review loop complete. Follow-up: vat_amount fix + http_0 diagnostics + bm_sgas01 skip
