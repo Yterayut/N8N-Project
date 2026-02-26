@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T038 Benchmark ≥95% tax_invoice (Codex running) |
-| **Active Agent** | Codex (T038 implement) |
-| **Codex Status** | T038 🔄 running since 17:54; T036 MERGED ✅ (review 8/10); T029D-fix ✅ baseline 75.52% |
+| **Phase** | T039 Active Learning Loop (Codex running) → T038 ค่อยทำหลัง |
+| **Active Agent** | Codex (T039 implement) |
+| **Codex Status** | T039 🔄 running since 18:19; T038 ⏸ paused (รอ T039 เสร็จก่อน); T029D-fix ✅ baseline 75.52% |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-26 13:55 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -108,7 +108,7 @@ _(none)_
 ### In Progress (Codex)
 | ID | Task | Status |
 |----|------|--------|
-| T038 | Benchmark Accuracy ≥95% (tax_invoice) | 🔄 Running — assigned 2026-02-26 17:54 |
+| T039 | Active Learning Loop: Feedback → TRAIN_CASES → LESSONS | 🔄 Running — assigned 2026-02-26 18:19 |
 
 ### Pending (Codex)
 | ID | Task | Status |
@@ -118,6 +118,7 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
+| T038 | Benchmark Accuracy ≥95% (tax_invoice) | Codex | T039 เสร็จก่อน |
 | T030 | Supabase migration (proposal ready) | — | Deferred |
 
 ### Recently Completed
@@ -276,6 +277,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 18:11 | sync | all | auto-sync |
+| 2026-02-26 17:55 | sync | all | auto-sync |
 | 2026-02-26 17:35 | sync | all | auto-sync |
 | 2026-02-26 17:32 | sync | all | auto-sync |
 | 2026-02-26 16:32 | sync | all | auto-sync |
