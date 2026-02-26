@@ -222,4 +222,61 @@ Tax ID `107561000013` → GG claim ว่าเป็น INET → **CC ไม่
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-26 by Codex*
+## LESSON-012: Side-system nodes ต้องมี `continueOnFail=True` ตั้งแต่วันแรก
+
+**Contributor:** CC | **Session:** 2026-02-26 | **Ref:** S2 hotfix, tech-debt-plan
+
+### เกิดอะไรขึ้น
+OCR audit พบว่า 8 nodes ที่เป็น side-system (Telegram notify, Sheets logging, HTTP GET rules) ไม่มี `continueOnFail=True`
+ถ้า Telegram rate limit หรือ Google Sheets quota เกิน → OCR ทั้งหมดพัง ทั้งที่เป็นแค่ logging
+
+### ความเสี่ยงที่เกิดขึ้นได้จริง
+- **Google Sheets quota exceeded** (ช่วง batch หรือ concurrent requests) → OCR ทุก request fail ทันที
+- **Telegram rate limit** (100 msg/min) → test หนักๆ → OCR พัง
+- **ocr-rules-reader timeout** → OCR พังแม้ flag=false (เกิดได้ทุกวัน)
+
+### Lesson
+> **Side-system nodes ต้องมี `continueOnFail=True` ตั้งแต่วันที่สร้าง** ไม่ใช่แก้ทีหลัง
+
+หลักการแบ่ง:
+| ประเภท node | continueOnFail | เหตุผล |
+|------------|----------------|--------|
+| Gemini API (GenerateContent) | **False** | ถ้า Gemini พัง → OCR ทำไม่ได้จริง → ควร stop |
+| Prompt template (Get row Prompt) | **False** | ไม่มี prompt → OCR ทำไม่ได้ |
+| Google Sheets logging (OCR_RAW*) | **True** | logging ไม่ควรฆ่า main flow |
+| Telegram notify | **True** | Telegram down ≠ OCR fail |
+| HTTP GET side rules/flags | **True** | ถ้า load fail → proceed gracefully |
+
+---
+
+## LESSON-013: Python script ที่รับ stdin ห้ามใช้ heredoc ภายใน pipe
+
+**Contributor:** CC | **Session:** 2026-02-26 | **Ref:** S1+S2+S3 patch
+
+### เกิดอะไรขึ้น
+```bash
+# ❌ ทำงานไม่ได้ — heredoc กิน stdin ก่อน pipe
+curl ... | python3 << 'PYEOF'
+import json, sys
+d = json.load(sys.stdin)  # ← ได้ empty เพราะ heredoc ใช้ stdin แล้ว
+PYEOF
+```
+
+### Fix
+```bash
+# ✅ เซฟ script เป็น file ก่อน แล้วใช้ pipe ปกติ
+cat > /tmp/myscript.py << 'PYEOF'
+import json, sys
+d = json.load(sys.stdin)
+...
+PYEOF
+
+curl ... | python3 /tmp/myscript.py > /tmp/output.json
+```
+
+### Lesson
+> **ถ้า Python script ต้องรับ stdin ผ่าน pipe → ต้องเซฟเป็นไฟล์ก่อนเสมอ** — heredoc ภายใน pipe จะ overwrite stdin
+
+---
+
+*อัปเดตล่าสุด: 2026-02-26 by CC*

@@ -304,4 +304,82 @@ sd.pending_train = {
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-25 by Codex*
+## PATTERN-013: Timing-Safe API Key Comparison
+
+**Contributor:** CC | **Discovered:** S1 hotfix audit, 2026-02-26
+**Severity:** High — timing attack ไม่มี error ให้เห็น
+
+### ปัญหา
+```javascript
+// ❌ ผิด — JavaScript engine อาจ short-circuit ตาม prefix ที่ match
+if (givenKey !== expectedKey) {
+  return [{ json: { response_code: 401 } }];
+}
+```
+Attacker วัด response latency → ไล่ brute-force API key ทีละ character ได้
+
+### Fix — ใช้ timingSafeEqual() ทุก Code node ที่มี API key check
+```javascript
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+const expectedKey = String($env.OCR_SHARED_API_KEY || '');
+const givenKey = String(headers['x-api-key'] || payload.api_key || '');
+
+if (!expectedKey) {
+  return [{ json: { response_code: 500, error_code: 'AUTH_NOT_CONFIGURED' } }];
+}
+if (!timingSafeEqual(givenKey, expectedKey)) {
+  return [{ json: { response_code: 401, error_code: 'UNAUTHORIZED' } }];
+}
+```
+
+### Rule
+> **ทุก Code node ที่ compare API key → ต้องใช้ `timingSafeEqual()` เสมอ** ห้ามใช้ `===` / `!==`
+
+---
+
+## PATTERN-014: n8n REST API ใน HTTP Request Node ต้องใช้ API Key ไม่ใช่ Basic Auth
+
+**Contributor:** CC | **Discovered:** T036 review, 2026-02-26
+**Severity:** Medium — Basic Auth ดูเหมือนผ่าน แต่ n8n ไม่ยอมรับ
+
+### ปัญหา
+เมื่อ n8n workflow (HTTP Request node) ต้องเรียก `/rest/workflows` หรือ n8n REST API อื่น:
+- **Basic Auth** (username/password) → n8n API ไม่รับ → 401 หรือ redirect → ไม่ work
+- **Session cookie** → หมดอายุ ใช้ใน automation ไม่ได้
+
+### Fix Options
+```
+Option A: n8n API Key
+  Header: X-N8N-API-KEY: <key from n8n Settings → API Keys>
+  ← แนะนำ: stable, ไม่หมดอายุ, ออกแบบมาสำหรับ automation
+
+Option B: SQLite Direct (Fallback ถ้า API ใช้ไม่ได้)
+  sqlite3 .n8n-dev/.n8n/database.sqlite "SELECT ..."
+  ← ใช้ได้ใน Codex/CC ที่ access server โดยตรง แต่ห้ามใช้ใน live workflow
+```
+
+### ตัวอย่าง HTTP Request node config
+```json
+{
+  "authentication": "genericCredentialType",
+  "genericAuthType": "httpHeaderAuth",
+  "nodeCredentialType": "httpHeaderAuth"
+}
+```
+Credential: `X-N8N-API-KEY` → `{{ $env.N8N_API_KEY }}`
+
+### Rule
+> ภายใน n8n workflow ที่ต้องเรียก n8n REST API → ใช้ **n8n API Key header** เสมอ — Basic Auth ไม่ work
+
+---
+
+*อัปเดตล่าสุด: 2026-02-26 by CC*
