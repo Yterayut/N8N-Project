@@ -22,6 +22,25 @@ esac
 CODEX_DIR="$REPO_ROOT/agents/codex"
 MODE="${1:?Usage: codex-exec.sh <discuss|implement|verify|respond|ask> [task-id] [message]}"
 
+# Load env for API keys (notify + n8n base URL)
+if [ -f "$REPO_ROOT/.env" ]; then
+  set -a; source "$REPO_ROOT/.env" 2>/dev/null; set +a
+fi
+N8N_BASE="${N8N_BASE_URL:-http://localhost:5678}"
+
+# Change 1: Notify CC via Telegram เมื่อ Codex เสร็จงาน
+codex_notify() {
+  local task_id="$1"
+  local status="${2:-done}"
+  local last_commit
+  last_commit=$(git -C "$CODEX_DIR" log --oneline -1 2>/dev/null || echo "no commit")
+  curl -sf -X POST "$N8N_BASE/webhook/gg-notify" \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: ${OCR_SHARED_API_KEY:-}" \
+    -d "{\"role\":\"Codex\",\"message\":\"[$task_id] $status\\n$last_commit\"}" \
+    >/dev/null 2>&1 || echo "[codex-exec] notify skipped (webhook not ready)"
+}
+
 # Sync before work
 echo "[codex-exec] Syncing agents/codex with stable..."
 git -C "$CODEX_DIR" merge stable --no-edit 2>/dev/null || true
@@ -32,12 +51,22 @@ find_spec() {
     find "$REPO_ROOT/docs/collab/tasks/" -name "${tid}-*" -o -name "${tid,,}-*" 2>/dev/null | head -1
 }
 
+# Change 4: GG awareness — ดู proposals + reports ล่าสุด
+GG_PROPOSALS=$(ls "$REPO_ROOT/docs/gg/proposals/" 2>/dev/null | grep -v '^$' | head -5 | tr '\n' ' ' || echo "none")
+GG_REPORTS=$(ls "$REPO_ROOT/docs/gg/reports/" 2>/dev/null | grep -v '^$' | head -3 | tr '\n' ' ' || echo "none")
+
 # Preamble ที่ Codex ต้องอ่านทุกครั้ง
 PREAMBLE="You are Codex agent. Read these files first (IN THIS ORDER) before doing anything:
 1. $CODEX_DIR/CODEX.md — your identity and rules
 2. $REPO_ROOT/docs/collab/HANDOFF.md — current task board
-3. $REPO_ROOT/docs/collab/knowledge/n8n-patterns.md — known patterns
+3. $REPO_ROOT/docs/collab/knowledge/n8n-patterns.md — known patterns (PATTERN-001 to PATTERN-012)
 4. $REPO_ROOT/docs/collab/knowledge/lessons-learned.md — avoid past mistakes
+
+GG Agent context (Intelligence Layer):
+- GG recent proposals: ${GG_PROPOSALS:-none} (in $REPO_ROOT/docs/gg/proposals/)
+- GG recent reports:   ${GG_REPORTS:-none} (in $REPO_ROOT/docs/gg/reports/)
+- GG spec guidelines:  $REPO_ROOT/docs/gg/spec-guidelines.md
+- If your task involves GG output → read the relevant proposal/report file before implementing
 
 IMPORTANT RULES:
 - You work on branch agents/codex in worktree $CODEX_DIR
@@ -105,11 +134,21 @@ PRE-SUBMIT CHECKLIST (verify before commit — do NOT skip):
 8. git push origin agents/codex
 9. Report what you did and test results (include exec ID if E2E ran)"
 
+        # Change 2: Dependency check ก่อนเริ่ม
+        DEPS=$(grep -iE "^\*\*Depends on:\*\*|^Depends on:" "$SPEC_FILE" 2>/dev/null | grep -oP 'T\d+' | tr '\n' ' ')
+        for dep in $DEPS; do
+          if ! grep -qiE "${dep}.*(complet|done)|✅.*${dep}" "$REPO_ROOT/docs/collab/HANDOFF.md" 2>/dev/null; then
+            echo "[WARN] Dependency $dep may not be completed — verify HANDOFF.md before proceeding"
+          fi
+        done
+
         echo "[codex-exec] implement $TASK_ID — Codex starting work (danger-full-access for localhost)..."
         cd "$CODEX_DIR"
         # ใช้ -s danger-full-access เพราะ implement ต้องการ curl localhost:5678
         # sandbox_permissions network=true ไม่ allow loopback/localhost
         "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+        # Change 1: Notify CC เมื่อ Codex เสร็จงาน
+        codex_notify "$TASK_ID" "implement complete"
         ;;
 
     verify)
@@ -139,6 +178,7 @@ Steps:
         echo "[codex-exec] verify $TASK_ID — Codex checking live system state..."
         cd "$CODEX_DIR"
         "$CODEX_CLI" exec -s danger-full-access "$PROMPT" 2>&1
+        codex_notify "$TASK_ID" "verify complete"
         ;;
 
     respond)
@@ -174,6 +214,7 @@ Steps:
         echo "[codex-exec] respond $TASK_ID — Codex reviewing feedback..."
         cd "$CODEX_DIR"
         "$CODEX_CLI" exec -c 'sandbox_permissions=["disk-full-read-access","network=true"]' "$PROMPT" 2>&1
+        codex_notify "$TASK_ID" "respond complete"
         ;;
 
     ask)

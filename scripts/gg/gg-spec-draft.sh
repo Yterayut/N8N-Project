@@ -26,6 +26,11 @@ TEMPLATE=$(cat "$PROJECT_DIR/docs/collab/reviews/_TEMPLATE.md" 2>/dev/null || ec
 # โหลด spec guidelines (CC feedback สะสม — สอน GG pattern ที่ถูกต้อง)
 SPEC_GUIDELINES=$(cat "$PROJECT_DIR/docs/gg/spec-guidelines.md" 2>/dev/null || echo "")
 
+# Change 5: โหลด n8n patterns + Codex lessons + CC feedback ทั้งหมด
+N8N_PATTERNS=$(cat "$PROJECT_DIR/docs/collab/knowledge/n8n-patterns.md" 2>/dev/null || echo "")
+LESSONS_LEARNED=$(cat "$PROJECT_DIR/docs/collab/knowledge/lessons-learned.md" 2>/dev/null || echo "")
+CC_FEEDBACK=$(cat "$PROJECT_DIR/docs/gg/feedback/"*.md 2>/dev/null || echo "no feedback yet")
+
 # หา task ID ถัดไป
 LAST_TASK_ID=$(ls "$PROJECT_DIR/docs/collab/tasks/T"*.md 2>/dev/null | grep -oP 'T\d+' | sort | tail -1 || echo "T031")
 NEXT_ID=$(echo "$LAST_TASK_ID" | python3 -c "import sys; t=sys.stdin.read().strip(); print(f'T{int(t[1:])+1:03d}')" 2>/dev/null || echo "T032")
@@ -44,6 +49,15 @@ This is an n8n-based OCR invoice processing system with:
 - Learning loop: TRAIN_CASES → runtime rules → better OCR
 - 3 agents: Claude Code (planner), Codex (executor), GG/Gemini (intelligence)
 - Stack: n8n, Google Sheets, Google Drive, Telegram, SQLite
+
+## N8N Patterns Reference (PATTERN-001 to PATTERN-012 — must follow):
+$N8N_PATTERNS
+
+## Codex Lessons Learned (avoid repeating these mistakes):
+$LESSONS_LEARNED
+
+## Previous CC Feedback on GG Specs (learn from these):
+$CC_FEEDBACK
 
 ## Recent HANDOFF context:
 $HANDOFF_SUMMARY
