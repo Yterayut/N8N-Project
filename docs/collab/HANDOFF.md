@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T040 in progress — GLM5 fallback OCR (queue path) |
-| **Active Agent** | Codex (implementing T040) |
-| **Codex Status** | T040 🔄 implementing — GLM5 fallback on queue path `up1n75qEhbsXswii` |
+| **Phase** | T040 complete (with external credential limit on GLM5 success test) |
+| **Active Agent** | _(none)_ |
+| **Codex Status** | T040 ✅ queue fallback graph patched on `up1n75qEhbsXswii`; Gemini path pass (`153473`), fallback branch executes but GLM5 returns 401 (`153475`) |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-02-27 06:30 |
+| **Last Sync** | 2026-02-27 06:45 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -106,7 +106,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| T040 | GLM5 fallback OCR (queue path, `up1n75qEhbsXswii`) | Codex | 2026-02-27 |
+_(none)_
 
 ### Pending (Codex)
 _(none)_
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T040 | GLM5 (Zhipu AI) fallback OCR (queue path) | Codex | 2026-02-27 | Patched live OCR workflow `up1n75qEhbsXswii` via n8n REST: added `IF (Gemini OK?)`, `Code (Prepare GLM5 Request)`, `HTTP (GLM5 GenerateContent)` (`continueOnFail=true`, `onError=continueRegularOutput`), `Code (Reshape GLM5 Response)`; rewired queue path and removed direct `HTTP (GenerateContent)` -> `Code (Parse Result)` link; added `fallback_used/fallback_model/fallback_status/model_version` in parse output. Tests: Gemini OK exec `153473` (`fallback_used=false`) ✅; forced fallback image exec `153475` hits GLM5 branch but provider returns `401` token invalid (`fallback_status=failed`) ⚠️; forced both fail PDF exec `153477` graceful error ✅; `verify_nowThai_sync.sh` ✅ |
 | T037 | Add `validation_trace` to `Code (Normalize + Validate)` | Codex | 2026-02-26 | Patched live OCR workflow `up1n75qEhbsXswii` via n8n REST: added `_trace` + `check()` instrumentation and `x.validation_trace`; patched main `/ocr-dev` success responder `Respond to Webhook6` to include `validation_trace` in HTTP response. E2E: valid `PTT-OR.pdf` exec `153324` all pass trace ✅; fail `fleetcard.pdf` exec `153395` shows `vendor_tax_id_format` fail ✅; `verify_nowThai_sync.sh` ✅ |
 | T038 | Benchmark Accuracy ≥95% (tax_invoice) | Codex | 2026-02-26 | Patched `ocr-benchmark-runner` compare logic via n8n REST (`vkIBCzSBUDVZH5kQ`): best-bill selection for multi-bill docs, stronger invoice/tax-id tolerance, multi-bill `doc_type` skip, fixture doc_type mismatch skip (`bm_ritta01`); targeted verifies `153130` (ritta skip), `153138` (feed01 100%), `153145` (elec01 100%); full rerun `153152` => `avg_accuracy_v3_pct=92.19%`, `avg_accuracy_tax_invoice_pct=97.92%` ✅ |
 | T029D-fix | Benchmark Accuracy Fix (`vat_amount` + `http_0` diagnostics) | Codex | 2026-02-26 | Implemented via n8n REST on workflow `vkIBCzSBUDVZH5kQ`; OCR schema sample exec `152555` confirms no VAT field; full rerun exec `152579` => `total=20`, `ocr_scored=16`, `transport_fail=4`, `skip=0`, `avg_accuracy=75.52%` (up from 49.67%); transport_fail rows no accuracy ✅; live `bm_sgas01` row already PDF (`สยามแก๊ส.pdf`) so `.json` skip path added generically but not exercised |
