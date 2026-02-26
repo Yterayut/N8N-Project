@@ -94,4 +94,5 @@ FILEPATH=$(save_proposal "$FILENAME" "$JSON_OUTPUT")
 echo ""
 echo "✅ Ground truth saved: $FILEPATH"
 echo "⚠️  Human spot-check required (≥10% of fields) before using in benchmark"
+notify "E" "✅ Ground truth ready: $(basename "$FILEPATH") — CC ต้อง spot-check ก่อนใช้ใน benchmark — CC review อัตโนมัติ ยุทไม่ต้องทำอะไร" "$FILEPATH"
 log "=== Role E complete: $FILEPATH ==="
