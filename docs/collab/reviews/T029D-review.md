@@ -163,22 +163,38 @@ Conditions (follow-up ใน T029D-fix หรือ T037 scope):
 ## Codex Response
 *(Codex fill ใน section นี้หลังอ่าน review — ใช้ `codex-exec.sh respond T029D`)*
 
-**Date:**
+**Date:** 2026-02-26
 
 ### Response to Issues Raised
+- Issue 1 (`vat_amount` mismatch): Agree this is likely compare/mapping drift rather than pure OCR quality. I seeded `ground_truth.vat_amount` directly from GG proposal shape, but I did not first sample live OCR payload keys across representative docs. Follow-up should inspect actual bill keys (`bills[0]`) from execs and normalize compare keys (or remove `vat_amount` from cases where OCR schema does not emit it).
+- Issue 2 (`http_0` rows): Agree this is a bug in benchmark observability. Current compare logic correctly marks non-200 as fail, but it collapses transport failures into accuracy=0 without enough diagnostics. Next patch should persist/return explicit failure reason (`curl_exit_code`, file missing, timeout, http_code, parse_error) so these rows are excluded from OCR-quality interpretation.
+- Issue 3 (`invoice_number` I→1): Agree and I consider this a valid baseline limitation, not infrastructure bug. I would keep strict exact-match in v1 benchmark (to preserve regression sensitivity) but document tolerance options for future scoring modes (format-aware or edit-distance scoring).
 
 ### Design Decisions Explained
+- `sleep 12` in `Execute Command`: Chosen to preserve synchronous webhook response behavior after `SplitInBatches + Wait` caused premature/empty responses with `responseNode`. This kept benchmark execution deterministic and debuggable in one request while staying near the intended rate limit.
+- HTTP `202` treated as parseable response: Intent was to avoid discarding partial OCR payloads during dev endpoint behavior variations and still collect field-level evidence. I agree the summary should distinguish `202 partial` from `200 success` more clearly so accuracy is not over-interpreted.
+- `doc_type` normalization map (`fuel→tax_invoice`, `electricity→invoice`, `fleet_card→other`): Added to compare semantic equivalence between benchmark labels and OCR labels, not to inflate scores. I documented it in the task closing notes to keep this tradeoff visible.
+- `bm_sgas01` JSON case kept in seed: I followed spec seed list and documented it as a known v1 limitation. Review feedback is correct that it should be explicitly skipped/flagged in runner logic rather than counted as a normal accuracy case.
 
 ### What I Would Do Differently Next Time
+- Run a preflight schema audit on 3-5 sample OCR outputs before finalizing `fields_to_check` defaults (especially numeric tax fields).
+- Separate result classes at the data model level: `transport_fail`, `parse_fail`, `ocr_scored`, instead of forcing everything into pass/partial/fail accuracy buckets.
+- Add richer benchmark row outputs early (e.g., `last_run_http_code`, `last_run_error_code`, `last_run_error_detail`) to make root-cause triage possible from the sheet without opening execution logs.
+- Enforce input-file eligibility (`.pdf/.jpg/.jpeg/.png`) and mark unsupported fixtures as `skip` during seed or run.
 
 ### New Patterns / Lessons Learned
+- Added `LESSON-014` to `docs/collab/knowledge/lessons-learned.md`: benchmark/QA runners must not mix transport/runtime failures with model accuracy scoring in the same metric.
 
 ### Closing Template
 ```
 Runtime patched:
+  No runtime patch in this response task (documentation-only follow-up on review)
 Verified from:
+  Review file `docs/collab/reviews/T029D-review.md` + T029D spec closing notes/execution IDs (`152265`, `152355`, `152362`)
 Docs synced:
+  `docs/collab/reviews/T029D-review.md`, `docs/collab/knowledge/lessons-learned.md`
 Remaining limits:
+  T029D follow-up implementation still needed for `vat_amount` normalization, `http_0` diagnostics, and `bm_sgas01` skip handling
 ```
 
 ---

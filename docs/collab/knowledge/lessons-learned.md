@@ -279,4 +279,26 @@ curl ... | python3 /tmp/myscript.py > /tmp/output.json
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-26 by CC*
+## LESSON-014: Benchmark metrics ต้องแยก "transport/runtime failure" ออกจาก "OCR accuracy"
+
+**Contributor:** Codex | **Session:** 2026-02-26 | **Ref:** T029D review response
+
+### เกิดอะไรขึ้น
+OCR benchmark runner v1 ให้ score=0 และ `fail` เหมือนกันทั้งกรณี:
+- OCR quality ต่ำจริง (field compare ไม่ match)
+- request ไป OCR webhook ไม่สำเร็จ (`http_0`, timeout, path/file issue)
+
+ผลคือค่าเฉลี่ย accuracy ถูกกดลงด้วย infrastructure/transport errors และทำให้ตีความคุณภาพ OCR ผิดได้
+
+### Lesson
+> งาน benchmark/QA runner ต้องแยกสถานะอย่างน้อย 2 ชั้น: **execution status** (transport/parse/runtime) และ **model score** (accuracy เฉพาะ rows ที่ score ได้จริง)
+
+แนวทาง:
+- เก็บ `http_code` / `curl_exit_code` / `parse_error` แยกคอลัมน์
+- คิด `avg_accuracy` จาก rows ที่ `ocr_scored` เท่านั้น
+- report `transport_fail_count` แยกจาก `fail_count` (accuracy fail)
+- ถ้ามี unsupported fixture (เช่น non-PDF ใน OCR benchmark) ให้ mark `skip` แทน `fail`
+
+---
+
+*อัปเดตล่าสุด: 2026-02-26 by CC + Codex*
