@@ -127,19 +127,27 @@ _Checklist ที่ตรวจ:_
 ## Codex Response
 *(Codex fill ใน section นี้หลังอ่าน review — ใช้ `codex-exec.sh respond T034`)*
 
-**Date:**
+**Date:** 2026-02-26
 
 ### Response to Issues Raised
-[ตอบทีละ issue — เห็นด้วย/ไม่เห็นด้วย + เหตุผล]
+- **Issue 1 (`check_recent_errors()` over-report):** เห็นด้วยครับ. ตอน implement ตั้งใจให้เป็น "health signal" แบบ fail-soft ก่อน (มี error activity ใน 24h ไหม + ขนาดความสะสมคร่าวๆ) เพราะ log line format ใน `common.sh` ไม่มี date จึง query ช่วงเวลาแบบ exact ไม่ได้. ถ้าจะทำให้ metric มีความหมายเชิง time-window จริง ต้องแก้ log format upstream ก่อนตามที่ review เสนอ (เหมาะเป็น backlog/T035)
+- **Issue 2 (Python heredoc triple-quote injection, theoretical):** เห็นด้วยครับว่าเป็น design ที่ fragile แม้ risk ปฏิบัติจริงต่ำมากในเวอร์ชันนี้ เพราะ `$CLI/$API/...` ถูกสร้างจาก `json_obj()` (Python `json.dumps`) และค่าที่ใส่เป็น status/message ที่เราคุมได้. อย่างไรก็ตาม temp-file / stdin handoff จะ robust กว่าและควรเป็น refactor ถัดไป
 
 ### Design Decisions Explained
-[อธิบาย trade-off ที่เลือก]
+- **เพิ่ม `IF (Authorized?)` + `Respond (401)` branch:** เลือกแก้ spec diagram เพราะต้องแยก unauthorized path ให้จบเร็วและไม่เรียก `Execute Command` โดยไม่จำเป็น
+- **ใช้ timing-safe compare:** reuse pattern จาก T032 เพื่อให้ webhook auth behavior สม่ำเสมอทุก workflow ที่รับ `x-api-key`
+- **ใช้ `json_obj()` helper + structured JSON output:** prioritise machine-readability และลด shell quoting bugs ตอนประกอบผลหลาย checks
+- **ใส่ `timeout 20s` ให้ Gemini API ping:** ป้องกัน health endpoint ค้างนานจนกระทบ caller / n8n execution timeout
+- **ยอมรับ `check_recent_errors()` แบบ approximation ชั่วคราว:** trade-off เพื่อส่ง endpoint ใช้งานได้ก่อน โดยไม่ไปแก้ shared logging format ใน task นี้ (ลด scope creep)
 
 ### What I Would Do Differently Next Time
-[honest reflection]
+- ออกแบบ log format ให้มี full datetime ตั้งแต่แรก (date+time) ถ้ารู้ว่าจะมี health/monitoring query แบบ rolling window
+- ส่ง JSON ระหว่าง shell ↔ Python ผ่าน temp files หรือ stdin แทน heredoc variable expansion เพื่อตัด quoting edge cases ออกไปเลย
+- เพิ่ม negative test เล็กๆ สำหรับข้อความที่มี quote/special chars ใน script output เพื่อ lock-in ความปลอดภัยของ JSON assembly
 
 ### New Patterns / Lessons Learned
-[เพิ่มใน n8n-patterns.md หรือ lessons-learned.md ถ้ามี]
+- เพิ่ม **LESSON-011** ใน `docs/collab/knowledge/lessons-learned.md`: ถ้าจะทำ recent/time-window monitoring ภายหลัง ต้องใส่ date ใน log line format ตั้งแต่ต้น ไม่งั้น metric จะกลายเป็น approximation
+- ไม่มี n8n pattern ใหม่จากงานนี้ (ประเด็นหลักเป็น shell/logging design มากกว่า n8n graph behavior)
 
 ### Closing Template
 ```

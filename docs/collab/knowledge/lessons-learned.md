@@ -203,4 +203,23 @@ Tax ID `107561000013` → GG claim ว่าเป็น INET → **CC ไม่
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-26 by CC*
+## LESSON-011: ถ้าต้อง query "recent errors" ภายหลัง ต้องใส่ date ใน log line ตั้งแต่แรก
+
+**Contributor:** Codex | **Session:** 2026-02-26 | **Ref:** T034 review response
+
+### เกิดอะไรขึ้น
+`gg-health.sh` ต้องรายงาน error log ในช่วง 24 ชั่วโมงล่าสุด แต่ shared log format ใน `scripts/gg/common.sh` มีแค่เวลา (เช่น `HH:MM:SS`) ไม่มีวันที่
+
+ผลคือ health check ทำได้แค่ใช้ file `mtime` เป็น gate แล้วนับทั้งไฟล์ ซึ่งเป็น **approximation** และอาจ over-report ได้ถ้ามี error เก่าเยอะแต่ไฟล์เพิ่งถูก append
+
+### Lesson
+> ถ้ามีโอกาสต้องทำ monitoring/health metrics แบบ rolling window (`last 1h`, `last 24h`) ให้ log line format มี **full datetime** (`YYYY-MM-DD HH:MM:SS`) ตั้งแต่วันแรก
+
+แนวทาง:
+- ใช้ timestamp ที่ parse/grep ได้ง่ายและ timezone ชัดเจน
+- ออกแบบ log format โดยคิด use case downstream (health check, alerting, analytics) ล่วงหน้า
+- ถ้ายังแก้ format ไม่ได้ ให้ label metric ว่าเป็น `approximate` ชัดเจนเพื่อกันตีความผิด
+
+---
+
+*อัปเดตล่าสุด: 2026-02-26 by Codex*
