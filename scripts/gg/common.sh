@@ -90,7 +90,19 @@ save_proposal() {
   local filename="$1"
   local content="$2"
   local filepath="$PROPOSALS_DIR/$filename"
-  echo "$content" > "$filepath"
+  # Change 3: Append approval status template ทุก proposal
+  cat > "$filepath" <<PROPOSAL
+$content
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: $TIMESTAMP by GG*
+PROPOSAL
   log "Proposal saved: $filepath"
   echo "$filepath"
 }

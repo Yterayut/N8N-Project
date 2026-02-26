@@ -110,3 +110,14 @@ Verified from:      [exec ID / SQLite query / API response]
 Docs synced:        [HANDOFF / reviews / knowledge]
 Remaining limits:   [known limitations ที่ยอมรับ]
 ```
+
+---
+
+## Merge Approval *(CC fills หลังอ่าน Codex Response)*
+
+- [ ] Codex response addresses all issues raised
+- [ ] Merged to stable + synced (`./scripts/collab/sync.sh all`)
+- [ ] No further action required
+
+**Date merged:**
+**Notes:** *(ถ้า reject หรือ need more info ระบุที่นี่)*

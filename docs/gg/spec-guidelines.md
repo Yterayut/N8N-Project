@@ -7,6 +7,23 @@ CC อัปเดตไฟล์นี้เมื่อพบ pattern ให�
 
 ---
 
+## N8N Patterns — Single Source of Truth
+
+**อ่าน `docs/collab/knowledge/n8n-patterns.md` ก่อนเขียน spec เสมอ** — มี PATTERN-001 ถึง PATTERN-012
+
+Patterns ที่สำคัญที่สุดสำหรับ spec writing:
+
+| Pattern | หัวข้อ | กฎ |
+|---------|--------|-----|
+| PATTERN-001 | Multi-input node | ใช้ `$('NodeName').first().json.field` ไม่ใช่ `$json` |
+| PATTERN-008 | Webhook webhookId | ทุก webhook node สร้างผ่าน REST ต้องมี `webhookId` UUID ใน DoD |
+| PATTERN-010 | IF node conditions | ใช้ typeVersion 2.3 + v3 format เสมอ |
+| PATTERN-011 | Webhook path collision | ตรวจ path ซ้ำก่อน activate |
+
+ถ้า spec มี webhook ใหม่ → ต้องมีทั้ง RULE-SG-004 (Code node auth) + PATTERN-008 (webhookId) ใน DoD เสมอ
+
+---
+
 ## OUTPUT FORMAT RULES
 
 ### RULE-SG-001: Output คือ markdown spec เท่านั้น
