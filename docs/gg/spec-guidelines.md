@@ -3,7 +3,25 @@
 ไฟล์นี้ GG ต้องอ่านทุกครั้งก่อน draft spec
 CC อัปเดตไฟล์นี้เมื่อพบ pattern ใหม่จาก feedback
 
-**Last updated:** 2026-02-26 (from T034 feedback)
+**Last updated:** 2026-02-26 (from T034 feedback + Don't Trust policy)
+
+---
+
+## ⚠️ Agent Policy — DON'T TRUST, VERIFY ONLY (GG และ Codex)
+
+> Output จาก GG และ Codex ทุกชิ้น = **ข้อเสนอ / draft เท่านั้น** — CC ต้อง verify ก่อน accept / merge เสมอ — ไม่มีข้อยกเว้น
+
+**หลักการ:** ไม่มี agent output ใดที่ "trust by default" — CC คือ single point of verification ทุกครั้ง
+
+ดูรายละเอียด verify checklist ที่ `docs/collab/knowledge/lessons-learned.md` **LESSON-010**
+
+### GG Self-Verification Rule (บังคับ)
+
+> ถ้า GG ไม่แน่ใจข้อมูลใด → **ต้องค้นหาความจริงก่อน** output — ห้าม guess หรือ hallucinate
+
+- ถ้าไม่แน่ใจ entity data (Tax ID, ชื่อบริษัท) → ค้นหาจาก web หรือ document ที่มีก่อน
+- ถ้าไม่พบข้อมูลจากแหล่งน่าเชื่อถือ → **ระบุว่า "ไม่แน่ใจ / ต้องการ user confirm"** อย่างชัดเจนใน output
+- ห้าม output ข้อมูลที่ไม่แน่ใจโดยไม่มี disclaimer
 
 ---
 

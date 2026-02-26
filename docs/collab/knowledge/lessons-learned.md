@@ -166,7 +166,7 @@ T029A verify ผ่านระดับ runtime execution:
 
 ---
 
-## LESSON-010: GG hallucinate ข้อมูล entity จริง (Tax ID, ชื่อบริษัท)
+## LESSON-010: Agent Output — Don't Trust, Verify Only (GG และ Codex)
 
 **Contributor:** CC | **Session:** 2026-02-26 | **Ref:** GG Curation Report 2026-02-25
 
@@ -175,18 +175,31 @@ GG curation report ระบุว่า Tax ID `107561000013` เป็นข�
 CC review ผ่านโดยไม่ verify — user แก้ว่าข้อมูลผิด: Tax ID ของ INET จริงๆ คือ `0107544000094`
 
 ### ความเป็นจริง
-GG (LLM) สามารถ hallucinate ข้อมูลจริงเช่น Tax ID หรือชื่อบริษัทได้โดยไม่มี warning
-CC รับ GG output มาโดยไม่ตรวจสอบ → recommendation ผิดถูก propagate ออกไป
+LLM agents (GG และ Codex) สามารถ hallucinate หรือ implement ผิดได้โดยไม่มี warning
+CC รับ output มาโดยไม่ตรวจสอบ → ข้อมูลผิดถูก propagate ออกไป
 
-### Lesson
-> **ห้าม accept GG's entity identification (Tax ID, ชื่อบริษัท, เลขทะเบียน) โดยตรง**
-> ต้อง verify กับแหล่งข้อมูลจริงก่อนทุกครั้ง เช่น ฐานข้อมูลกรมพัฒนาธุรกิจการค้า หรือ user confirm
-> GG เหมาะสำหรับ pattern analysis / structural review — ไม่ใช่ factual business data lookup
+### Policy (บังคับ 2026-02-26)
+> **GG และ Codex output ทุกชิ้น = "Don't Trust, Verify Only"**
+> CC ต้อง verify ก่อน accept / merge / execute เสมอ — ไม่มีข้อยกเว้น
 
-### Checklist เมื่อ review GG curation/analysis report
-- [ ] GG ระบุชื่อบริษัท / Tax ID → **verify ก่อน accept เสมอ**
-- [ ] GG แนะนำ mapping หรือ master data update → **ให้ user confirm ก่อน**
-- [ ] GG วิเคราะห์ pattern (duplicates, noise, schema) → ใช้ได้เลย low risk
+#### GG Output
+| ประเภท | ระดับ trust | วิธี verify |
+|--------|-------------|-------------|
+| Entity data (Tax ID, ชื่อบริษัท, เลขทะเบียน) | Zero | ถาม user หรือ verify จากแหล่งจริง |
+| Curation recommendations (KEEP/REMOVE) | Low | verify factual claims ก่อน execute |
+| Spec draft (code, architecture) | Low | CC review ทุกบรรทัด |
+| Pattern analysis / structural review | Medium | spot-check raw data ประกอบ |
+
+#### Codex Output
+| ประเภท | ระดับ trust | วิธี verify |
+|--------|-------------|-------------|
+| n8n workflow patches | Low | re-fetch จาก n8n API + smoke test |
+| SQLite / data writes | Low | query ยืนยันหลัง write เสมอ |
+| Bash scripts | Low | อ่าน code ก่อน merge ทุกบรรทัด |
+| Test results ที่ Codex report | Low | ดู exec ID + ตรวจ n8n execution log จริง |
+
+### ตัวอย่างที่ถูก
+Tax ID `107561000013` → GG claim ว่าเป็น INET → **CC ไม่ accept** → user confirm ว่าผิด
 
 ---
 
