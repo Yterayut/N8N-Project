@@ -13,6 +13,18 @@
 - ถ้าเห็น potential issue หรือ alternative approach → เพิ่มใน `## Discussion` section ของ spec file ก่อน execute
 - อ่าน `docs/collab/knowledge/` เพื่อ reference patterns ที่รู้อยู่แล้ว
 
+> ### ⚠️ MANDATORY SPEC COMPLIANCE RULE (บังคับ — ห้ามละเมิด)
+>
+> **Spec = สัญญา ไม่ใช่ข้อแนะนำ**
+>
+> - ถ้า **ไม่มี concern** ใน `## Discussion` → หมายความว่าเห็นด้วยกับ spec ทุกข้อ → **ต้อง implement 100% ตาม spec ทุกจุด** ไม่มีข้อยกเว้น
+> - ถ้า **มี concern** → เขียนใน `## Discussion` ก่อน implement ทันที → รอ CC ตอบกลับก่อนเริ่มงาน
+> - **ห้าม skip test** ที่ spec กำหนด โดยไม่แจ้ง Discussion ก่อน — ถ้า skip → score หัก และ CC จะ reject
+> - **ห้าม improvise** นอก scope โดยไม่ได้รับอนุญาต — ถ้าอยากเพิ่ม → แจ้ง Discussion ก่อน
+> - **ถ้า spec ผิดพลาด / ไม่สมเหตุสมผล** → Discussion เท่านั้น ไม่ใช่แก้เงียบๆ เอง
+>
+> **กฎ:** ไม่มี Discussion = เห็นด้วย = ต้อง implement ครบ 100%
+
 ### Post-execution (หลังทำงาน)
 - อ่าน Code Review ที่ CC เขียนที่ `docs/collab/reviews/T0xx-review.md`
 - Fill in `## Codex Response` section — ตอบ concerns, อธิบาย decisions, เพิ่ม insight
