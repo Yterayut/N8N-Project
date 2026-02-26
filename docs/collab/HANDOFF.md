@@ -106,7 +106,9 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Status |
+|----|------|--------|
+| T029D | OCR Benchmark Runner | 🔄 Codex กำลัง implement (assigned 12:50) — รอ push + CC review |
 
 ### Pending (Codex)
 | ID | Task | Status |
@@ -116,7 +118,6 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T029D | Benchmark Runner | Codex | CC spot-check GG ground truth 3-5 files → populate OCR_BENCHMARK_FUEL sheet ก่อน assign |
 | T030 | Supabase migration (proposal ready) | — | Deferred |
 
 ### Recently Completed
@@ -272,6 +273,10 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 12:48 | sync | all | auto-sync |
+| 2026-02-26 12:44 | sync | all | auto-sync |
+| 2026-02-26 12:36 | sync | all | auto-sync |
+| 2026-02-26 12:35 | sync | all | auto-sync |
 | 2026-02-26 12:35 | sync | all | auto-sync |
 | 2026-02-26 12:35 | sync | all | auto-sync |
 | 2026-02-26 12:34 | sync | all | auto-sync |

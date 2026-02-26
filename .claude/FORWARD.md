@@ -97,7 +97,7 @@ git -C agents/codex log --oneline -5
 git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
 ```
 
-## Last Checkpoint — 12:45
-- ✅ T036 MERGED (review 8/10) — 3 workflows active, T1/T3/T4/T5 pass, HANDOFF อัปเดต
-- 🔄 Codex ยังไม่ respond T036 review (`docs/collab/reviews/T036-review.md`)
-- ⏭️ Spot-check GG ground truth (3-5 files) → T029D Benchmark Runner
+## Last Checkpoint — 12:50
+- ✅ T036 merged, GG ground truth 21/21 fixed (caltex re-run, shell tax_id แก้), T029D spec เสร็จ + assign Codex
+- 🔄 Codex กำลัง implement T029D (`tmux session codex`) — รอ review
+- ⏭️ รอ Codex T029D เสร็จ → review + merge | Codex ยังไม่ respond T036 review
