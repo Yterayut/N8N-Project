@@ -110,12 +110,14 @@ _(none)_
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
+| T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | spec ready at `docs/collab/tasks/T035-*.md` |
 | T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test documents in GDrive (not available) |
 | T030 | Supabase migration (proposal ready) | — | Codex proposal in T029-architecture.md Discussion |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T034 review | T034 Code Review + Codex Response + Merge Approval | CC+Codex | 2026-02-26 | CLOSED — LESSON-011 added; review loop complete |
 | T034 | GG Agent Health Check Endpoint | Codex | 2026-02-26 | Implemented; workflow `BlCrCNITw9ThtfOx` active (`/webhook/gg-health`); T1 401 + T2 200/JSON + T4 JSON parse ✅; optional T3 warn smoke ✅ |
 | T033 | GG Data + Notify Webhooks | Codex | 2026-02-25 | Implemented; new workflows `XtaSg9pLDuPERtI8` + `YZTJwkh25isaLKHo` active; webhook auth tests T1-T6 ✅; `gg-curate.sh` confirmed live fetch (`Found 4 TRAIN_CASES`) |
 | T032 | Timing-Safe API Key Comparison | Codex | 2026-02-25 | Verified live target Code nodes already use `timingSafeEqual()` in 3 workflows (`ztJ8oCBHREUPPry6`, `jmJHPPj0OM5LcZ0n`, `dFzVzAFjdRJHbQqe`); correct-key 200 + wrong-key 401 ✅ |
@@ -263,6 +265,13 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 08:44 | sync | all | auto-sync |
+| 2026-02-26 08:44 | sync | all | auto-sync |
+| 2026-02-26 08:44 | sync | all | auto-sync |
+| 2026-02-26 08:33 | sync | all | auto-sync |
+| 2026-02-26 08:30 | sync | all | auto-sync |
+| 2026-02-26 07:59 | sync | all | auto-sync |
+| 2026-02-26 07:58 | sync | all | auto-sync |
 | 2026-02-26 07:18 | sync | all | auto-sync |
 | 2026-02-26 07:18 | sync | all | auto-sync |
 | 2026-02-26 07:13 | sync | all | auto-sync |
