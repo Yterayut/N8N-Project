@@ -194,6 +194,11 @@ Spreadsheet ID: `12L5A0I36lNzyoKlrBl9hIbIvsfbUVFcmXDj_bE3sAr0`
 
 _Codex: เพิ่ม concerns ก่อน implement_
 
+**Codex (2026-02-26, pre-check / implemented):**
+- Live `ocr-feedback-receiver` already had `HTTP (POST ocr-km-log)` but it was connected directly after `Append OCR_FEEDBACK` (ran once per feedback row) and could duplicate KM logs; patched to aggregate + gate + run after response.
+- Live `ocr-km-suggest` writes to `OCR_KM_LESSONS` (not generic `LESSONS`) and existing status semantics use `suggestion` / `approved`; implemented FIELD_DIFFS auto-pattern lessons into `OCR_KM_LESSONS` with `status='suggestion'` (still review-gated).
+- Added `Google Sheets (Read FIELD_DIFFS)` node initially without credentials by mistake; detected via runtime (`continueOnFail` error row) and patched credentials from existing Sheets read node before final verification.
+
 **CC Pre-notes:**
 - ตรวจ T026 workflow ว่า node ที่เก็บ `ocr_bills` (ต้นฉบับ) ชื่อว่าอะไรจริงๆ ก่อน patch
 - ถ้า T026 ไม่ได้เก็บ `ocr_bills` ไว้ใน flow → ต้อง lookup เพิ่ม (GET OCR_RAW row แล้วดึง `bills_json`)
@@ -224,22 +229,22 @@ _Codex: เพิ่ม concerns ก่อน implement_
 ## Definition of Done
 
 **Implemented:**
-- [ ] `ocr-feedback-receiver` มี IF + HTTP node → km-logger (continueOnFail)
-- [ ] `ocr-km-suggest` filter รวม `feedback_kpi` source
-- [ ] `ocr-km-suggest` auto-LESSONS เมื่อ pattern ≥3
+- [x] `ocr-feedback-receiver` มี IF + HTTP node → km-logger (continueOnFail)
+- [x] `ocr-km-suggest` filter รวม `feedback_kpi` source
+- [x] `ocr-km-suggest` auto-LESSONS เมื่อ pattern ≥3
 
 **Verified from system:**
-- [ ] TRAIN_CASES มี row ใหม่ source=`feedback_kpi` หลัง test feedback
-- [ ] FIELD_DIFFS มี rows สำหรับ feedback นั้น
-- [ ] T029B exec ใช้ feedback rows ในการวิเคราะห์
+- [x] TRAIN_CASES มี row ใหม่ source=`feedback_kpi` หลัง test feedback
+- [x] FIELD_DIFFS มี rows สำหรับ feedback นั้น
+- [x] T029B exec ใช้ feedback rows ในการวิเคราะห์
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — feedback → TRAIN_CASES flow
-- [ ] Exec ID: `_______` — T029B daily run พร้อม real corrections
+- [x] Exec ID: `153089` (feedback) + `153093` (km-log) — feedback → TRAIN_CASES/FIELD_DIFFS flow (`source=feedback_kpi`)
+- [x] Exec ID: `153112` — T029B webhook run (`/webhook/ocr-km-suggest`) with real corrections + FIELD_DIFFS hot-pattern lessons
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
-- [ ] T039 closing template filled
+- [x] HANDOFF.md updated
+- [x] T039 closing template filled
 
 ---
 
@@ -248,7 +253,21 @@ _Codex: เพิ่ม concerns ก่อน implement_
 
 ```
 Runtime patched:
+- `ocr-feedback-receiver` (`ztJ8oCBHREUPPry6`): moved km-log call to post-response path, added `Code (Prepare KM Log Payload)` + `IF (KM Log Needed?)`, gated on aggregated `diff_count > 0`, and set side-system nodes (`Sheets`/`Telegram`/`HTTP`) `continueOnFail=true` + `onError=continueRegularOutput`
+- `ocr-km-suggest` (`NkKd02QyzLRcpIJM`): added `Google Sheets (Read FIELD_DIFFS)` + `Merge (Attach FIELD_DIFFS)`, filtered analysis to real sources (`feedback_kpi`, `telegram_train`), insufficient-real-case skip, FIELD_DIFFS hot-pattern auto lessons (>=3), and set side-system nodes `continueOnFail=true`
+
 Verified from:
+- Feedback T1: `153089` (feedback receiver) + `153093` (km logger) — km-log payload aggregated once, `diff_count=1`, TRAIN_CASE/FIELD_DIFFS rows prepared with `source=feedback_kpi`
+- Feedback T2: `153095` — `Code (Prepare KM Log Payload)` returned `_skip_km_log=true`, `HTTP (POST ocr-km-log)` did not run, no new km-log exec (`max` stayed `153093`)
+- Feedback auth negative: wrong API key → `401` (`{\"error\":\"UNAUTHORIZED\"}`)
+- KM suggest run before FIELD_DIFFS creds fix: `153111` exposed `Read FIELD_DIFFS` credentials issue (error row via continueOnFail)
+- KM suggest final rerun: `153112` read 70 FIELD_DIFFS rows, `Code (Analyze Patterns)` reported `real_cases=12`, `analyzed_field_diffs=60`, and created `field_diff_hot:*` lessons
+
 Docs synced:
+- `HANDOFF.md` moved `T039` to Recently Completed
+- This spec updated (Discussion, DoD, E2E exec IDs, closing notes)
+
 Remaining limits:
+- T3 (km-logger workflow intentionally down) not executed to avoid temporary disruption of shared KM logging workflow
+- Spec wording references generic `LESSONS` tab / `pending_review`; live implementation maps to existing `OCR_KM_LESSONS` schema with `status='suggestion'` (review-gated equivalent)
 ```

@@ -125,6 +125,7 @@ _(none)_
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
 | T029D-fix | Benchmark Accuracy Fix (`vat_amount` + `http_0` diagnostics) | Codex | 2026-02-26 | Implemented via n8n REST on workflow `vkIBCzSBUDVZH5kQ`; OCR schema sample exec `152555` confirms no VAT field; full rerun exec `152579` => `total=20`, `ocr_scored=16`, `transport_fail=4`, `skip=0`, `avg_accuracy=75.52%` (up from 49.67%); transport_fail rows no accuracy ✅; live `bm_sgas01` row already PDF (`สยามแก๊ส.pdf`) so `.json` skip path added generically but not exercised |
+| T039 | Active Learning Loop (feedback → TRAIN_CASES/FIELD_DIFFS → KM suggest) | Codex | 2026-02-26 | Implemented via n8n REST on `ztJ8oCBHREUPPry6` + `NkKd02QyzLRcpIJM`; fixed duplicate km-log risk by aggregating + gating post-response (`diff_count > 0`); added FIELD_DIFFS read + real-source filter + hot-pattern (`field_diff_hot`) lessons in KM suggest; side-system `continueOnFail=True`/`onError=continueRegularOutput` on Sheets/Telegram/HTTP nodes in touched workflows ✅; tests: feedback wrong-key 401 ✅, diff>0 feedback `153089` + km-log `153093` ✅, no-diff skip km-log `153095` ✅, km-suggest rerun after FIELD_DIFFS creds fix `153112` => `new_lessons=5`, `real_cases=12`, `analyzed_field_diffs=60` ✅ |
 | T029D | OCR Benchmark Runner | Codex | 2026-02-26 | Implemented via n8n REST; workflow `vkIBCzSBUDVZH5kQ` active (`/webhook/ocr-benchmark`); webhook auth + `webhookId` ✅; side-system `continueOnFail`/`onError=continueRegularOutput` ✅; benchmark sheet tab `OCR_BENCHMARK_FUEL` seeded 20 rows (1 malformed GG JSON skipped); tests: unauthorized 401 ✅, filtered tax_invoice exec `152265` ✅, targeted bm_shell01 exec `152355` pass ✅, full run exec `152362` ✅ (20 rows updated); spec `docs/collab/tasks/T029D-benchmark.md` closing template filled |
 | S1+S2+S3 | OCR Security + Resilience Hotfix (live patch) | CC | 2026-02-26 | LIVE ✅ — S1: `timingSafeEqual()` ใน `Code (Validate Feedback Payload)` (main OCR `up1n75qEhbsXswii`); S2: `continueOnFail=True` บน 8 nodes (Telegram + Sheets + ocr-rules-reader); S3: PATTERN-001 comment; smoke wrong-key→UNAUTHORIZED ✅ correct-key→INVALID_SCHEMA ✅; `verify_nowThai_sync.sh` ✅; plan: `docs/ocr/tech-debt-plan-2026-02-26.md` |
 | T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | **MERGED 8/10** — workflows: `ImhtvE0MgWPQBn63`, `jtwhukQgRmJAEMkP`, `WRuU2CglWAYjxOQ5` active; T1/T3/T4/T5 ✅; review: `docs/collab/reviews/T036-review.md` |
@@ -277,6 +278,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 18:20 | sync | all | auto-sync |
 | 2026-02-26 18:11 | sync | all | auto-sync |
 | 2026-02-26 17:55 | sync | all | auto-sync |
 | 2026-02-26 17:35 | sync | all | auto-sync |
