@@ -97,7 +97,7 @@ git -C agents/codex log --oneline -5
 git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
 ```
 
-## Last Checkpoint — 13:14
-- ✅ S1+S2+S3 hotfix LIVE: `timingSafeEqual()` ใน Validate Feedback, `continueOnFail=True` 8 nodes, PATTERN-001 comment; smoke ✅; HANDOFF committed
-- 🔄 Codex กำลัง implement T029D (`tmux session codex`) — รอ review + merge
-- ⏭️ รอ Codex T029D + T036 respond review; next sprint: M1 (extract dup code paths), M2 (validation_trace)
+## Last Checkpoint — 14:00
+- ✅ T029D merged (8/10): benchmark runner active, 20 rows, baseline avg=49.67% — root cause: vat_amount mapping + http_0 x4 + invoice_number I→1
+- ✅ Knowledge: LESSON-012/013, PATTERN-013/014 added; ground truth 21/21 spot-checked; T037 spec เขียนแล้ว
+- 🔄 Codex: respond T029D review (tmux codex) — รอ response แล้ว assign fix + T037
