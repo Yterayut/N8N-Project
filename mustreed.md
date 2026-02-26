@@ -1,0 +1,6 @@
+- 2025-11-05: From now on ensure every workflow change updates both UI-exported files and the backend database so they stay in sync.
+- 2025-11-06: From now on every change or enhancement must ship with unit tests so we can verify the behaviour immediately.
+- 2025-11-06: Event-based encouragement needs ENV pairs (`FB_EVENT_KEYWORDS_*`, `FB_EVENT_REPLIES_*`), the workflow code/UI/DB kept in sync, and Google Sheets must include the `EventCategory` column.
+- 2025-11-06: FB_NEGATIVE keyword path now deletes comment, logs to sheet, and notifies LINE.
+- 2025-11-06: Non-negative Facebook comments auto-like before replying; record `Facebook_Like_Sent` in sheet without LINE alerts.
+- 2025-11-06: Workflow 3 confirmed to auto-like, reply, and log to both Google Sheets tabs successfully.
