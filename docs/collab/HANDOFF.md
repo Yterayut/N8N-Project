@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T039 Active Learning Loop (Codex running); T038 benchmark target met ✅ |
-| **Active Agent** | Codex (T039 implement) |
-| **Codex Status** | T039 🔄 running since 18:19; T038 ✅ done (tax_invoice avg 97.92%, exec `153152`); T029D-fix ✅ baseline 75.52% |
+| **Phase** | All tasks complete ✅ — T036/T037/T038/T039 done |
+| **Active Agent** | _(none)_ |
+| **Codex Status** | T037 ✅ validation_trace; T038 ✅ 97.92% tax_invoice; T039 ✅ feedback loop; T036 ✅ reviewed+responded |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-26 20:44 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -106,14 +106,10 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Status |
-|----|------|--------|
-| T039 | Active Learning Loop: Feedback → TRAIN_CASES → LESSONS | 🔄 Running — assigned 2026-02-26 18:19 |
+_(none)_
 
 ### Pending (Codex)
-| ID | Task | Status |
-|----|------|--------|
-| T036 respond | Codex respond to T036 review | รอ Codex อ่าน + fill `## Codex Response` ใน `docs/collab/reviews/T036-review.md` |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -279,6 +275,10 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 20:47 | sync | all | auto-sync |
+| 2026-02-26 20:47 | sync | all | auto-sync |
+| 2026-02-26 20:45 | sync | all | auto-sync |
+| 2026-02-26 20:45 | sync | all | auto-sync |
 | 2026-02-26 18:41 | sync | all | auto-sync |
 | 2026-02-26 18:37 | sync | all | auto-sync |
 | 2026-02-26 18:20 | sync | all | auto-sync |
