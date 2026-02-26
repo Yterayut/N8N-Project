@@ -110,7 +110,8 @@ cat docs/collab/reviews/_TEMPLATE.md  # read template first
 cat docs/gg/reports/2026-02-25-curation.md
 ```
 
-## Last Checkpoint — 07:30
-- ✅ 8 gap-closing changes done + retrospective saved
-- ✅ FORWARD.md written (this file)
-- ⏭️ Commit HANDOFF.md → write T034 review → test Codex notification
+## Last Checkpoint — 08:50
+- ✅ T034 review CLOSED (Codex responded, LESSON-011 added, Merge Approval done)
+- ✅ GG/Codex "Don't Trust, Verify Only" policy — LESSON-010, spec-guidelines, MEMORY updated
+- ✅ bills=[] root cause found + T035 spec เขียนแล้ว — assigned Codex
+- ⏭️ รอ Codex implement T035 → CC verify → enable OCR_RUNTIME_RULES_ENABLED=true
