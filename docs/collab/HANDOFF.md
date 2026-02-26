@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T029D Benchmark Runner completed (await CC review) + S1+S2+S3 hotfix LIVE |
-| **Active Agent** | Codex (T036 respond + T029D handoff) |
-| **Codex Status** | T036 MERGED ✅ (review 8/10); T029D ✅ implemented + pushed (workflow `vkIBCzSBUDVZH5kQ`, execs `152265/152355/152362`); รอ Codex respond T036 review |
+| **Phase** | T038 Benchmark ≥95% tax_invoice (Codex running) |
+| **Active Agent** | Codex (T038 implement) |
+| **Codex Status** | T038 🔄 running since 17:54; T036 MERGED ✅ (review 8/10); T029D-fix ✅ baseline 75.52% |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-26 13:55 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -106,7 +106,9 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Status |
+|----|------|--------|
+| T038 | Benchmark Accuracy ≥95% (tax_invoice) | 🔄 Running — assigned 2026-02-26 17:54 |
 
 ### Pending (Codex)
 | ID | Task | Status |
@@ -274,6 +276,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-26 17:35 | sync | all | auto-sync |
+| 2026-02-26 17:32 | sync | all | auto-sync |
 | 2026-02-26 16:32 | sync | all | auto-sync |
 | 2026-02-26 16:31 | sync | all | auto-sync |
 | 2026-02-26 16:29 | sync | all | auto-sync |
