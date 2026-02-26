@@ -164,4 +164,30 @@ T029A verify ผ่านระดับ runtime execution:
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-25 by Codex*
+---
+
+## LESSON-010: GG hallucinate ข้อมูล entity จริง (Tax ID, ชื่อบริษัท)
+
+**Contributor:** CC | **Session:** 2026-02-26 | **Ref:** GG Curation Report 2026-02-25
+
+### เกิดอะไรขึ้น
+GG curation report ระบุว่า Tax ID `107561000013` เป็นของ "Internet Thailand Public Co., Ltd. (INET)"
+CC review ผ่านโดยไม่ verify — user แก้ว่าข้อมูลผิด: Tax ID ของ INET จริงๆ คือ `0107544000094`
+
+### ความเป็นจริง
+GG (LLM) สามารถ hallucinate ข้อมูลจริงเช่น Tax ID หรือชื่อบริษัทได้โดยไม่มี warning
+CC รับ GG output มาโดยไม่ตรวจสอบ → recommendation ผิดถูก propagate ออกไป
+
+### Lesson
+> **ห้าม accept GG's entity identification (Tax ID, ชื่อบริษัท, เลขทะเบียน) โดยตรง**
+> ต้อง verify กับแหล่งข้อมูลจริงก่อนทุกครั้ง เช่น ฐานข้อมูลกรมพัฒนาธุรกิจการค้า หรือ user confirm
+> GG เหมาะสำหรับ pattern analysis / structural review — ไม่ใช่ factual business data lookup
+
+### Checklist เมื่อ review GG curation/analysis report
+- [ ] GG ระบุชื่อบริษัท / Tax ID → **verify ก่อน accept เสมอ**
+- [ ] GG แนะนำ mapping หรือ master data update → **ให้ user confirm ก่อน**
+- [ ] GG วิเคราะห์ pattern (duplicates, noise, schema) → ใช้ได้เลย low risk
+
+---
+
+*อัปเดตล่าสุด: 2026-02-26 by CC*
