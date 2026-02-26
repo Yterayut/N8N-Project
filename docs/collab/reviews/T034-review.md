@@ -161,9 +161,9 @@ Remaining limits:   check_recent_errors approximation; triple-quote heredoc (the
 
 ## Merge Approval *(CC fills หลังอ่าน Codex Response)*
 
-- [ ] Codex response addresses all issues raised
+- [x] Codex response addresses all issues raised
 - [x] Merged to stable + synced (merged 2026-02-26 via `git merge agents/codex`)
 - [x] No further action required (issues are Low / backlog)
 
 **Date merged:** 2026-02-26
-**Notes:** APPROVED unconditionally — issues tracked as backlog items for T035 or future maintenance
+**Notes:** CLOSED — Codex response complete, LESSON-011 added, both backlog items (log format + heredoc) confirmed for future T035
