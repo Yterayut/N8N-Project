@@ -2,116 +2,102 @@
 
 ## Where We Are
 - Branch: `stable`
-- Last commit: `33f471a` docs(retro): session retrospective 2026-02-26-3agent-gap-closing
-- Phase: **3-Agent Gap Closing COMPLETE** — T033/T032/T029C merged, T034 done, 8 gap changes in
+- Last commit: `29d09ea feat(gg): notify CC เมื่อ GG เสร็จงาน`
+- Phase: T036 System Health Report + T029D Ground Truth prep
 
 ## What Was Accomplished This Session
 
-- ✅ Merged Codex T033+T032+T029C from `agents/codex` → `stable` (`c95080b`)
-- ✅ Live tests passed: T033 webhooks (gg-data-gateway + gg-notify-gateway), T032 timing-safe auth, T029C response
-- ✅ GG Spec Feedback Loop installed — `docs/gg/feedback/T034-feedback.md` + `docs/gg/spec-guidelines.md` (10 rules)
-- ✅ T034 spec rewritten by CC (6 issues found in GG draft — internal reasoning, wrong auth, missing webhookId, wrong CLI flags, DoD format, missing Risk)
-- ✅ T034 (GG Health Monitor) assigned + completed by Codex — `gg-health-monitor` workflow `BlCrCNITw9ThtfOx` active
-- ✅ `scripts/gg/gg-health.sh` created by Codex — checks CLI, API (timeout 20s), scripts, storage, data gateway
-- ✅ `codex-exec.sh` REPO_ROOT bug fixed (2 attempts) — now uses `git rev-parse --git-common-dir` for worktree-aware detection
-- ✅ 8 gap-closing changes committed (`b45c256`):
-  1. `codex_notify()` in codex-exec.sh — Telegram after implement/verify/respond
-  2. Dependency check in codex-exec.sh — warn if prerequisite not complete
-  3. GG proposals/reports awareness in codex-exec.sh preamble
-  4. Approval Status template in `common.sh` `save_proposal()`
-  5. `gg-spec-draft.sh` loads n8n-patterns + lessons-learned + CC feedback
-  6. Merge Approval section in `_TEMPLATE.md`
-  7. CODEX.md updated — GG awareness + notification note
-  8. `spec-guidelines.md` — n8n patterns reference
-- ✅ Session retrospective saved — `docs/collab/retrospectives/2026-02-26-3agent-gap-closing.md`
+- **T035 merged** (9/10) — `bills=[]` bug แก้แล้ว, `OCR_RUNTIME_RULES_ENABLED=true`
+- **T036 spec + assign Codex** — 3 workflows: daily health 07:30, on-demand `/health`, error spike monitor
+- **T036 Codex เสร็จ** — 3 workflows สร้างแล้ว — **รอ CC review + merge**
+- **codex-exec.sh แก้ 2 bugs** — pipefail exit + nested tmux Codex CLI refuse (`|| true` + `unset TMUX`)
+- **GG notify เพิ่มแล้ว** — `gg-groundtruth.sh`, `gg-spec-draft.sh`, `gg-groundtruth-batch.sh` (ใหม่)
+- **GG ground truth batch 21/21** — ทุก PDF ใน `file/` extract แล้ว → `docs/gg/proposals/2026-02-26-groundtruth-*.json`
+- **Flow การส่งงาน Codex** — ค้นพบ + แก้ + บันทึกใน MEMORY
 
-## Current State of Live System
+## Current State of Key Files
 
-| Workflow | ID | Status |
-|----------|----|--------|
-| ocr-invoice-processor | `up1n75qEhbsXswii` | Active, 114 nodes |
-| gg-data-gateway | `XtaSg9pLDuPERtI8` | Active — GET /webhook/gg-data |
-| gg-notify-gateway | `YZTJwkh25isaLKHo` | Active — POST /webhook/gg-notify |
-| gg-health-monitor | `BlCrCNITw9ThtfOx` | Active — GET /webhook/gg-health |
-| ocr-rules-reader | `dFzVzAFjdRJHbQqe` | Active — flag=false (safe) |
-| ocr-km-logger | `jmJHPPj0OM5LcZ0n` | Active |
-| ocr-km-suggest | `NkKd02QyzLRcpIJM` | Active — daily 06:00 BKK |
-| ocr-feedback-receiver | `ztJ8oCBHREUPPry6` | Active |
+| ไฟล์ | สถานะ |
+|------|-------|
+| `docs/collab/HANDOFF.md` | **M uncommitted** — ต้อง commit |
+| `docs/collab/tasks/T036-system-health-report.md` | spec พร้อม ✅ |
+| `docs/collab/reviews/T036-review.md` | ยังไม่มี — CC ต้องเขียน |
+| `docs/gg/proposals/2026-02-26-groundtruth-*.json` | 21 files รอ CC spot-check |
+| `scripts/collab/codex-exec.sh` | แก้แล้ว committed ✅ |
+| `scripts/gg/gg-groundtruth-batch.sh` | ใหม่ committed ✅ |
 
 ## What To Do Next (In Order)
 
-1. **Commit HANDOFF.md** — `git add docs/collab/HANDOFF.md && git commit -m "chore: sync handoff" && ./scripts/collab/sync.sh all`
-2. **Write T034 Code Review** — `docs/collab/reviews/T034-review.md` จาก `_TEMPLATE.md` — Codex ต้องการ review เพื่อ fill Codex Response
-3. **Test Codex notification** — `./scripts/collab/codex-exec.sh ask "ping"` → ดู Telegram ว่ามี notification
-4. **Review GG curation report** — `docs/gg/reports/2026-02-25-curation.md` — 1 case recommended FLAG/REMOVE รอ CC decision
-5. **Test gg-spec-draft.sh round 2** — `./scripts/gg/gg-spec-draft.sh "test requirement"` → verify guidelines inject ทำงาน
-6. **bills=[] investigation** — ก่อน enable `OCR_RUNTIME_RULES_ENABLED=true` ต้องสืบสวน data lineage issue
+1. **Commit HANDOFF.md** ที่ยังค้าง:
+   ```bash
+   git add docs/collab/HANDOFF.md && git commit -m "chore: T036 done pending review, T029D ground truth ready"
+   ```
+2. **Review T036** — ตรวจ 3 workflows + เขียน `docs/collab/reviews/T036-review.md` + merge agents/codex
+3. **Smoke test T036** — trigger manual → ยืนยัน Telegram 07:30 + `/health` + error alert ทำงาน
+4. **Spot-check GG ground truth** — เปิด 3-5 ไฟล์ `2026-02-26-groundtruth-*.json` เทียบ PDF จริงใน `file/`
+5. **Implement T029D** — populate OCR_BENCHMARK_FUEL sheet แล้ว assign Codex
 
-## Pending Tasks (from HANDOFF.md)
+## Pending Tasks
 
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
-| T034 review | CC write Code Review for T034 | CC | T034 done ✅ |
-| T029D | Benchmark Runner (DEFERRED) | Codex | Ground truth test docs in GDrive |
-| T030 | Supabase migration (proposal ready) | — | CC decision on scope |
+| T036 | System Health Report | CC review | Codex เสร็จแล้ว รอ merge |
+| T029D | Benchmark Runner | Codex | CC spot-check ground truth ก่อน |
+| T030 | Supabase migration | — | deferred |
 
 ## Uncommitted Changes
+- `docs/collab/HANDOFF.md` — M (อัปเดต T036 + T029D status)
 
-- `M docs/collab/HANDOFF.md` — needs commit + sync
+## Context That Took Time To Build
 
-## Context That Took Time To Build (Don't Lose)
-
-### GG Spec Feedback Loop (NEW this session)
-- GG ยังไม่สมบูรณ์ — T034 draft มี 6 issues (internal reasoning ใน output, wrong auth, missing webhookId, wrong flags, DoD format, missing Risk)
-- **2-layer feedback**: per-spec `docs/gg/feedback/T0xx-feedback.md` + living `docs/gg/spec-guidelines.md` (10 rules)
-- `gg-spec-draft.sh` now injects: spec-guidelines + n8n-patterns + lessons-learned + all feedback files
-- **Next GG spec test**: รัน `gg-spec-draft.sh "test"` → ดูว่า output เริ่มด้วย `# T0xx` ทันที ไม่มี preamble
-
-### codex-exec.sh REPO_ROOT Detection
-- Fix: `git rev-parse --git-common-dir` → absolute path สำหรับ worktree, `.git` สำหรับ main repo
-- Pattern: `case "$_GIT_COMMON" in /*) REPO_ROOT="$(dirname "$_GIT_COMMON")" ;; *) REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)" ;; esac`
-- เหตุผล: ถ้ารันจาก worktree `agents/codex/` → git-common-dir = `/path/to/main-repo/.git` → dirname = main repo ✅
-
-### Codex Notification (NEW this session)
-- `codex_notify()` ใน codex-exec.sh — POST ไป `/webhook/gg-notify` พร้อม role=Codex
-- รัน auto หลัง implement/verify/respond modes
-- **ยังไม่ได้ test จริง** — ต้องทดสอบว่า Telegram รับได้
-
-### CODEX.md Gitignore Pattern
-- `agents/` directory ถูก gitignore ใน stable — commit CODEX.md ต้องทำใน worktree แล้ว merge:
-  ```bash
-  git -C agents/codex add CODEX.md && git -C agents/codex commit -m "..."
-  git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
-  ```
-
-### Codex Push Failure (ongoing)
-- `git push origin agents/codex` failed — no GitHub credentials in shell
-- Workaround: CC merge manually `git -C agents/codex ...` + sync
-- Fix needed: GITHUB_TOKEN in .env + token-based remote URL
-
-### GG Curation Report Pending
-- `docs/gg/reports/2026-02-25-curation.md` — generated during T033 verification
-- 1 case recommended FLAG/REMOVE — CC ยังไม่ได้ review
-
-## Commands To Run First
-
+### วิธีส่งงาน Codex ที่ถูกต้อง (confirmed 2026-02-26)
 ```bash
-# 1. Commit uncommitted HANDOFF.md
-git add docs/collab/HANDOFF.md && git commit -m "chore: sync handoff 2026-02-26" && ./scripts/collab/sync.sh all
+# 1. เช็ค pane ต้องเป็น bash (ไม่ใช่ node)
+tmux list-panes -t codex -F "#{pane_current_command}"
 
-# 2. Write T034 review (new file from template)
-cat docs/collab/reviews/_TEMPLATE.md  # read template first
+# 2. ส่ง full path เสมอ — ห้าม pipe (Codex ต้องการ TTY)
+tmux send-keys -t codex \
+  "/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/scripts/collab/codex-exec.sh implement T0xx" \
+  Enter
 
-# 3. Test Codex notification
-./scripts/collab/codex-exec.sh ask "ping" 2>&1 | tail -5
-# Then check Telegram
-
-# 4. Review GG curation report
-cat docs/gg/reports/2026-02-25-curation.md
+# 3. ยืนยัน Codex start
+sleep 8 && ps aux | grep "node.*codex" | grep -v grep | grep -v vscode
 ```
 
-## Last Checkpoint — 08:50
-- ✅ T034 review CLOSED (Codex responded, LESSON-011 added, Merge Approval done)
-- ✅ GG/Codex "Don't Trust, Verify Only" policy — LESSON-010, spec-guidelines, MEMORY updated
-- ✅ bills=[] root cause found + T035 spec เขียนแล้ว — assigned Codex
-- ⏭️ รอ Codex implement T035 → CC verify → enable OCR_RUNTIME_RULES_ENABLED=true
+### Bugs ที่แก้ใน codex-exec.sh
+1. `grep | grep` ไม่มี match → `set -e` + `pipefail` exit → แก้: `|| true`
+2. `$TMUX` set → Codex CLI refuse start → แก้: `unset TMUX` ก่อนรัน
+
+### T036 Workflow Names (Codex สร้างแล้ว)
+- `system-daily-health-report` — cron 00:30 UTC = 07:30 BKK
+- `system-health-ondemand` — Telegram Trigger `/health`
+- `system-error-monitor` — cron */30, alert ≥5 errors/1h, cooldown 2h
+
+### GG Batch Ground Truth (ครั้งหน้า)
+```bash
+./scripts/gg/gg-groundtruth-batch.sh   # batch ทุกไฟล์ใน file/
+```
+เมื่อเสร็จ → Telegram แจ้งยุทอัตโนมัติ
+
+## Commands To Run First
+```bash
+# 1. Commit HANDOFF.md ที่ค้าง
+git add docs/collab/HANDOFF.md
+git commit -m "chore: update HANDOFF — T036 done pending review, T029D ground truth ready"
+
+# 2. ดู T036 workflows ที่ Codex สร้าง
+curl -s http://localhost:5678/rest/workflows -b cookie.txt | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); [print(w['id'], w['name'], w['active']) for w in d['data'] if 'system' in w['name']]"
+
+# 3. ดู Codex commit T036
+git -C agents/codex log --oneline -5
+
+# 4. Review + merge T036
+# เขียน docs/collab/reviews/T036-review.md แล้ว:
+git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
+```
+
+## Last Checkpoint — 12:45
+- ✅ T036 MERGED (review 8/10) — 3 workflows active, T1/T3/T4/T5 pass, HANDOFF อัปเดต
+- 🔄 Codex ยังไม่ respond T036 review (`docs/collab/reviews/T036-review.md`)
+- ⏭️ Spot-check GG ground truth (3-5 files) → T029D Benchmark Runner
