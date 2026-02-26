@@ -169,9 +169,9 @@ Remaining limits:   HTTP Get Workflows dead code (SQLite fallback), T2 all-OK no
 
 ## Merge Approval *(CC fills หลังอ่าน Codex Response)*
 
-- [ ] Codex response addresses all issues raised
-- [ ] Merged to stable + synced (`./scripts/collab/sync.sh all`)
-- [ ] No further action required
+- [x] Codex response addresses all issues raised — honest, ครบทุก issue
+- [x] Merged to stable + synced
+- [x] No further action required
 
-**Date merged:**
-**Notes:**
+**Date merged:** 2026-02-26
+**Notes:** Codex response ดี — ยอมรับทุก issue + อธิบาย design trade-offs ชัดเจน LESSON-015 added ✅
