@@ -229,18 +229,18 @@ Logic:
 ## Definition of Done
 
 **Implemented:**
-- [ ] `OCR_BENCHMARK_FUEL` sheet สร้างแล้ว, columns ตาม spec
-- [ ] Sheet populated: ≥10 rows จาก ground truth files
-- [ ] `ocr-benchmark-runner` workflow active
+- [x] `OCR_BENCHMARK_FUEL` sheet สร้างแล้ว, columns ตาม spec
+- [x] Sheet populated: ≥10 rows จาก ground truth files *(20 rows populated; 1 GG proposal malformed and skipped)*
+- [x] `ocr-benchmark-runner` workflow active *(ID: `vkIBCzSBUDVZH5kQ`)*
 
 **Verified:**
-- [ ] T1 ผ่าน (auth)
-- [ ] T2 ผ่าน (full run, Telegram received)
-- [ ] T3 ผ่าน (sheet updated)
-- [ ] ≥1 row มี result=pass (ยืนยัน accuracy logic ทำงาน)
+- [x] T1 ผ่าน (auth)
+- [x] T2 ผ่าน (full run, Telegram received)
+- [x] T3 ผ่าน (sheet updated)
+- [x] ≥1 row มี result=pass (ยืนยัน accuracy logic ทำงาน)
 
 **Docs:**
-- [ ] HANDOFF.md อัปเดต T029D complete + workflow ID
+- [x] HANDOFF.md อัปเดต T029D complete + workflow ID
 
 ---
 
@@ -255,3 +255,19 @@ Logic:
 ## Discussion
 
 *(Codex pre-execution questions ใส่ที่นี่)*
+
+- Codex note (proceeding): `bm_sgas01` ระบุ `input_file_path = file/สยามแก๊ส.json` ซึ่งไม่ใช่ binary PDF/image; จะ populate ตาม spec แต่ benchmark runner จะ mark fail ถ้า main OCR webhook ไม่รองรับ JSON upload (ถือเป็น expected v1 limitation unless runtime proves otherwise).
+- Codex note (update): `SplitInBatches` + `Wait` ทำให้ webhook ตอบกลับเร็วแบบ empty body (resume execution) เมื่อใช้ `responseNode`; implementation final ใช้ `sleep 12` ใน `Execute Command` แทน เพื่อคง sync response และยัง rate-limit ได้ใกล้เคียง intent.
+
+---
+
+## Closing Template
+*(Codex fill ก่อน push — บังคับ)*
+
+```
+Benchmark runner created: ocr-benchmark-runner (vkIBCzSBUDVZH5kQ), webhook /webhook/ocr-benchmark (webhookId present), active=true
+Sheet seeded: OCR_BENCHMARK_FUEL = 20 rows (1 GG proposal malformed plain-text file skipped: 2026-02-26-groundtruth-บิลน้ำมัน_feedcard_04_kbank.json)
+Verified from: T1 401 auth; T4 filter tax_invoice exec 152265 (13 rows only); T5 targeted bm_shell01 exec 152355 (pass=1, avg=80); T2 full run exec 152362 (20 rows, pass=6, partial=7, fail=7); sheet last_run_* updated for exec IDs 152238/152265/152362
+Docs synced: HANDOFF.md + T029D-benchmark.md
+Known deviations: compare treats HTTP 202 as valid OCR response (needs_review with payload); benchmark doc_type normalization maps fuel→tax_invoice, electricity→invoice, fleet_card→other; optional request field filter_benchmark_id added for targeted test runs
+```

@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T029D Benchmark Runner (Codex) + S1+S2+S3 hotfix LIVE |
-| **Active Agent** | Codex (T029D) |
-| **Codex Status** | T036 MERGED ✅ (review 8/10); T029D 🔄 กำลัง implement; รอ Codex respond T036 review |
+| **Phase** | T029D Benchmark Runner completed (await CC review) + S1+S2+S3 hotfix LIVE |
+| **Active Agent** | Codex (T036 respond + T029D handoff) |
+| **Codex Status** | T036 MERGED ✅ (review 8/10); T029D ✅ implemented + pushed (workflow `vkIBCzSBUDVZH5kQ`, execs `152265/152355/152362`); รอ Codex respond T036 review |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-02-26 13:07 |
+| **Last Sync** | 2026-02-26 13:55 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -106,9 +106,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Status |
-|----|------|--------|
-| T029D | OCR Benchmark Runner | 🔄 Codex กำลัง implement (assigned 12:50) — รอ push + CC review |
+_(none)_
 
 ### Pending (Codex)
 | ID | Task | Status |
@@ -123,6 +121,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T029D | OCR Benchmark Runner | Codex | 2026-02-26 | Implemented via n8n REST; workflow `vkIBCzSBUDVZH5kQ` active (`/webhook/ocr-benchmark`); webhook auth + `webhookId` ✅; side-system `continueOnFail`/`onError=continueRegularOutput` ✅; benchmark sheet tab `OCR_BENCHMARK_FUEL` seeded 20 rows (1 malformed GG JSON skipped); tests: unauthorized 401 ✅, filtered tax_invoice exec `152265` ✅, targeted bm_shell01 exec `152355` pass ✅, full run exec `152362` ✅ (20 rows updated); spec `docs/collab/tasks/T029D-benchmark.md` closing template filled |
 | S1+S2+S3 | OCR Security + Resilience Hotfix (live patch) | CC | 2026-02-26 | LIVE ✅ — S1: `timingSafeEqual()` ใน `Code (Validate Feedback Payload)` (main OCR `up1n75qEhbsXswii`); S2: `continueOnFail=True` บน 8 nodes (Telegram + Sheets + ocr-rules-reader); S3: PATTERN-001 comment; smoke wrong-key→UNAUTHORIZED ✅ correct-key→INVALID_SCHEMA ✅; `verify_nowThai_sync.sh` ✅; plan: `docs/ocr/tech-debt-plan-2026-02-26.md` |
 | T036 | System Health Report (daily + on-demand + error spike monitor) | Codex | 2026-02-26 | **MERGED 8/10** — workflows: `ImhtvE0MgWPQBn63`, `jtwhukQgRmJAEMkP`, `WRuU2CglWAYjxOQ5` active; T1/T3/T4/T5 ✅; review: `docs/collab/reviews/T036-review.md` |
 | T035 | Fix bills=[] in Code (Apply Runtime Rules) + enable OCR_RUNTIME_RULES_ENABLED=true | Codex | 2026-02-26 | Implemented; live workflow `up1n75qEhbsXswii` patched via REST; `verify_nowThai_sync.sh` ✅; `/webhook/ocr-dev` smoke `bills_count=1`; exec `151920` confirms `IF (Runtime Rules Enabled?)` enabled branch + `Code (Apply Runtime Rules)` ran and preserved `bills`; `rules_engine=no_rules` (no active `OCR_KM_RUNTIME_RULES` rows) |
