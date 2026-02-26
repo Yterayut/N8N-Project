@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | Codex (T039 implement) |
 | **Codex Status** | T039 🔄 running since 18:19; T038 ✅ done (tax_invoice avg 97.92%, exec `153152`); T029D-fix ✅ baseline 75.52% |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-02-26 19:09 |
+| **Last Sync** | 2026-02-26 20:44 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -123,6 +123,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T037 | Add `validation_trace` to `Code (Normalize + Validate)` | Codex | 2026-02-26 | Patched live OCR workflow `up1n75qEhbsXswii` via n8n REST: added `_trace` + `check()` instrumentation and `x.validation_trace`; patched main `/ocr-dev` success responder `Respond to Webhook6` to include `validation_trace` in HTTP response. E2E: valid `PTT-OR.pdf` exec `153324` all pass trace ✅; fail `fleetcard.pdf` exec `153395` shows `vendor_tax_id_format` fail ✅; `verify_nowThai_sync.sh` ✅ |
 | T038 | Benchmark Accuracy ≥95% (tax_invoice) | Codex | 2026-02-26 | Patched `ocr-benchmark-runner` compare logic via n8n REST (`vkIBCzSBUDVZH5kQ`): best-bill selection for multi-bill docs, stronger invoice/tax-id tolerance, multi-bill `doc_type` skip, fixture doc_type mismatch skip (`bm_ritta01`); targeted verifies `153130` (ritta skip), `153138` (feed01 100%), `153145` (elec01 100%); full rerun `153152` => `avg_accuracy_v3_pct=92.19%`, `avg_accuracy_tax_invoice_pct=97.92%` ✅ |
 | T029D-fix | Benchmark Accuracy Fix (`vat_amount` + `http_0` diagnostics) | Codex | 2026-02-26 | Implemented via n8n REST on workflow `vkIBCzSBUDVZH5kQ`; OCR schema sample exec `152555` confirms no VAT field; full rerun exec `152579` => `total=20`, `ocr_scored=16`, `transport_fail=4`, `skip=0`, `avg_accuracy=75.52%` (up from 49.67%); transport_fail rows no accuracy ✅; live `bm_sgas01` row already PDF (`สยามแก๊ส.pdf`) so `.json` skip path added generically but not exercised |
 | T039 | Active Learning Loop (feedback → TRAIN_CASES/FIELD_DIFFS → KM suggest) | Codex | 2026-02-26 | Implemented via n8n REST on `ztJ8oCBHREUPPry6` + `NkKd02QyzLRcpIJM`; fixed duplicate km-log risk by aggregating + gating post-response (`diff_count > 0`); added FIELD_DIFFS read + real-source filter + hot-pattern (`field_diff_hot`) lessons in KM suggest; side-system `continueOnFail=True`/`onError=continueRegularOutput` on Sheets/Telegram/HTTP nodes in touched workflows ✅; tests: feedback wrong-key 401 ✅, diff>0 feedback `153089` + km-log `153093` ✅, no-diff skip km-log `153095` ✅, km-suggest rerun after FIELD_DIFFS creds fix `153112` => `new_lessons=5`, `real_cases=12`, `analyzed_field_diffs=60` ✅ |

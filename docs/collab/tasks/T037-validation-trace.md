@@ -155,6 +155,8 @@ print(node['parameters']['jsCode'][:500])
 _Codex: เพิ่ม concerns / ข้อสงสัย / alternative approach ที่นี่ **ก่อน implement**_
 _ถ้าไม่มี → เขียน "No concerns — proceeding"_
 
+No concerns — proceeding.
+
 ---
 
 ## Test Plan
@@ -180,21 +182,21 @@ _ถ้าไม่มี → เขียน "No concerns — proceeding"_
 > Codex: อย่า mark Done ถ้ายังไม่ครบทุก checkbox
 
 **Implemented:**
-- [ ] `Code (Normalize + Validate)` ใน workflow `up1n75qEhbsXswii` มี `validation_trace` ใน output ทุก path
-- [ ] helper function `check()` และ `_trace` array เพิ่มแล้ว
-- [ ] value truncate ที่ 100 chars
+- [x] `Code (Normalize + Validate)` ใน workflow `up1n75qEhbsXswii` มี `validation_trace` ใน output ทุก path
+- [x] helper function `check()` และ `_trace` array เพิ่มแล้ว
+- [x] value truncate ที่ 100 chars
 
 **Verified from system:**
-- [ ] GET /rest/executions/{id} → response body มี `validation_trace` array
-- [ ] trace มี entry สำหรับทุก rule ที่ evaluate
-- [ ] Exec ID fail case: `validation_trace` มี result='fail' entries
+- [x] GET /rest/executions/{id} → response body มี `validation_trace` array
+- [x] trace มี entry สำหรับทุก rule ที่ evaluate
+- [x] Exec ID fail case: `validation_trace` มี result='fail' entries
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — valid doc → all pass
-- [ ] Exec ID: `_______` — invalid doc → trace มี fail entries
+- [x] Exec ID: `153324` — valid doc (`PTT-OR.pdf`) → all pass (`validation_trace` 9 entries, all `pass`)
+- [x] Exec ID: `153395` — invalid doc (`fleetcard.pdf`) → trace มี fail entries (`vendor_tax_id_format=result:fail`)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 - [ ] Review file created (CC จะทำ)
 
 ---
@@ -207,4 +209,24 @@ Runtime patched:
 Verified from:
 Docs synced:
 Remaining limits:
+```
+
+```
+Runtime patched:
+- Live n8n workflow `up1n75qEhbsXswii` via REST PATCH
+- Node `Code (Normalize + Validate)`: added `_trace`, `check()`, `x.validation_trace`
+- Node `Respond to Webhook6` (main /ocr-dev success response): included `validation_trace` in response envelope
+
+Verified from:
+- `/webhook/ocr-dev` valid sample `PTT-OR.pdf` → request_id `1772112825285-75d49185ecf78`, exec `153324`, `validation_trace` present with 9 entries (all `pass`)
+- `/webhook/ocr-dev` fail sample `fleetcard.pdf` → request_id `1772113299345-d4385f60d58bc`, exec `153395`, `vendor_tax_id_format` trace entry = `fail`
+- `GET /rest/executions/{id}` raw response bodies for `153324` and `153395` contain matching `workflowId`, `request_id`, and `validation_trace`
+- `./scripts/verify_nowThai_sync.sh` ✅
+
+Docs synced:
+- `docs/collab/tasks/T037-validation-trace.md`
+- `docs/collab/HANDOFF.md`
+
+Remaining limits:
+- Execution payloads from `/rest/executions/{id}` are n8n intern-table encoded, so verification was done by raw-response matching (`workflowId` + `request_id` + `validation_trace`) rather than full semantic decode of runData.
 ```
