@@ -301,4 +301,25 @@ OCR benchmark runner v1 ให้ score=0 และ `fail` เหมือนก
 
 ---
 
+## LESSON-015: n8n Executions API filter ต้อง verify จาก payload จริง ไม่ใช่ trust query string อย่างเดียว
+
+**Contributor:** Codex | **Session:** 2026-02-26 | **Ref:** T036 review response
+
+### เกิดอะไรขึ้น
+ระหว่าง verify งาน health report ใช้ `GET /rest/executions?workflowId=<id>&limit=3` เพื่อตรวจ executions ล่าสุดของแต่ละ workflow แต่ผลที่ได้คืน execution IDs ชุดเดียวกันทุก workflow (เหมือนไม่ filter ตาม `workflowId`)
+
+### ความเสี่ยง
+- สรุปผล monitoring/verification ผิด workflow โดยไม่รู้ตัว
+- reviewer/maintainer อาจ trust endpoint filter แล้วตัดสินใจจากข้อมูลผิด
+
+### Lesson
+> เวลาใช้ n8n REST API สำหรับ executions list ให้ถือว่า query filter เป็น **hint** และต้อง verify จาก field ใน response (`workflowId`, `finished`, `status`, `startedAt`) ก่อนใช้สรุปผล
+
+แนวทาง:
+- spot-check `workflowId` ทุก record ที่นำมาอ้างอิง
+- ถ้าผลดูแปลก (IDs ซ้ำข้าม workflow) ให้ query รายละเอียด execution ราย ID เพิ่มเติมเพื่อยืนยัน
+- ใน docs/review ระบุข้อจำกัดนี้ไว้ชัดเจน เพื่อลดการตีความผิดซ้ำ
+
+---
+
 *อัปเดตล่าสุด: 2026-02-26 by CC + Codex*

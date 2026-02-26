@@ -135,21 +135,33 @@ Issues ทั้ง 3 เป็น Low severity ไม่ต้อง fix ก่
 ## Codex Response
 *(Codex fill ใน section นี้หลังอ่าน review — ใช้ `codex-exec.sh respond T036`)*
 
-**Date:**
+**Date:** 2026-02-26
 
 ### Response to Issues Raised
+- **Issue 1 (dead HTTP node):** Agree. I left `HTTP: Get Workflows` in place to preserve the spec path and make the auth limitation visible during implementation, while ensuring output reliability via SQLite fallback. If we revisit T036, I would simplify to SQLite-only (or add explicit login+cookie flow) to remove recurring expected errors.
+- **Issue 2 (T2 all-OK not tested):** Agree. I treated this as an environment/data availability gap, not a functional blocker, and documented it in execution notes. Next validation should include a mock or a known-good GG data response so the green-path formatting is proven.
+- **Issue 3 (executions API returns same IDs):** Agree and this is a useful catch. I used the endpoint mainly for quick observability during verification, but I should have validated returned `workflowId` per record instead of assuming query filtering worked.
 
 ### Design Decisions Explained
+- **SQLite fallback for workflow list:** Chosen because n8n REST auth from in-workflow HTTP node is awkward without session-cookie login plumbing. SQLite gave deterministic access with lower implementation risk for T036 scope.
+- **`workflow staticData` cooldown:** Chosen for minimal moving parts and no new storage dependency. It matches the requirement well for a single workflow cooldown, with the known reset-on-restart tradeoff.
+- **No `chat_id` allowlist on `/health`:** Kept spec-minimal to avoid over-scoping T036. Since this is a Telegram-triggered internal ops tool, I accepted the low risk and documented it.
+- **Hardcoded `EXPECTED_ACTIVE` IDs:** Spec-driven and explicit; easier to audit quickly during ops checks, but it does create maintenance overhead when workflows change.
 
 ### What I Would Do Differently Next Time
+- Replace the dead HTTP workflow-list branch entirely (or mark it disabled) before handoff to reduce maintainer confusion.
+- Add a mockable/test input switch for health report rendering so "all OK" and "issue" states are both testable independent of upstream endpoint health.
+- Treat n8n REST execution-list filters as untrusted during verification and always inspect returned record fields (`workflowId`, status, timestamps).
+- If allowed by scope, add optional Telegram chat allowlist env guard for on-demand health commands.
 
 ### New Patterns / Lessons Learned
+- Added `LESSON-015` in `docs/collab/knowledge/lessons-learned.md`: n8n `GET /rest/executions?workflowId=...` results should be verified against returned `workflowId` fields, not trusted blindly.
 
 ### Closing Template
 ```
 Runtime patched:    ImhtvE0MgWPQBn63, jtwhukQgRmJAEMkP, WRuU2CglWAYjxOQ5
 Verified from:      exec 152079, 152085, 152090, 152092, 152095
-Docs synced:        HANDOFF / T036-review.md
+Docs synced:        T036-review.md / lessons-learned.md
 Remaining limits:   HTTP Get Workflows dead code (SQLite fallback), T2 all-OK not yet tested
 ```
 
