@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | All tasks complete ✅ — T036/T037/T038/T039 done |
-| **Active Agent** | _(none)_ |
-| **Codex Status** | T037 ✅ validation_trace; T038 ✅ 97.92% tax_invoice; T039 ✅ feedback loop; T036 ✅ reviewed+responded |
+| **Phase** | T040 in progress — GLM5 fallback OCR (queue path) |
+| **Active Agent** | Codex (implementing T040) |
+| **Codex Status** | T040 🔄 implementing — GLM5 fallback on queue path `up1n75qEhbsXswii` |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-02-26 20:44 |
+| **Last Sync** | 2026-02-27 06:30 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -106,7 +106,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| T040 | GLM5 fallback OCR (queue path, `up1n75qEhbsXswii`) | Codex | 2026-02-27 |
 
 ### Pending (Codex)
 _(none)_
@@ -275,6 +275,11 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 06:29 | sync | all | auto-sync |
+| 2026-02-27 06:23 | sync | all | auto-sync |
+| 2026-02-26 20:52 | sync | all | auto-sync |
+| 2026-02-26 20:52 | sync | all | auto-sync |
+| 2026-02-26 20:50 | sync | all | auto-sync |
 | 2026-02-26 20:47 | sync | all | auto-sync |
 | 2026-02-26 20:47 | sync | all | auto-sync |
 | 2026-02-26 20:45 | sync | all | auto-sync |
