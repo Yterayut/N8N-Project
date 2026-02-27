@@ -360,7 +360,9 @@ curl -s -b /tmp/cookie.txt 'http://localhost:5678/rest/debug/env' 2>/dev/null | 
 
 ## Discussion
 
-*(Codex กรอก section นี้ก่อน implement ถ้ามี concern)*
+- พบ behavior จริงของ Typhoon `/v1/ocr` ต่างจากตัวอย่างใน spec: response อยู่ที่ `results[0].message.choices[0].message.content` และ content เป็น JSON string (`{"natural_text":"..."}`) ไม่ใช่ `choices[0].message.content` ตรงๆ
+- Parse chain ของ workflow นี้ต้องต่อ `Code (Reshape Typhoon Response) -> Code (Parse Result)` ที่ `index: 0` เพื่อให้ `Code (Parse Result)` emit output ได้จริง (ต่อเป็น `index: 1` แล้ว node run แต่ output ว่าง)
+- ดำเนินการต่อโดยปรับ implementation ให้รองรับ runtime จริงตามข้างต้น
 
 ---
 
@@ -388,22 +390,22 @@ curl -s -b /tmp/cookie.txt 'http://localhost:5678/rest/debug/env' 2>/dev/null | 
 > Codex: อย่า mark Done ถ้ายังไม่ครบทุก checkbox
 
 **Implemented:**
-- [ ] 3 GLM5 nodes REMOVED จาก workflow `up1n75qEhbsXswii`
-- [ ] `Code (Prepare Typhoon Request)` เพิ่มแล้ว — binary pass-through ทำงาน
-- [ ] `HTTP (Typhoon OCR)` เพิ่มแล้ว — multipart form-data, `continueOnFail: true`
-- [ ] `Code (Reshape Typhoon Response)` เพิ่มแล้ว — output Gemini-like structure
-- [ ] Connection ใหม่ทั้งหมดถูกต้อง: IF FALSE → Typhoon → Parse Result [input 1]
+- [x] 3 GLM5 nodes REMOVED จาก workflow `up1n75qEhbsXswii`
+- [x] `Code (Prepare Typhoon Request)` เพิ่มแล้ว — binary pass-through ทำงาน
+- [x] `HTTP (Typhoon OCR)` เพิ่มแล้ว — multipart form-data, `continueOnFail: true`
+- [x] `Code (Reshape Typhoon Response)` เพิ่มแล้ว — output Gemini-like structure
+- [x] Connection ใหม่ทั้งหมดถูกต้อง: IF FALSE → Typhoon → Parse Result (runtime ใช้ input index 0 เพื่อให้ Parse Result ปล่อย output ได้จริง)
 
 **Verified from system (required):**
-- [ ] T1 Exec ID: `________` — Typhoon fallback, `fallback_used=true`, `bills_count≥1`
-- [ ] T2 Exec ID: `________` — Gemini OK, `fallback_used=false`
-- [ ] `verify_nowThai_sync.sh` ผ่าน
+- [x] T1 Exec ID: `153576` — Typhoon fallback, `fallback_used=true`, `bills_count=1`, `fallback_status=success` (ใน `raw_json` มี `vendor_tax_id=0105564172883`)
+- [x] T2 Exec ID: `153579` — Gemini OK, `fallback_used=false`, `bills_count=4`
+- [x] `verify_nowThai_sync.sh` ผ่าน
 
 **E2E Passed:**
-- [ ] Exec ID: `________` — Typhoon fallback path ครบ
+- [x] Exec ID: `153576` — Typhoon fallback path ครบ (IF FALSE -> Prepare Typhoon -> HTTP Typhoon -> Reshape -> Parse -> Set Done)
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 - [ ] Review file created (CC จะทำ)
 
 ---
@@ -413,8 +415,8 @@ curl -s -b /tmp/cookie.txt 'http://localhost:5678/rest/debug/env' 2>/dev/null | 
 *(Codex fill ก่อน push — บังคับ)*
 
 ```
-Runtime patched:
-Verified from:
-Docs synced:
-Remaining limits:
+Runtime patched: Replaced GLM5 fallback branch with Typhoon OCR branch on workflow `up1n75qEhbsXswii` via n8n REST PATCH; updated reshape logic to parse live Typhoon OCR nested response format; restored queue Gemini URL after forced-fail testing.
+Verified from: Exec `153576` (forced Gemini fail -> Typhoon success), Exec `153579` (Gemini success no fallback), `./scripts/verify_nowThai_sync.sh` OK.
+Docs synced: Updated this spec (Discussion/DoD/closing), updated `docs/collab/HANDOFF.md` task board.
+Remaining limits: Queue webhook `/webhook/ocr-queue` currently returns HTTP 500 with empty body despite successful enqueue execution; not in T041B scope. `Code (Parse Result)` emits parsed OCR in `raw_json` (not top-level `bills`) on queue path.
 ```

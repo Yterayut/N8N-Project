@@ -47,11 +47,11 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T041B spec READY — Codex implement Typhoon fallback (แทน GLM5) |
+| **Phase** | T041B implemented — Typhoon fallback active on queue path |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T041B assigned — spec: `docs/collab/tasks/T041B-typhoon-fallback.md` |
+| **Codex Status** | T041B completed (awaiting CC review) — spec updated with exec IDs |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-02-27 07:10 |
+| **Last Sync** | 2026-02-27 10:25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -109,9 +109,7 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-| ID | Task | Owner | Notes |
-|----|------|-------|-------|
-| T041B | Typhoon OCR Fallback (แทน GLM5 queue path) | Codex | spec: `docs/collab/tasks/T041B-typhoon-fallback.md` |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -122,6 +120,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T041B | Typhoon OCR fallback (replace GLM5 on queue path) | Codex | 2026-02-27 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: removed GLM5 trio, added `Code (Prepare Typhoon Request)` + `HTTP (Typhoon OCR)` + `Code (Reshape Typhoon Response)` with `continueOnFail=true`; updated reshape parser to handle live Typhoon OCR nested response (`results[0].message.choices[0].message.content` JSON-string natural_text); fallback wiring active through `IF (Gemini OK?)`; queue parse handoff uses input index 0 (runtime-required). Tests: forced Gemini fail exec `153576` => `fallback_used=true`, `fallback_model=typhoon-ocr-preview`, `fallback_status=success`, `bills_count=1` (tax ID present in `raw_json`); Gemini-normal exec `153579` => `fallback_used=false`, `bills_count=4`; `verify_nowThai_sync.sh` ✅. |
 | T040 | GLM5 (Zhipu AI) fallback OCR (queue path) | Codex+CC | 2026-02-27 | **APPROVED WITH CONDITIONS (7/10)** — Patched workflow `up1n75qEhbsXswii` queue path: `IF (Gemini OK?)`, `Code (Prepare GLM5 Request)` (JWT auth + glm-5), `HTTP (GLM5 GenerateContent)` (continueOnFail, rawContentType=application/json), `Code (Reshape GLM5 Response)` → `Code (Parse Result)` multi-input. CC fixes: rawContentType, JWT HS256 gen, model=glm-5, restored Gemini URL. T1 exec `153492` `fallback_used=false` `bills_count=1` ✅; T3 graceful fail ✅; verify_nowThai ✅; T2 pending Zhipu AI account top-up (error 1113 no credits); T040B (direct path) pending; review: `docs/collab/reviews/T040-review.md` |
 | T037 | Add `validation_trace` to `Code (Normalize + Validate)` | Codex | 2026-02-26 | Patched live OCR workflow `up1n75qEhbsXswii` via n8n REST: added `_trace` + `check()` instrumentation and `x.validation_trace`; patched main `/ocr-dev` success responder `Respond to Webhook6` to include `validation_trace` in HTTP response. E2E: valid `PTT-OR.pdf` exec `153324` all pass trace ✅; fail `fleetcard.pdf` exec `153395` shows `vendor_tax_id_format` fail ✅; `verify_nowThai_sync.sh` ✅ |
 | T038 | Benchmark Accuracy ≥95% (tax_invoice) | Codex | 2026-02-26 | Patched `ocr-benchmark-runner` compare logic via n8n REST (`vkIBCzSBUDVZH5kQ`): best-bill selection for multi-bill docs, stronger invoice/tax-id tolerance, multi-bill `doc_type` skip, fixture doc_type mismatch skip (`bm_ritta01`); targeted verifies `153130` (ritta skip), `153138` (feed01 100%), `153145` (elec01 100%); full rerun `153152` => `avg_accuracy_v3_pct=92.19%`, `avg_accuracy_tax_invoice_pct=97.92%` ✅ |
@@ -279,6 +278,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 10:05 | sync | all | auto-sync |
+| 2026-02-27 10:04 | sync | all | auto-sync |
+| 2026-02-27 10:03 | sync | all | auto-sync |
 | 2026-02-27 07:30 | sync | all | auto-sync |
 | 2026-02-27 07:29 | sync | all | auto-sync |
 | 2026-02-27 07:28 | sync | all | auto-sync |
