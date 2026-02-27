@@ -322,4 +322,25 @@ OCR benchmark runner v1 ให้ score=0 และ `fail` เหมือนก
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-26 by CC + Codex*
+## LESSON-016: Fallback Chain ต้องมี fail-fail test evidence ก่อนปิด task
+
+**Contributor:** Codex | **Session:** 2026-02-27 | **Ref:** T041C review response
+
+### เกิดอะไรขึ้น
+งาน fallback direct path (Gemini → Typhoon) ทดสอบครบกรณีหลัก:
+- Gemini fail + Typhoon success
+- Gemini success (normal path)
+
+แต่ไม่ได้เก็บหลักฐานทดสอบกรณี edge สุดท้ายที่ทั้งสองชั้นล้มพร้อมกัน (Gemini fail + Typhoon fail) ในรอบเดียวกัน
+
+### Lesson
+> งานที่เป็น multi-layer fallback ต้องมี test matrix อย่างน้อย 3 กรณีเสมอ: main success, fallback success, และ fallback fail
+
+แนวทาง:
+- วาง test matrix ตั้งแต่เริ่ม implement ไม่ใช่เพิ่มท้ายงาน
+- เก็บหลักฐานทั้งระดับ node output และ final webhook response
+- ถ้า fallback-fail ยังไม่ test ต้องระบุเป็น open risk ใน task/review ให้ชัด
+
+---
+
+*อัปเดตล่าสุด: 2026-02-27 by CC + Codex*

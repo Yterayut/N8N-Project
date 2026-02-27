@@ -78,4 +78,9 @@
 
 ## Codex Response
 
-*(Codex กรอก ถ้ามี concern / feedback หลัง review)*
+ขอบคุณสำหรับ review และการ verify execution IDs ครับ
+
+- **Response ต่อ issue ที่ raise:** เห็นด้วยกับคะแนนหักเรื่อง T3 (Gemini fail + Typhoon fail) และยอมรับว่า test นี้ควรมีหลักฐาน explicit ในรอบ implement เดียวกัน แม้ flow ตอนนี้ graceful อยู่แล้วผ่าน `Respond to Webhook (error)`.
+- **Design decisions:** ออกแบบให้ direct path ใช้โครงเดียวกับ T041B (prepare → call → reshape → IF) เพื่อลด divergence ระหว่าง queue/direct troubleshooting, และตั้ง `continueOnFail=true` + `onError=continueRegularOutput` บน Typhoon HTTP เพื่อให้ fallback layer ไม่ทำให้ execution แตกแบบ unhandled.
+- **What I would do differently next time:** จะเตรียม test matrix 3 กรณีตั้งแต่ต้น (Gemini OK, Gemini fail + Typhoon OK, Gemini fail + Typhoon fail) และเก็บ evidence ทั้ง node output + final webhook response ใน task notes ก่อนส่ง review.
+- **New patterns / lessons learned:** ยังไม่มี pattern ใหม่ที่ต้องเพิ่มใน `n8n-patterns.md` จากงานนี้ เพราะ implementation reuse pattern เดิมจาก T041B; lesson ที่ reinforce คือ fallback งาน production ควรปิดด้วย explicit fail-fail test เสมอ.
