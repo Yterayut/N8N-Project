@@ -382,4 +382,77 @@ Credential: `X-N8N-API-KEY` → `{{ $env.N8N_API_KEY }}`
 
 ---
 
-*อัปเดตล่าสุด: 2026-02-26 by CC*
+---
+
+## PATTERN-015: Multi-Model Fallback (Gemini → GLM5)
+
+**Contributor:** CC | **Discovered:** T040 (2026-02-27)
+
+### Context
+SPOF: main OCR พึ่ง Gemini 100% → ถ้า API ล่ม OCR หยุดทั้งหมด
+
+### Pattern
+```
+HTTP (Primary Model) [continueOnFail=true]
+         ↓
+IF (Primary OK?)         ← check: !!json?.candidates?.[0]?.content?.parts?.[0]?.text
+   TRUE → Code (Parse Result)    ← path 0 (success)
+   FALSE → Code (Prepare Fallback Request)   ← path 1 (fallback)
+                ↓
+         HTTP (Fallback Model)  [continueOnFail=true]
+                ↓
+         Code (Reshape Fallback Response)  ← normalize to primary format
+                ↓
+         Code (Parse Result)    ← input 1 (multi-input)
+```
+
+### Key Discoveries (T040)
+
+#### 1. Zhipu AI API Key Format
+- Old-format key (`hex.secret`) requires **JWT HS256 generation** — cannot use directly as Bearer
+- JWT headers: `{"alg": "HS256", "sign_type": "SIGN"}`
+- JWT payload: `{"api_key": id, "exp": timestamp+3600000ms, "timestamp": now_ms}`
+- Generate in Code node using `require('crypto')` + HMAC SHA256
+- Pass `_glm5_jwt` in output, use `=Bearer {{ $json._glm5_jwt }}` in HTTP header
+
+```javascript
+const { createHmac } = require('crypto');
+const [apiId, apiSecret] = $env.GLM5_API_KEY.split('.');
+const now = Date.now();
+const header = Buffer.from(JSON.stringify({alg:'HS256',sign_type:'SIGN'})).toString('base64url');
+const payload = Buffer.from(JSON.stringify({api_key:apiId,exp:now+3600000,timestamp:now})).toString('base64url');
+const sig = createHmac('sha256',apiSecret).update(`${header}.${payload}`).digest('base64url');
+const jwtToken = `${header}.${payload}.${sig}`;
+```
+
+#### 2. n8n HTTP Node rawContentType
+- `contentType: "raw"` → sends `application/octet-stream` by default ← **GOTCHA**
+- Fix: add `rawContentType: "application/json"` to parameters
+- Custom Content-Type header does NOT override body content-type in raw mode
+
+#### 3. Zhipu AI Available Models (2026-02)
+- Available: `glm-4.5`, `glm-4.5-air`, `glm-4.6`, `glm-4.7`, `glm-5`
+- **NOT available:** `glm-4v`, `glm-4v-plus`, `glm-4v-flash` (old naming convention)
+- `glm-5` = recommended (most capable, supports multimodal)
+- Check available models: `GET /api/paas/v4/models` with JWT Bearer
+
+#### 4. Graceful failure structure
+```javascript
+// Reshape node: if fallback also fails
+if (!choices?.[0]?.message?.content) {
+  return [{json: {
+    candidates: null,
+    fallback_used: true,
+    fallback_model: $env.GLM5_MODEL,
+    fallback_status: 'failed',
+    error: response?.error?.message || 'no response'
+  }}];
+}
+```
+
+### Rules
+> 1. Always use `continueOnFail: true` + `onError: continueRegularOutput` on ALL model HTTP nodes
+> 2. Reshape fallback response to match primary response format — avoid touching Parse node
+> 3. For Zhipu AI old-format keys: generate JWT per-request in Code node — never hardcode
+
+*อัปเดตล่าสุด: 2026-02-27 by CC*
