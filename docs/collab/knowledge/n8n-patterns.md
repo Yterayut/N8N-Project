@@ -456,3 +456,26 @@ if (!choices?.[0]?.message?.content) {
 > 3. For Zhipu AI old-format keys: generate JWT per-request in Code node — never hardcode
 
 *อัปเดตล่าสุด: 2026-02-27 by CC*
+
+---
+
+## PATTERN-016 — Switch Node Expression Mode Output Count
+
+**Problem:** n8n Switch v3.2 in expression mode defaults to 4 outputs (0-3). Using output index ≥ 4 throws "The ouput N is not allowed."
+
+**Cause:** Parameter name is `numberOutputs` (default=4). Many assume it's `outputsAmount` — that's wrong.
+
+**Error hint:** "Output indexes are zero based, if you want to use the extra output use N-1" → means `numberOutputs` equals N, so valid range is 0 to N-1.
+
+**Fix:** Add `numberOutputs: N` (e.g., 5) to the Switch node's parameters via REST PATCH:
+```json
+{
+  "mode": "expression",
+  "output": "={{ expr }}",
+  "numberOutputs": 5
+}
+```
+
+**Verified:** `SwitchV3.node.js` → `getNodeParameter('numberOutputs', itemIndex)` → `returnData = new Array(numberOutputs).fill(0).map(() => [])`
+
+*Source confirmed: n8n-nodes-base SwitchV3 source, fixed in gg-data-gateway 2026-02-27*
