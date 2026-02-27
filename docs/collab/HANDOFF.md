@@ -285,6 +285,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-02-27 17:26 | sync | all | auto-sync |
+| 2026-02-27 17:16 | sync | all | auto-sync |
+| 2026-02-27 17:13 | sync | all | auto-sync |
 | 2026-02-27 14:08 | sync | all | auto-sync |
 | 2026-02-27 14:05 | sync | all | auto-sync |
 | 2026-02-27 11:17 | sync | all | auto-sync |
