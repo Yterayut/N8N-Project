@@ -1,4 +1,13 @@
-# Forward Handoff — 2026-02-26
+# Forward Handoff — 2026-02-27
+
+## Last Checkpoint — 07:10 BKK
+- ✅ T040 APPROVED — GLM5 fallback wired (queue path), JWT auth, model=glm-5, T1 exec `153492` pass
+- 🔄 T2 (GLM5 success test) pending Zhipu AI account top-up (error 1113 no credits)
+- ⏭️ Codex respond T040 + T040B spec (direct path `/ocr-dev` coverage)
+
+---
+
+# Previous Handoff — 2026-02-26
 
 ## Where We Are
 - Branch: `stable`
