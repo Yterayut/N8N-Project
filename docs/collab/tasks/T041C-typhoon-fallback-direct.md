@@ -249,7 +249,7 @@ IF (Typhoon OK?) [TRUE]    → Code in JavaScript9 [input 0]  (ใหม่)
 
 ## Discussion
 
-*(Codex กรอก section นี้ก่อน implement ถ้ามี concern)*
+- 2026-02-27 (Codex): ไม่มี blocking concern ต่อ spec; implement ตาม spec ตรงๆ
 
 ---
 
@@ -279,21 +279,21 @@ IF (Typhoon OK?) [TRUE]    → Code in JavaScript9 [input 0]  (ใหม่)
 > Codex: อย่า mark Done ถ้ายังไม่ครบทุก checkbox
 
 **Implemented:**
-- [ ] Connection `If2 [0] → Respond to Webhook (error)` ถูก REMOVE แล้ว
-- [ ] 4 Typhoon nodes เพิ่มแล้ว: Prepare / HTTP / Reshape / IF(Typhoon OK?)
-- [ ] `IF (Typhoon OK?) [TRUE]` → `Code in JavaScript9` [input 0] ✅
-- [ ] `IF (Typhoon OK?) [FALSE]` → `Respond to Webhook (error)` [input 0] ✅
+- [x] Connection `If2 [0] → Respond to Webhook (error)` ถูก REMOVE แล้ว
+- [x] 4 Typhoon nodes เพิ่มแล้ว: Prepare / HTTP / Reshape / IF(Typhoon OK?)
+- [x] `IF (Typhoon OK?) [TRUE]` → `Code in JavaScript9` [input 0] ✅
+- [x] `IF (Typhoon OK?) [FALSE]` → `Respond to Webhook (error)` [input 0] ✅
 
 **Verified from system:**
-- [ ] T1 Exec ID: `________` — Typhoon fallback, `fallback_used=true`, bills มีค่า
-- [ ] T2 Exec ID: `________` — Gemini OK, normal response
-- [ ] `verify_nowThai_sync.sh` ✅
+- [x] T1 Exec ID: `153614` — Typhoon fallback (forced `If2=TRUE`), direct Typhoon chain ran; `Code (Reshape Typhoon Response - Direct)` output `fallback_used=true`, `fallback_status=success`; HTTP response `bills_count=1`
+- [x] T2 Exec ID: `153621` — Gemini OK, normal response (`success=true`, `bills_count=4`, no `fallback_used` field in response)
+- [x] `verify_nowThai_sync.sh` ✅
 
 **E2E Passed:**
-- [ ] Exec ID: `________` — direct path Typhoon fallback ครบ
+- [x] Exec ID: `153614` — direct path Typhoon fallback ครบ
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
+- [x] HANDOFF.md updated
 - [ ] Review file created (CC จะทำ)
 
 ---
@@ -303,8 +303,8 @@ IF (Typhoon OK?) [TRUE]    → Code in JavaScript9 [input 0]  (ใหม่)
 *(Codex fill ก่อน push — บังคับ)*
 
 ```
-Runtime patched:
-Verified from:
-Docs synced:
-Remaining limits:
+Runtime patched: Live workflow `up1n75qEhbsXswii` patched via n8n REST API; added direct fallback nodes `Code (Prepare Typhoon Request - Direct)` + `HTTP (Typhoon OCR - Direct)` + `Code (Reshape Typhoon Response - Direct)` + `IF (Typhoon OK? - Direct)` and rewired `If2` true branch.
+Verified from: GET workflow after patch confirms wiring + `continueOnFail`; E2E fallback exec `153614` (forced `If2=TRUE`) confirms direct Typhoon chain success; Gemini-normal exec `153621` confirms standard path.
+Docs synced: This spec updated + `docs/collab/HANDOFF.md` moved T041C to Recently Completed.
+Remaining limits: T3 (both Gemini+Typhoon fail graceful 500) not executed in this run.
 ```

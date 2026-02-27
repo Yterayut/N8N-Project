@@ -109,19 +109,17 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-| ID | Task | Owner | Notes |
-|----|------|-------|-------|
-| T041C | Typhoon fallback — Direct path `/ocr-dev` | Codex | spec: `docs/collab/tasks/T041C-typhoon-fallback-direct.md` |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
-| T041C | Typhoon fallback — Direct path (`/ocr-dev`) | Codex | assigned |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T041C | Typhoon OCR fallback (direct path `/ocr-dev`) | Codex | 2026-02-27 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: added `Code (Prepare Typhoon Request - Direct)` + `HTTP (Typhoon OCR - Direct)` + `Code (Reshape Typhoon Response - Direct)` + `IF (Typhoon OK? - Direct)`; rewired `If2` true branch from direct error responder to Typhoon chain; Typhoon IF true returns to `Code in JavaScript9` (input 0), false to `Respond to Webhook (error)`; `continueOnFail=true` + `onError=continueRegularOutput` on direct Typhoon HTTP node. Tests: forced direct fallback exec `153614` (If2 forced true) shows direct Typhoon chain ran with `fallback_used=true`, `fallback_status=success` in reshape node output and response `bills_count=1`; Gemini-normal exec `153621` response `success=true`, `bills_count=4`; `verify_nowThai_sync.sh` ✅. |
 | T041B | Typhoon OCR fallback (replace GLM5 on queue path) | Codex | 2026-02-27 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: removed GLM5 trio, added `Code (Prepare Typhoon Request)` + `HTTP (Typhoon OCR)` + `Code (Reshape Typhoon Response)` with `continueOnFail=true`; updated reshape parser to handle live Typhoon OCR nested response (`results[0].message.choices[0].message.content` JSON-string natural_text); fallback wiring active through `IF (Gemini OK?)`; queue parse handoff uses input index 0 (runtime-required). Tests: forced Gemini fail exec `153576` => `fallback_used=true`, `fallback_model=typhoon-ocr-preview`, `fallback_status=success`, `bills_count=1` (tax ID present in `raw_json`); Gemini-normal exec `153579` => `fallback_used=false`, `bills_count=4`; `verify_nowThai_sync.sh` ✅. |
 | T040 | GLM5 (Zhipu AI) fallback OCR (queue path) | Codex+CC | 2026-02-27 | **APPROVED WITH CONDITIONS (7/10)** — Patched workflow `up1n75qEhbsXswii` queue path: `IF (Gemini OK?)`, `Code (Prepare GLM5 Request)` (JWT auth + glm-5), `HTTP (GLM5 GenerateContent)` (continueOnFail, rawContentType=application/json), `Code (Reshape GLM5 Response)` → `Code (Parse Result)` multi-input. CC fixes: rawContentType, JWT HS256 gen, model=glm-5, restored Gemini URL. T1 exec `153492` `fallback_used=false` `bills_count=1` ✅; T3 graceful fail ✅; verify_nowThai ✅; T2 pending Zhipu AI account top-up (error 1113 no credits); T040B (direct path) pending; review: `docs/collab/reviews/T040-review.md` |
 | T037 | Add `validation_trace` to `Code (Normalize + Validate)` | Codex | 2026-02-26 | Patched live OCR workflow `up1n75qEhbsXswii` via n8n REST: added `_trace` + `check()` instrumentation and `x.validation_trace`; patched main `/ocr-dev` success responder `Respond to Webhook6` to include `validation_trace` in HTTP response. E2E: valid `PTT-OR.pdf` exec `153324` all pass trace ✅; fail `fleetcard.pdf` exec `153395` shows `vendor_tax_id_format` fail ✅; `verify_nowThai_sync.sh` ✅ |
