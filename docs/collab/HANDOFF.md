@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T041B implemented — Typhoon fallback active on queue path |
+| **Phase** | T041B APPROVED ✅ — Typhoon OCR fallback live (queue path); T041C (direct path) next |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T041B completed (awaiting CC review) — spec updated with exec IDs |
+| **Codex Status** | T041B ✅ — exec `153576` Typhoon success; exec `153579` Gemini OK; review: `T041B-review.md` |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-27 10:25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
