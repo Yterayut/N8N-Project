@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T040 APPROVED WITH CONDITIONS — T2 test pending Zhipu AI top-up |
+| **Phase** | T041B spec READY — Codex implement Typhoon fallback (แทน GLM5) |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T040 ✅ queue fallback wired; CC fixed JWT auth + model=glm-5 + rawContentType; T1 exec `153492` ✅; T2 pending credits |
+| **Codex Status** | T041B assigned — spec: `docs/collab/tasks/T041B-typhoon-fallback.md` |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-27 07:10 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -109,12 +109,15 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-_(none)_
+| ID | Task | Owner | Notes |
+|----|------|-------|-------|
+| T041B | Typhoon OCR Fallback (แทน GLM5 queue path) | Codex | spec: `docs/collab/tasks/T041B-typhoon-fallback.md` |
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
+| T041C | Typhoon fallback — Direct path (`/ocr-dev`) | — | T041B stable |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
@@ -276,6 +279,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 07:30 | sync | all | auto-sync |
+| 2026-02-27 07:29 | sync | all | auto-sync |
+| 2026-02-27 07:28 | sync | all | auto-sync |
 | 2026-02-27 07:28 | sync | all | auto-sync |
 | 2026-02-27 07:09 | sync | all | auto-sync |
 | 2026-02-27 07:08 | sync | all | auto-sync |
