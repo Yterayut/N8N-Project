@@ -278,8 +278,14 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ---
 
 ## Sync Log
+<!-- 2026-02-27 17:18 BKK -->
+- D: KM Rules cleanup — 7 GG no-op rules deactivated, 13→6 active ✅
+- B: Dead node cleanup — ocr-training 122→118 nodes (4 orphans removed) ✅
+
 
 | Date | Direction | By | Notes |
+| 2026-02-27 14:08 | sync | all | auto-sync |
+| 2026-02-27 14:05 | sync | all | auto-sync |
 | 2026-02-27 11:17 | sync | all | auto-sync |
 | 2026-02-27 11:16 | sync | all | auto-sync |
 | 2026-02-27 11:16 | sync | all | auto-sync |

@@ -44,3 +44,13 @@
 ## Uncommitted Changes
 - `.env` has TYPHOON_API_KEY added (not tracked — .gitignore'd)
 - `.tmp/`, `cookie.txt`, `tmp/` — gitignored
+
+## Last Checkpoint — 17:12
+- ✅ KM Rules review done: 13 → 6 active (7 GG no-op rules set inactive, priority dup fixed, row14 approved_by filled)
+- ✅ Active rules: rule-v1(100), v4(90), v2(80), v3(70), elec-ft-zero(60), fleetcard-qty(55)
+- ⏭️ Next: dead node cleanup (ocr-training 4 dead nodes) or Typhoon timeout investigation
+
+## Last Checkpoint — 17:18
+- ✅ Dead node cleanup: ocr-training 122→118 nodes (4 orphans removed)
+- ✅ KM Rules: 13→6 active
+- ⏭️ Next: Typhoon timeout (A) or Codex respond T041C (E)
