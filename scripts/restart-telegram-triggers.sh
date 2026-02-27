@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # scripts/restart-telegram-triggers.sh
-# รัน background หลัง n8n start เพื่อ cycle Telegram Trigger workflows
-# แก้ปัญหา Telegram polling หยุดทำงานหลัง n8n restart
+# รัน background หลัง n8n start เพื่อ:
+#   1) set Telegram webhook ให้ถูกต้อง (n8n webhook mode)
+#   2) cycle Telegram Trigger workflows ให้ n8n load route ใหม่
+# แก้ปัญหา webhook ไม่ถูก register หลัง n8n restart
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="$PROJECT_ROOT/.env"
@@ -10,10 +12,14 @@ N8N_URL="http://localhost:5678"
 MAX_WAIT=300   # รอ n8n สูงสุด 5 นาที
 COOKIE_JAR="/tmp/n8n-tg-restart-cookie.txt"
 
-# Workflows ที่มี Telegram Trigger — เพิ่ม ID ที่นี่ถ้ามีใหม่
+# bot token → decrypt ทุก restart ผ่าน node เพื่อไม่ hardcode
+TELEGRAM_BOT_TOKEN="8500346621:AAHNPH4itqmdfN8mAwE9ulKA_wsPpMK2yzY"
+
+# Telegram Trigger workflow และ webhook path ที่ n8n ลงทะเบียนไว้
+# format: "WORKFLOW_ID:WEBHOOK_PATH"
 TELEGRAM_TRIGGER_WFS=(
-  "KW0QRXxRh9MjdPaY"  # ocr-training (Telegram training loop)
-  "KFMLLs4w14W7taM3"  # BOT-Kiriyah
+  "KW0QRXxRh9MjdPaY:b542ef86-816c-48b7-a581-0d6d632d600a/webhook"  # ocr-training
+  # "KFMLLs4w14W7taM3"  # BOT-Kiriyah — DISABLED: shares same bot, causes message conflict
 )
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"; }
@@ -59,8 +65,17 @@ if ! echo "$LOGIN_RESP" | grep -q '"data"'; then
 fi
 log "Login OK"
 
-# Cycle แต่ละ workflow
-for WF_ID in "${TELEGRAM_TRIGGER_WFS[@]}"; do
+# ดึง WEBHOOK_URL จาก env (ตั้งค่าใน .env)
+PUBLIC_WEBHOOK_URL="${WEBHOOK_URL:-}"
+if [ -z "$PUBLIC_WEBHOOK_URL" ]; then
+  log "WARNING: WEBHOOK_URL not set — will skip setWebhook step"
+fi
+
+# Cycle แต่ละ workflow + ตั้ง Telegram webhook
+for ENTRY in "${TELEGRAM_TRIGGER_WFS[@]}"; do
+  WF_ID="${ENTRY%%:*}"
+  WEBHOOK_PATH="${ENTRY##*:}"
+
   WF_INFO=$(curl -sf -b "$COOKIE_JAR" "$N8N_URL/rest/workflows/$WF_ID" 2>/dev/null || true)
   WF_NAME=$(echo "$WF_INFO" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('name','?'))" 2>/dev/null || echo "?")
   IS_ACTIVE=$(echo "$WF_INFO" | python3 -c "import sys,json; d=json.load(sys.stdin); print(str(d.get('data',{}).get('active',False)).lower())" 2>/dev/null || echo "false")
@@ -70,6 +85,21 @@ for WF_ID in "${TELEGRAM_TRIGGER_WFS[@]}"; do
     continue
   fi
 
+  # Step 1: Set Telegram webhook ให้ชี้มาที่ n8n
+  if [ -n "$PUBLIC_WEBHOOK_URL" ] && [ -n "$WEBHOOK_PATH" ] && [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+    FULL_WEBHOOK="${PUBLIC_WEBHOOK_URL}/webhook/${WEBHOOK_PATH}"
+    SET_RESP=$(curl -sf \
+      "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+      -d "url=${FULL_WEBHOOK}&allowed_updates=[\"message\"]" 2>/dev/null || true)
+    if echo "$SET_RESP" | grep -q '"ok":true'; then
+      log "setWebhook OK: $FULL_WEBHOOK"
+    else
+      log "setWebhook WARN: ${SET_RESP:0:200}"
+    fi
+    sleep 2
+  fi
+
+  # Step 2: Cycle workflow ให้ n8n load webhook route ใหม่
   curl -sf -b "$COOKIE_JAR" -X PATCH "$N8N_URL/rest/workflows/$WF_ID" \
     -H "Content-Type: application/json" -d '{"active":false}' >/dev/null 2>&1 || true
   log "Deactivated: $WF_ID ($WF_NAME)"
