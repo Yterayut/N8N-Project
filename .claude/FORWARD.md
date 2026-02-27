@@ -1,129 +1,164 @@
 # Forward Handoff — 2026-02-27
 
-## Last Checkpoint — 07:10 BKK
-- ✅ T040 APPROVED — GLM5 fallback wired (queue path), JWT auth, model=glm-5, T1 exec `153492` pass
-- 🔄 T2 (GLM5 success test) pending Zhipu AI account top-up (error 1113 no credits)
-- ⏭️ Codex respond T040 + T040B spec (direct path `/ocr-dev` coverage)
+## Where We Are
+- Branch: `stable`
+- Last commit: `cc2b8d9` chore: final sync log 2026-02-27 session end
+- Phase: **T040 APPROVED WITH CONDITIONS** — GLM5 fallback wired, T2 pending Zhipu AI top-up
 
 ---
 
-# Previous Handoff — 2026-02-26
-
-## Where We Are
-- Branch: `stable`
-- Last commit: `ab19016` chore: HANDOFF sync — all tasks complete
-- Phase: **Sprint สมบูรณ์** — T036/T037/T038/T039 ทำเสร็จหมด
-
 ## What Was Accomplished This Session
 
-- **T038 ✅ APPROVED 9/10** — Benchmark tax_invoice accuracy: 75.52% → **97.92%** (เป้า 95%)
-  - `normalizeInvoiceNum()` fix invoice I→1 confusion, exec `153152`
-- **T039 ✅ APPROVED 9/10** — Active Learning Loop ปิด loop แล้ว
-  - OCR_FEEDBACK → TRAIN_CASES bridge verified (6 feedback_kpi rows live)
-  - FIELD_DIFFS 54 rows, auto-pattern ≥3 → OCR_KM_LESSONS (status=suggestion)
-  - exec `153089/153093/153112`
-- **T036 respond ✅** — Codex fill `## Codex Response` + LESSON-015 added
-  - Merge Approval completed — T036 fully closed
-- **T037 ✅ APPROVED 9/10** — validation_trace เพิ่มใน main OCR workflow
-  - caller เห็น trace ทุก rule pass/fail, exec `153324`/`153395`
-- **CODEX.md rule enforced** — "ไม่มี Discussion = ต้อง implement 100%"
-- **Auto-pipeline** — watcher script monitor Codex + auto-assign next task
-- **Feedback loop verified** — ทั้ง 2 ช่องทาง (admin feedback + Telegram train) ครบ loop แล้ว
-  - TRAIN_CASES: 12 rows (4 manual + 6 feedback_kpi + 2 telegram_train)
-  - T029B รัน 06:00 BKK ทุกวัน → pattern → OCR_KM_LESSONS → OCR_RUNTIME_RULES (flag=ON)
+### T040 — GLM5 (Zhipu AI) Fallback OCR (queue path)
+- **Phase 0 (CC):** `GLM5_API_KEY` + `GLM5_MODEL=glm-5` ใน `.env`; spec `T040-glm5-fallback.md` ครบ
+- **Codex discuss:** ยืนยัน binary node = `Download file`/field `data`; lock scope = queue path only
+- **Codex implement (`be7d99b`):** 4 nodes เพิ่ม + connections + fallback tracking fields ใน `Code (Parse Result)`
+- **CC fixes:** rawContentType bug, JWT HS256 auth, model `glm-4v` → `glm-5` (only available)
+- **Review:** `docs/collab/reviews/T040-review.md` — **7/10 APPROVED WITH CONDITIONS**
+- **PATTERN-015** เพิ่มใน `docs/collab/knowledge/n8n-patterns.md`
+
+### Test Results This Session
+| Test | Exec | Status |
+|------|------|--------|
+| T1: Gemini OK path | `153492` | ✅ `fallback_used=false`, `bills_count=1` |
+| T3: Both fail graceful | `153475/153477` | ✅ `status=error` ไม่ crash |
+| verify_nowThai_sync | — | ✅ |
+| T2: GLM5 success | — | ⚠️ **blocked** — Zhipu AI error 1113 (no credits) |
+
+---
 
 ## Current State of Key Files
 
-| ไฟล์ | สถานะ |
-|------|-------|
-| `docs/collab/HANDOFF.md` | ✅ synced — board cleared |
-| `docs/collab/reviews/T036-review.md` | ✅ Merge Approval filled |
-| `docs/collab/reviews/T037-review.md` | ✅ APPROVED 9/10 |
-| `docs/collab/reviews/T038-review.md` | ✅ APPROVED 9/10 |
-| `docs/collab/reviews/T039-review.md` | ✅ APPROVED 9/10, Codex respond pending |
-| `docs/collab/tasks/T039-active-learning-loop.md` | ✅ closed |
-| `agents/codex/CODEX.md` | ✅ เพิ่ม 100% spec compliance rule |
+| File | Status | Notes |
+|------|--------|-------|
+| `.env` | Changed | `GLM5_API_KEY=96d8029d...`, `GLM5_MODEL=glm-5` added |
+| `.env.example` | Committed | GLM5 vars documented |
+| `docs/collab/tasks/T040-glm5-fallback.md` | Committed | Spec with Discussion + Closing Template filled |
+| `docs/collab/reviews/T040-review.md` | Committed | 7/10, Codex Response section blank (pending) |
+| `docs/collab/HANDOFF.md` | Committed | T040 in Recently Completed, T2 pending noted |
+| `docs/collab/knowledge/n8n-patterns.md` | Committed | PATTERN-015 added (JWT auth, rawContentType, models list) |
+| Live workflow `up1n75qEhbsXswii` | **PATCHED** | 4 new nodes on queue path, Gemini URL restored |
+
+---
 
 ## What To Do Next (In Order)
 
-1. **T039 respond** — `codex-exec.sh respond T039` (Codex ตอบ review T039 — minor, ไม่ urgent)
-2. **T037 respond** — `codex-exec.sh respond T037` (เช่นกัน — minor)
-3. **Review OCR_KM_LESSONS** — ดู entries ที่ status=`suggestion` → approve/reject → enable เป็น runtime rule
-4. **T040 (ถ้าต้องการ)** — OCR prompt improvement จาก lessons ที่ accumulate แล้ว
-5. **ติดตาม GG prompt-engineer proposals** — cron ทุกวัน 09:00 → `docs/gg/proposals/`
+### 1. Top up Zhipu AI account → re-run T2 test
+```bash
+# Login to open.bigmodel.cn → add credits
+# Then test fallback (force Gemini fail, manual run):
+# 1. Login n8n:
+curl -sS -c /tmp/cookie.txt -X POST http://localhost:5678/rest/login \
+  -H "Content-Type: application/json" \
+  -d '{"emailOrLdapLoginId":"yterayut@gmail.com","password":"Marn2530"}'
+
+# 2. Patch Gemini URL to invalid (test only):
+# GET workflow, change HTTP (GenerateContent) url to "invalid-model", PATCH back
+
+# 3. Queue file + trigger manual run:
+curl -X POST http://localhost:5678/webhook/ocr-queue \
+  -H "x-api-key: ocm-cabonrecipte!" \
+  -F "file=@agents/codex/file/susco.pdf;type=application/pdf"
+# Then trigger Schedule Trigger manual run
+
+# Expected: fallback_used=true, fallback_status=success, bills_count >= 1
+```
+
+### 2. Codex respond T040
+```bash
+./scripts/collab/codex-exec.sh respond T040
+```
+แล้ว CC fill Merge Approval ใน `docs/collab/reviews/T040-review.md`
+
+### 3. T040B spec — Direct path coverage
+Direct path (`/ocr-dev`) ยังไม่มี Gemini fallback — เขียน spec T040B ซึ่งจะ patch:
+- Node ที่ใช้ Gemini บน direct path (ต่างจาก queue path)
+- CC ต้องระบุว่า node ชื่ออะไรบน direct path ก่อนเขียน spec
+
+---
 
 ## Pending Tasks (from HANDOFF.md)
 
-| ID | Task | Owner | หมายเหตุ |
-|----|------|-------|---------|
-| T030 | Supabase migration | — | Deferred ไม่มีกำหนด |
+| ID | Task | Owner | Depends on |
+|----|------|-------|-----------|
+| T040B | Direct path (`/ocr-dev`) GLM5 fallback | Codex | T040 merged |
+| T030 | Supabase migration (proposal ready) | — | Deferred |
+
+---
 
 ## Uncommitted Changes
+ไม่มี — clean working tree (ยกเว้น `.tmp/`, `cookie.txt`, `tmp/` ที่ใน .gitignore)
 
-ไม่มี — clean working tree
+---
 
 ## Context That Took Time To Build (Don't Lose)
 
-### Training Loop Status (verified 2026-02-26)
-- ทั้ง 2 ช่องทาง (admin feedback + ยุท Telegram) ครบ loop แล้ว — ไม่ต้องแก้เพิ่ม
-- TRAIN_CASES เป็น single source of truth — แยกด้วย `source` column (feedback_kpi / telegram_train / manual)
-- T029B รัน 06:00 BKK (`0 23 * * *` UTC) — corrections วันนี้จะวิเคราะห์พรุ่งนี้
-- Manual trigger: `curl -X POST /webhook/ocr-km-suggest -H "x-api-key: $OCR_SHARED_API_KEY"`
+### Zhipu AI API Key Format — CRITICAL
+- Key format `hex.secret` = **OLD FORMAT** → ต้อง generate JWT HS256 ก่อนใช้ (ไม่ใช่ direct Bearer)
+- JWT headers: `{"alg": "HS256", "sign_type": "SIGN"}`
+- JWT payload: `{"api_key": id, "exp": now_ms + 3600000, "timestamp": now_ms}`
+- ใน Code node: `require('crypto')` + `createHmac('sha256', secret).update(header+'.'+payload).digest('base64url')`
+- HTTP node ใช้: `=Bearer {{ $json._glm5_jwt }}` (จาก Code node output)
+- NEW format keys (longer string) อาจใช้ direct Bearer ได้ — ขึ้นอยู่กับ account
 
-### Benchmark Status
-- `ocr-benchmark-runner` (`vkIBCzSBUDVZH5kQ`) — `/webhook/ocr-benchmark`
-- Overall avg: 92.19%, tax_invoice: **97.92%** (exec `153152`)
-- bm_ritta01 → skip (fixture_doc_type_mismatch) — ไม่ใช่ bug
+### Zhipu AI Available Models (2026-02, this account)
+`glm-4.5`, `glm-4.5-air`, `glm-4.6`, `glm-4.7`, `glm-5`
+**ไม่มี:** `glm-4v`, `glm-4v-plus`, `glm-4v-flash` (naming convention เปลี่ยน)
+`glm-5` รองรับ multimodal (vision) — ใช้ `image_url` type ใน messages content
 
-### Codex Git Sandbox Issue (recurring)
-- Codex CLI sandbox block git commit → CC ต้อง commit ให้เสมอ:
-  ```bash
-  git -C agents/codex add <files> && git -C agents/codex commit -m "..." && git merge agents/codex --no-edit && ./scripts/collab/sync.sh all
-  ```
-- Monitor script: `nohup bash /tmp/monitor-codex.sh > /tmp/monitor-codex.log 2>&1 &`
+### n8n HTTP Raw Node Content-Type GOTCHA
+- `contentType: "raw"` → ส่ง `application/octet-stream` โดย default
+- Custom `Content-Type` header ใน headerParameters **ไม่ override** body mime type
+- **Fix:** เพิ่ม `rawContentType: "application/json"` ใน parameters ตรงๆ
 
-### Auto-Pipeline Pattern (ใช้งานได้)
-```bash
-# watcher ที่ detect Codex commit แล้ว auto-merge + assign next task
-nohup bash /tmp/watch-next.sh > /tmp/watch.log 2>&1 &
+### Queue Path vs Direct Path
+Workflow `up1n75qEhbsXswii` มี 2 Gemini paths:
+- **Queue path** (T040 patched): `Download file` → `HTTP (Upload to Gemini)` → `HTTP (GenerateContent)` → `Code (Parse Result)`
+- **Direct path** (T040B needed): `HTTP Upload File5` → `Code in JavaScript9`
+
+### n8n Service Management
+- n8n รันเป็น systemd user service: `systemctl --user restart n8n.service`
+- `.env` ถูก load ตอน startup → ต้อง restart เมื่อเพิ่ม env var ใหม่
+- EnvironmentFile: `/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/.env`
+- Verify env loaded: `cat /proc/$(systemctl --user show n8n.service -p MainPID --value)/environ | tr '\0' '\n' | grep GLM5`
+
+### Queue Worker Manual Trigger
+```python
+# Load full workflow, set as workflowData body
+wf = requests.get(...).json()['data']
+body = {
+    'workflowData': wf,
+    'destinationNode': {'nodeName': 'Code  Set Done'},  # double space!
+    'triggerToStartFrom': {'name': 'Schedule Trigger'}
+}
+requests.post('.../rest/workflows/up1n75qEhbsXswii/run', json=body)
 ```
-แต่ monitor ต้องคำนึงว่า Codex sandbox block git → CC ยังต้อง commit ให้
+**Note:** `destinationNode` ต้องเป็น `'Code  Set Done'` (2 spaces ในชื่อ)
 
-### GG Roles ที่ยังไม่ได้ใช้จริง
-- G (Prompt Engineer) — cron รันทุกวัน proposals อยู่ที่ `docs/gg/proposals/` รอ review
-- J (OCR Validator) — ยังไม่เคย invoke
-- I (Spec Drafter) — ยังไม่เคยใช้ (CC เขียนเอง)
+---
 
-### วิธีส่งงาน Codex (confirmed working)
+## Commands To Run First (Next Session)
 ```bash
-# ตรวจ pane ต้องเป็น bash
-tmux list-panes -t codex -F "#{pane_current_command}"
-# ส่ง command
-tmux send-keys -t codex "/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/scripts/collab/codex-exec.sh implement T0xx" Enter
-# รอ 20 วิ แล้วตรวจ
-sleep 20 && ps aux | grep "node.*codex" | grep -v grep | grep -v vscode | wc -l
-```
-ห้าม pipe `&&` ต่อใน same tmux send-keys — buffer concatenation bug
+# 1. Resume dev session
+dev   # หรือ tmux attach -t dev
 
-## Commands To Run First
+# 2. Check current state
+cat docs/collab/HANDOFF.md | head -60
 
-```bash
-# 1. Recap สถานะ
-git log --oneline -5
-
-# 2. ดู OCR_KM_LESSONS ที่สร้างอัตโนมัติ
+# 3. Verify workflow is healthy (Gemini URL restored)
 source .env
-curl -s "http://localhost:5678/webhook/gg-data?sheet=OCR_KM_RUNTIME_RULES" \
-  -H "x-api-key: $OCR_SHARED_API_KEY" | python3 -c "import json,sys; rows=json.load(sys.stdin); [print(r.get('rule_id','?'), r.get('status','?'), str(r.get('description','?'))[:60]) for r in rows[-5:]]"
+curl -sS -c /tmp/cookie.txt -X POST http://localhost:5678/rest/login \
+  -H "Content-Type: application/json" \
+  -d "{\"emailOrLdapLoginId\":\"yterayut@gmail.com\",\"password\":\"Marn2530\"}"
+curl -sS -b /tmp/cookie.txt "http://localhost:5678/rest/workflows/up1n75qEhbsXswii" | \
+  python3 -c "import json,sys; wf=json.load(sys.stdin)['data']; [print(n['name'],':',n['parameters'].get('url','')[:60]) for n in wf['nodes'] if 'GenerateContent' in n['name']]"
 
-# 3. ดู GG prompt proposals ล่าสุด
-ls -lt docs/gg/proposals/ | head -10
-
-# 4. ถ้าจะ assign งาน Codex ต่อ
-./scripts/collab/codex-exec.sh respond T039
+# 4. If Zhipu AI topped up → run T2 test
 ```
 
-## Last Checkpoint — 20:52
-- ✅ T036/T037/T038/T039 done, reviewed, merged — board clean
-- ✅ Feedback loop ทั้ง 2 ช่องทางครบ, CODEX.md rule enforced
-- ⏭️ Session ถัดไป: review OCR_KM_LESSONS + T039/T037 respond (minor) + วางแผน T040 ถ้าต้องการ
+---
+
+## Last Checkpoint — 07:15
+- ✅ T040 APPROVED (7/10) — GLM5 fallback queue path live, JWT auth, glm-5 model
+- 🔄 T2 test blocked — Zhipu AI account has no credits (error 1113)
+- ⏭️ Top up Zhipu AI → re-run T2 → Codex respond T040 → T040B spec
