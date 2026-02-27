@@ -100,6 +100,10 @@ else
   echo "⚠️  ngrok not found on PATH; skipping tunnel setup"
 fi
 
+# Restart Telegram Trigger workflows in background after n8n is ready
+# Fixes: polling stops after n8n restart (known n8n behavior)
+"$SCRIPT_DIR/scripts/restart-telegram-triggers.sh" >> "$SCRIPT_DIR/logs/telegram-trigger-restart.log" 2>&1 &
+
 N8N_BIN="${N8N_BIN:-$(command -v n8n || true)}"
 if [ -n "$N8N_BIN" ]; then
   echo "🟢 Starting n8n..."
