@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T041B APPROVED ✅ — Typhoon OCR fallback live (queue path); T041C (direct path) next |
+| **Phase** | T041C ✅ DONE — Typhoon OCR fallback live (queue + direct path); Thai time ISO patch applied |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T041B ✅ — exec `153576` Typhoon success; exec `153579` Gemini OK; review: `T041B-review.md` |
+| **Codex Status** | T041C ✅ — exec `153614` Typhoon direct fallback; exec `153621` Gemini OK; pending review |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-27 10:25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -119,6 +119,8 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| Thai time ISO | Patch `nowISO()` → `+07:00` in 5 Code nodes; add `GENERIC_TIMEZONE=Asia/Bangkok` to `.env` | CC | 2026-02-27 | `created_at_iso` was UTC; now returns `2026-02-27T10:xx:xx+07:00`; `verify_nowThai_sync.sh` ✅ |
+| normalize fix | Pick lists in `Code (Normalize + Validate)`: added `customer_name_th`, `item_unit_price`, `item_quantity`, `item_description_th` | CC | 2026-02-27 | Fixed `customer_name=""`, `unit_price=0`, `quantity=0` in normalized output; restored from `workflow_history` |
 | T041C | Typhoon OCR fallback (direct path `/ocr-dev`) | Codex | 2026-02-27 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: added `Code (Prepare Typhoon Request - Direct)` + `HTTP (Typhoon OCR - Direct)` + `Code (Reshape Typhoon Response - Direct)` + `IF (Typhoon OK? - Direct)`; rewired `If2` true branch from direct error responder to Typhoon chain; Typhoon IF true returns to `Code in JavaScript9` (input 0), false to `Respond to Webhook (error)`; `continueOnFail=true` + `onError=continueRegularOutput` on direct Typhoon HTTP node. Tests: forced direct fallback exec `153614` (If2 forced true) shows direct Typhoon chain ran with `fallback_used=true`, `fallback_status=success` in reshape node output and response `bills_count=1`; Gemini-normal exec `153621` response `success=true`, `bills_count=4`; `verify_nowThai_sync.sh` ✅. |
 | T041B | Typhoon OCR fallback (replace GLM5 on queue path) | Codex | 2026-02-27 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: removed GLM5 trio, added `Code (Prepare Typhoon Request)` + `HTTP (Typhoon OCR)` + `Code (Reshape Typhoon Response)` with `continueOnFail=true`; updated reshape parser to handle live Typhoon OCR nested response (`results[0].message.choices[0].message.content` JSON-string natural_text); fallback wiring active through `IF (Gemini OK?)`; queue parse handoff uses input index 0 (runtime-required). Tests: forced Gemini fail exec `153576` => `fallback_used=true`, `fallback_model=typhoon-ocr-preview`, `fallback_status=success`, `bills_count=1` (tax ID present in `raw_json`); Gemini-normal exec `153579` => `fallback_used=false`, `bills_count=4`; `verify_nowThai_sync.sh` ✅. |
 | T040 | GLM5 (Zhipu AI) fallback OCR (queue path) | Codex+CC | 2026-02-27 | **APPROVED WITH CONDITIONS (7/10)** — Patched workflow `up1n75qEhbsXswii` queue path: `IF (Gemini OK?)`, `Code (Prepare GLM5 Request)` (JWT auth + glm-5), `HTTP (GLM5 GenerateContent)` (continueOnFail, rawContentType=application/json), `Code (Reshape GLM5 Response)` → `Code (Parse Result)` multi-input. CC fixes: rawContentType, JWT HS256 gen, model=glm-5, restored Gemini URL. T1 exec `153492` `fallback_used=false` `bills_count=1` ✅; T3 graceful fail ✅; verify_nowThai ✅; T2 pending Zhipu AI account top-up (error 1113 no credits); T040B (direct path) pending; review: `docs/collab/reviews/T040-review.md` |
@@ -278,6 +280,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 10:47 | sync | all | auto-sync |
 | 2026-02-27 10:32 | sync | all | auto-sync |
 | 2026-02-27 10:05 | sync | all | auto-sync |
 | 2026-02-27 10:04 | sync | all | auto-sync |
