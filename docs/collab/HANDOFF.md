@@ -47,9 +47,9 @@ Claude review → merge → sync all
 
 | Field | Value |
 |-------|-------|
-| **Phase** | T041C ✅ DONE — Typhoon OCR fallback live (queue + direct path); Thai time ISO patch applied |
+| **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T041C ✅ — exec `153614` Typhoon direct fallback; exec `153621` Gemini OK; pending review |
+| **Codex Status** | T041C ✅ merged; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-27 10:25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -280,6 +280,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 11:17 | sync | all | auto-sync |
+| 2026-02-27 11:16 | sync | all | auto-sync |
+| 2026-02-27 11:16 | sync | all | auto-sync |
 | 2026-02-27 10:47 | sync | all | auto-sync |
 | 2026-02-27 10:32 | sync | all | auto-sync |
 | 2026-02-27 10:05 | sync | all | auto-sync |

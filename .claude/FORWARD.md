@@ -1,11 +1,11 @@
 # Forward Handoff — 2026-02-27
 
-## Last Checkpoint — 11:20
+## Last Checkpoint — 14:05
 
-- ✅ T041C merged (Codex) + CC review 9/10 APPROVED — Typhoon fallback live on BOTH queue + direct paths
-- ✅ normalize fix applied: `customer_name_th`, `item_unit_price`, `item_quantity`, `item_description_th`
-- ✅ `nowISO()` patched → `+07:00` Thai ISO in 5 Code nodes; `GENERIC_TIMEZONE=Asia/Bangkok` in `.env`
-- ⏭️ Next: recommend T041D (review + plan next priorities) or user-directed
+- ✅ `/health` Telegram fixed — removed chatIds filter + toggled workflow off/on
+- ✅ GG Data (OCR_EXAMPLES) Switch bug fixed — `numberOutputs: 5` (was defaulting to 4; param name NOT `outputsAmount`)
+- ✅ T041C merged + CC review 9/10; Typhoon fallback live both paths; `nowISO()` Thai time patched
+- ⏭️ Next: investigate RUNTIMERULES=true safety + main OCR child_process errors (pre-patch, may be resolved)
 
 ---
 
