@@ -109,13 +109,15 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-_(none)_
+| ID | Task | Owner | Notes |
+|----|------|-------|-------|
+| T041C | Typhoon fallback — Direct path `/ocr-dev` | Codex | spec: `docs/collab/tasks/T041C-typhoon-fallback-direct.md` |
 
 ### Pending
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
-| T041C | Typhoon fallback — Direct path (`/ocr-dev`) | — | T041B stable |
+| T041C | Typhoon fallback — Direct path (`/ocr-dev`) | Codex | assigned |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
@@ -278,6 +280,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 ## Sync Log
 
 | Date | Direction | By | Notes |
+| 2026-02-27 10:32 | sync | all | auto-sync |
 | 2026-02-27 10:05 | sync | all | auto-sync |
 | 2026-02-27 10:04 | sync | all | auto-sync |
 | 2026-02-27 10:03 | sync | all | auto-sync |
