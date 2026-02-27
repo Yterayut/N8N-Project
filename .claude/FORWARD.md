@@ -1,10 +1,11 @@
 # Forward Handoff — 2026-02-27
 
-## Last Checkpoint — 10:05
+## Last Checkpoint — 11:20
 
-- ✅ T041B spec written + committed; Codex assigned + running (implementing now)
-- 🔄 Codex: replace 3 GLM5 nodes with Typhoon `/v1/ocr` in queue path
-- ⏭️ Wait Codex push → CC review → merge → T041C (direct path)
+- ✅ T041C merged (Codex) + CC review 9/10 APPROVED — Typhoon fallback live on BOTH queue + direct paths
+- ✅ normalize fix applied: `customer_name_th`, `item_unit_price`, `item_quantity`, `item_description_th`
+- ✅ `nowISO()` patched → `+07:00` Thai ISO in 5 Code nodes; `GENERIC_TIMEZONE=Asia/Bangkok` in `.env`
+- ⏭️ Next: recommend T041D (review + plan next priorities) or user-directed
 
 ---
 
