@@ -384,34 +384,48 @@ Webhook (ocr-dashboard) → Code (Auth) → Code (Fetch + Build HTML) → Respon
 ## DoD (Definition of Done)
 
 ### T1 — Auth reject
-- [ ] `curl .../ocr-dashboard?key=wrongkey` → 401 HTML response
+- [x] `curl .../ocr-dashboard?key=wrongkey` → 401 HTML response
 
 ### T2 — HTML 200
-- [ ] `curl .../ocr-dashboard?key=ocm-cabonrecipte!` → 200, Content-Type: text/html
-- [ ] Size > 2000 bytes
+- [x] `curl .../ocr-dashboard?key=ocm-cabonrecipte!` → 200, Content-Type: text/html
+- [x] Size > 2000 bytes (`3982` bytes)
 
 ### T3 — All 4 sections present
-- [ ] `grep -c "<table>" /tmp/t042_dash.html` ≥ 4
-- [ ] "Accuracy by Doc Type" text present
-- [ ] "Field Error Frequency" text present
-- [ ] "7-Day OCR Volume" text present
-- [ ] "Active KM Rules" text present
+- [x] `grep -c "<table>" /tmp/t042_dash.html` ≥ 4 (`4`)
+- [x] "Accuracy by Doc Type" text present
+- [x] "Field Error Frequency" text present
+- [x] "7-Day OCR Volume" text present
+- [x] "Active KM Rules" text present
 
 ### T4 — Data loaded
-- [ ] Summary cards show non-zero values (or graceful empty state)
-- [ ] KM Rules table shows 6 rules (or current active count)
+- [x] Summary cards show non-zero values (or graceful empty state) — current: graceful empty (`OCR วันนี้ (✓0 ✗0)`)
+- [x] KM Rules table shows 6 rules (or current active count) — current active count: `0`
 
 ### T5 — Verify
-- [ ] `./scripts/verify_nowThai_sync.sh` ✅ (sanity check)
+- [x] `./scripts/verify_nowThai_sync.sh` ✅ (sanity check)
 
 ---
 
 ## Discussion
 
-*(Codex: comment here before implementing if you see any issues with the spec)*
+- 2026-02-27 (Codex): Spec has 2 small conflicts with project rules/DoD:
+1) `Code (Auth)` returns `_status:401` but chain continues to HTML builder, which would override unauthorized output. Implemented minimal guard in `Code (Fetch + Build HTML)` to passthrough `_html/_status` when auth fails.
+2) Webhook `webhookId` in spec is `ocr-dashboard-v1-0001` (not UUID). Implemented UUID webhookId per PATTERN-008 checklist.
+3) `Code (Fetch + Build HTML)` spec uses `require('child_process')` + `sqlite3`; n8n task-runner in this environment disallows `child_process`. Implemented graceful fallback for execution volume block (empty-state trend/today cards) so endpoint still serves dashboard HTML reliably.
 
 ---
 
 ## Codex Response
 
 *(Codex: fill after CC review)*
+
+---
+
+## Closing Template
+
+```
+Runtime patched: Created new workflow `ocr-dashboard` via n8n REST API as `FsMOrto8DmG1LYjD` with webhook `GET /webhook/ocr-dashboard` and active=true; auth uses `x-api-key`/`?key=` against `$env.OCR_SHARED_API_KEY`; webhook node includes UUID webhookId (`ca1f19e3-ae58-4452-b572-69a35dba8c32`).
+Verified from: Auth reject test returns `HTTP/1.1 401 Unauthorized` + HTML body; success test returns `HTTP/1.1 200 OK`, `Content-Type: text/html; charset=utf-8`, response size `3982` bytes, `4` tables, and all required section headings present.
+Docs synced: This spec updated (DoD checked + Discussion + closing notes) and `docs/collab/HANDOFF.md` moved T042 to Recently Completed.
+Remaining limits: Execution volume cards currently use graceful empty-state fallback because Code-node sandbox disallows `child_process` (sqlite CLI) in this n8n runtime.
+```
