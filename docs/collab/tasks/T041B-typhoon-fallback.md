@@ -336,7 +336,14 @@ TYPHOON_API_KEY=sk-y51g5dvThqtd9h21NkabskWnt8vaCLKElVoMlRQ5YGD96VLP
 
 n8n อ่านผ่าน `$env.TYPHOON_API_KEY` — ห้าม hardcode key ในโค้ด
 
-**ไม่ต้อง restart n8n** หาก n8n อ่าน env ตอน runtime ผ่าน `$env`
+**Codex: ก่อนทดสอบ ตรวจว่า n8n โหลด env ใหม่แล้ว**
+```bash
+# ตรวจว่า TYPHOON_API_KEY โหลดแล้ว
+curl -s -b /tmp/cookie.txt 'http://localhost:5678/rest/debug/env' 2>/dev/null | grep TYPHOON || echo "not found"
+# ถ้า not found → restart n8n ก่อน:
+# sudo systemctl restart n8n   (หรือ pm2 restart n8n ตามที่ใช้)
+# แล้ว login ใหม่: curl -c /tmp/cookie.txt -X POST ...
+```
 
 ---
 
