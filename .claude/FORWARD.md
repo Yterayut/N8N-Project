@@ -54,3 +54,9 @@
 - ✅ Dead node cleanup: ocr-training 122→118 nodes (4 orphans removed)
 - ✅ KM Rules: 13→6 active
 - ⏭️ Next: Typhoon timeout (A) or Codex respond T041C (E)
+
+## Last Checkpoint — 17:45
+- ✅ T042 OCR Dashboard live: GET /webhook/ocr-dashboard?key=...
+- ✅ Data: Accuracy 70%(n=15), Field errors 77, KM rules 6 active
+- ✅ Fixed: switched from internal fetch() → GSheets nodes (fix for sandbox block)
+- ⏭️ Next: write T042 review + Typhoon timeout (A)
