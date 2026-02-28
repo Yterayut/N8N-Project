@@ -120,10 +120,11 @@ After patching, send Caltex bill via Telegram (vendor_tax_id: `0105564172883`):
 
 ## Definition of Done
 
-- [ ] `Code (Parse Result)` แสดงค่า `unit_price=21.191`, `quantity=47.19` สำหรับ Caltex bill
-- [ ] Field อื่นๆ ครบ (address, description, amount ไม่หาย)
-- [ ] Non-Caltex bill ไม่ถูก affect
-- [ ] Verify ผ่าน `./scripts/verify_nowThai_sync.sh`
+- [x] `Code (Parse Result)` vendor-correction logic added before `raw_json` stringify
+- [x] Caltex runtime output แสดง `line_unit_price=21.191`, `line_quantity=47.19`
+- [x] Field อื่นๆ ครบ (address, description, amount ไม่หาย)
+- [x] Non-Caltex bill ไม่ถูก affect
+- [x] Verify ผ่าน `./scripts/verify_nowThai_sync.sh`
 - [ ] Commit + push `agents/codex`
 
 ---
@@ -140,3 +141,16 @@ After patching, send Caltex bill via Telegram (vendor_tax_id: `0105564172883`):
 ## Discussion
 
 <!-- Codex: กรุณา comment ก่อน implement ถ้าเห็นปัญหากับ spec นี้ -->
+
+- 2026-02-28 (Codex): ระหว่าง verify พบว่า live `/ocr-dev` path ใช้ `Code in JavaScript9` ไม่ได้ผ่าน `Code (Parse Result)` และ Gemini payload ของ Caltex ที่ runtime ใช้ schema `items[].item_unit_price` / `item_quantity` ไม่ใช่ `list_detail[].unit_price` / `quantity` อย่างเดียว ดังนั้นเพื่อให้ behavior ตรง objective ("ทุก node downstream ได้ค่าที่ถูกต้อง") implementation จะ patch logic เดียวกันในทุก raw-JSON parse node ที่ active และรองรับทั้ง `bill-level`, `list_detail`, และ `items` schema โดยยังคง vendor-gated + threshold-gated ตาม rule เดิม
+
+---
+
+## Closing Template
+
+```
+Runtime patched: Updated workflow `up1n75qEhbsXswii` via n8n REST API; added the Caltex vendor-swap correction before `raw_json` stringify in `Code (Parse Result)`, `Code in JavaScript9`, and `Code in JavaScript24`; expanded the correction to cover `list_detail`, `items`, and `line_items` schema variants; patched `Code (Normalize + Validate)` to read `line_items` as a list-detail source.
+Verified from: Caltex live `/webhook/ocr-dev` run exec `154354` returned vendor `0105564172883` with `description=\"P-DIESEL\"`, `line_unit_price=21.191`, `line_quantity=47.19`, `line_amount=1000`, and address preserved; non-Caltex control run exec `154360` (PTT-OR, vendor `0107561000013`) remained unchanged at `line_unit_price=33.21`, `line_quantity=34.327`; `./scripts/verify_nowThai_sync.sh` passed.
+Docs synced: This spec updated (DoD checked, Discussion note, Closing Template filled) and `docs/collab/HANDOFF.md` will be moved to Recently Completed.
+Remaining limits: Telegram-specific E2E send was not run from this shell session; verification used the live `/webhook/ocr-dev` path that exercises the patched runtime nodes directly.
+```

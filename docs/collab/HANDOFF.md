@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T043 | Caltex unit_price / quantity swap fix | Codex | 2026-02-28 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: added vendor-gated Caltex swap logic before `raw_json` stringify in `Code (Parse Result)`, `Code in JavaScript9`, and `Code in JavaScript24`; expanded correction across `list_detail`, `items`, and `line_items`; updated `Code (Normalize + Validate)` to accept `line_items` source. E2E direct-path verify: Caltex exec `154354` => `line_unit_price=21.191`, `line_quantity=47.19`, address/description preserved ✅; non-Caltex control exec `154360` unchanged (`line_unit_price=33.21`, `line_quantity=34.327`) ✅; `verify_nowThai_sync.sh` ✅. |
 | T042 | OCR Accuracy Dashboard (HTML Web Page) | Codex | 2026-02-27 | Created new workflow `FsMOrto8DmG1LYjD` (`ocr-dashboard`) via n8n REST; webhook auth `x-api-key`/`?key=` + UUID webhookId (`ca1f19e3-ae58-4452-b572-69a35dba8c32`) ✅; endpoint `/webhook/ocr-dashboard` returns HTML dashboard with 4 sections (size `3982` bytes) and 401 unauthorized on wrong key ✅; `verify_nowThai_sync.sh` ✅. |
 | Thai time ISO | Patch `nowISO()` → `+07:00` in 5 Code nodes; add `GENERIC_TIMEZONE=Asia/Bangkok` to `.env` | CC | 2026-02-27 | `created_at_iso` was UTC; now returns `2026-02-27T10:xx:xx+07:00`; `verify_nowThai_sync.sh` ✅ |
 | normalize fix | Pick lists in `Code (Normalize + Validate)`: added `customer_name_th`, `item_unit_price`, `item_quantity`, `item_description_th` | CC | 2026-02-27 | Fixed `customer_name=""`, `unit_price=0`, `quantity=0` in normalized output; restored from `workflow_history` |
@@ -285,6 +286,12 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-02-28 08:41 | sync | all | auto-sync |
+| 2026-02-28 08:41 | sync | all | auto-sync |
+| 2026-02-28 06:38 | sync | all | auto-sync |
+| 2026-02-27 20:12 | sync | all | auto-sync |
+| 2026-02-27 19:41 | sync | all | auto-sync |
+| 2026-02-27 17:47 | sync | all | auto-sync |
 | 2026-02-27 17:37 | sync | all | auto-sync |
 | 2026-02-27 17:33 | sync | all | auto-sync |
 | 2026-02-27 17:33 | sync | all | auto-sync |
