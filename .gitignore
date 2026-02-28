@@ -45,3 +45,6 @@ logs/
 
 # Agent worktrees
 agents/
+.tmp/
+cookie.txt
+tmp/
