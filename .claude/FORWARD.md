@@ -113,7 +113,9 @@ curl -s "http://localhost:5678/webhook/ocr-dashboard?key=ocm-cabonrecipte!" | gr
 
 ---
 
-## Last Checkpoint — 17:52
-- ✅ T042 dashboard live (ngrok accessible), all 3 data sections real, 4th section graceful empty
-- ✅ Session complete: KM cleanup, dead nodes, T041C review closed, T042 dashboard
-- ⏭️ Next session: write T042 review → Typhoon timeout investigation (A)
+## Last Checkpoint — 2026-02-28
+- ✅ T042 dashboard live
+- ✅ Caltex swap fix: `Respond to Webhook6` now overrides `data.bills` with `$json.bills` (corrected by vendorCorrections)
+- ✅ Telegram webhook stable: restart-telegram-triggers.sh cycles only (n8n handles setWebhook+secret)
+- ✅ KM suggest: telegram_train threshold=1, auto-approved
+- ⏭️ Test Caltex bill via Telegram to confirm swap fix → write T042 review → Typhoon timeout
