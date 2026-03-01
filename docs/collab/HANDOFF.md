@@ -288,6 +288,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-01 12:03 | sync | all | auto-sync |
 | 2026-03-01 11:41 | sync | all | auto-sync |
 | 2026-03-01 11:39 | sync | all | auto-sync |
 | 2026-03-01 11:35 | patch | CC | T044: gg-data-gateway VENDOR_MAP output added; spec written; Codex assigned Phase 1+2+3 |
