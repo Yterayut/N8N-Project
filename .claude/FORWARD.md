@@ -122,7 +122,13 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 12:35
-- ✅ T044 COMPLETE: all 4 phases done — VENDOR_MAP, enrichment, KPI, dashboard (73.2%)
-- ✅ /rrr retrospective saved + MEMORY.md updated
+## Last Checkpoint — 16:30
+- ✅ chat_id fix: Telegram notify ใช้ `$json.telegram_chat_id` แทน `$env.TELEGRAM_ADMIN_CHAT_ID`
+- ✅ Backfill 13 rows: ocr_accuracy_pct=0 ใน OCR_TRAIN_CASES — dashboard 32 scored / 39 total
+- ✅ N8N_RUNNERS_ENABLED=false: process.env isolation fix (local .env เท่านั้น ไม่ commit)
 - ⏭️ ไม่มีงาน active — รอ task ถัดไปจาก user
+
+## Key Learnings This Session
+- **Bash `!` escaping via Claude Code tool**: แม้จะใช้ single quotes ใน curl, bash ก็ escape `!` เป็น `\!` ผ่าน Claude Code Bash tool → ใช้ Python urllib แทน curl เสมอเมื่อส่ง header ที่มี `!`
+- **GSheets Update matchingColumns**: `columns.value` ต้องรวม matching column ด้วย (e.g. `case_id: '={{ $json.case_id }}'`) ไม่งั้น error "Column to Match On required"
+- **n8n execution data format**: compact refs (data[N]) — ใช้ SQLite `execution_data` ไม่ใช่ REST API (REST API แสดง 0 เสมอถ้า pagination issue)
