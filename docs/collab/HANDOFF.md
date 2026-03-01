@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | _(none)_ |
 | **Codex Status** | T044 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-01 12:35 (T044 COMPLETE — all phases done; /rrr + /forward done) |
+| **Last Sync** | 2026-03-01 16:30 (chat_id fix + backfill 13 rows COMPLETE) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,8 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| chat_id fix | Fix Telegram `chat_id is empty` in `ocr-km-suggest` (NkKd02QyzLRcpIJM) — root cause: Telegram node used `$env.TELEGRAM_ADMIN_CHAT_ID` (wrong var); Fix: changed to pass `telegram_chat_id: process.env.TELEGRAM_OCR_CHAT_ID` from `Code (Build Telegram)`, Telegram node reads `{{ $json.telegram_chat_id }}`. Also: N8N_RUNNERS_ENABLED changed false (process.env isolation fix); auth code now uses `$env.OCR_SHARED_API_KEY \|\| process.env.OCR_SHARED_API_KEY` | CC | 2026-03-01 | Auth ✅, workflow ok:true analyzed_cases:35 ✅ |
+| backfill | Backfill 13 historical `telegram_train` rows with blank `ocr_accuracy_pct` in OCR_TRAIN_CASES. Logic: `(4 - min(diff_count, 4)) / 4 * 100` via FIELD_DIFFS join. All 13 rows have ocr_accuracy_pct=0 (≥4 diffs each). GSheets Update ran via km-suggest backfill nodes (now removed). Dashboard now shows 32 scored / 39 total. | CC | 2026-03-01 | 13 rows updated ✅, GSheets OK ✅ |
 | T044-Phase4 | Dashboard: switch GSheets read → TRAIN_CASES + CC hot-fixes (buildAccuracyStats blank-pct skip, count=0 filter, source breakdown) | CC | 2026-03-01 | 19 scored / 39 total bills, Overall 73.2% ✅ |
 | T044 | Single Source of Truth — Unified OCR Feedback Pipeline | Codex | 2026-03-01 | Patched live workflows via n8n REST: `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)` + vendor enrichment + fallback `ocr_accuracy_pct` + `continueOnFail=true` on both Google Sheets append nodes), `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)` + vendor enrichment + `continueOnFail=true` on `HTTP (POST ocr-km-log training)`), and `NkKd02QyzLRcpIJM` (`Code (Analyze Patterns)`, `Code (Build Telegram)`, webhook success/no-new-lessons responders). Verification: wrong-key `ocr-km-suggest` 401 ✅; Caltex feedback exec `154810` wrote `doc_type=fuel`, `vendor_name=Caltex`, `ocr_accuracy_pct=50` ✅; unknown-vendor feedback exec `154811` wrote `doc_type=other`, `vendor_name=unknown`, `ocr_accuracy_pct=100` ✅; KPI response exec `154827` returned `overall_accuracy_pct`, `accuracy_by_doc_type`, `accuracy_by_vendor` and built Telegram KPI text with doc_type/vendor breakdown ✅; `verify_nowThai_sync.sh` ✅. Limits: existing 13 historical `telegram_train` rows still need backfill; admin Telegram delivery in exec `154827` returned `Bad Request: chat_id is empty` in current env. |
 | T043 | Caltex unit_price / quantity swap fix | Codex | 2026-02-28 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: added vendor-gated Caltex swap logic before `raw_json` stringify in `Code (Parse Result)`, `Code in JavaScript9`, and `Code in JavaScript24`; expanded correction across `list_detail`, `items`, and `line_items`; updated `Code (Normalize + Validate)` to accept `line_items` source. E2E direct-path verify: Caltex exec `154354` => `line_unit_price=21.191`, `line_quantity=47.19`, address/description preserved ✅; non-Caltex control exec `154360` unchanged (`line_unit_price=33.21`, `line_quantity=34.327`) ✅; `verify_nowThai_sync.sh` ✅. |
@@ -288,6 +290,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-01 12:44 | sync | all | auto-sync |
 | 2026-03-01 12:37 | sync | all | auto-sync |
 | 2026-03-01 12:11 | sync | all | auto-sync |
 | 2026-03-01 12:08 | sync | all | auto-sync |
