@@ -106,7 +106,9 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Notes |
+|----|------|-------|
+| T044 | Single Source of Truth — Unified OCR Feedback Pipeline | Spec: `docs/collab/tasks/T044-single-source-of-truth.md` |
 
 ### Pending (Codex)
 _(none)_
@@ -115,6 +117,7 @@ _(none)_
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
+| T044-Phase4 | Dashboard: switch GSheets read → TRAIN_CASES | CC | T044 Codex complete |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
@@ -286,6 +289,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-01 11:35 | patch | CC | T044: gg-data-gateway VENDOR_MAP output added; spec written; Codex assigned Phase 1+2+3 |
+| 2026-02-28 09:11 | sync | all | auto-sync |
+| 2026-02-28 09:11 | sync | all | auto-sync |
 | 2026-02-28 08:57 | sync | all | auto-sync |
 | 2026-02-28 08:41 | sync | all | auto-sync |
 | 2026-02-28 08:41 | sync | all | auto-sync |
