@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T041C ✅ merged; Codex idle |
+| **Codex Status** | T044 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-02-27 10:25 |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -106,9 +106,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Notes |
-|----|------|-------|
-| T044 | Single Source of Truth — Unified OCR Feedback Pipeline | Spec: `docs/collab/tasks/T044-single-source-of-truth.md` |
+_(none)_
 
 ### Pending (Codex)
 _(none)_
@@ -122,6 +120,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T044 | Single Source of Truth — Unified OCR Feedback Pipeline | Codex | 2026-03-01 | Patched live workflows via n8n REST: `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)` + vendor enrichment + fallback `ocr_accuracy_pct` + `continueOnFail=true` on both Google Sheets append nodes), `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)` + vendor enrichment + `continueOnFail=true` on `HTTP (POST ocr-km-log training)`), and `NkKd02QyzLRcpIJM` (`Code (Analyze Patterns)`, `Code (Build Telegram)`, webhook success/no-new-lessons responders). Verification: wrong-key `ocr-km-suggest` 401 ✅; Caltex feedback exec `154810` wrote `doc_type=fuel`, `vendor_name=Caltex`, `ocr_accuracy_pct=50` ✅; unknown-vendor feedback exec `154811` wrote `doc_type=other`, `vendor_name=unknown`, `ocr_accuracy_pct=100` ✅; KPI response exec `154827` returned `overall_accuracy_pct`, `accuracy_by_doc_type`, `accuracy_by_vendor` and built Telegram KPI text with doc_type/vendor breakdown ✅; `verify_nowThai_sync.sh` ✅. Limits: existing 13 historical `telegram_train` rows still need backfill; admin Telegram delivery in exec `154827` returned `Bad Request: chat_id is empty` in current env. |
 | T043 | Caltex unit_price / quantity swap fix | Codex | 2026-02-28 | Patched live workflow `up1n75qEhbsXswii` via n8n REST: added vendor-gated Caltex swap logic before `raw_json` stringify in `Code (Parse Result)`, `Code in JavaScript9`, and `Code in JavaScript24`; expanded correction across `list_detail`, `items`, and `line_items`; updated `Code (Normalize + Validate)` to accept `line_items` source. E2E direct-path verify: Caltex exec `154354` => `line_unit_price=21.191`, `line_quantity=47.19`, address/description preserved ✅; non-Caltex control exec `154360` unchanged (`line_unit_price=33.21`, `line_quantity=34.327`) ✅; `verify_nowThai_sync.sh` ✅. |
 | T042 | OCR Accuracy Dashboard (HTML Web Page) | Codex | 2026-02-27 | Created new workflow `FsMOrto8DmG1LYjD` (`ocr-dashboard`) via n8n REST; webhook auth `x-api-key`/`?key=` + UUID webhookId (`ca1f19e3-ae58-4452-b572-69a35dba8c32`) ✅; endpoint `/webhook/ocr-dashboard` returns HTML dashboard with 4 sections (size `3982` bytes) and 401 unauthorized on wrong key ✅; `verify_nowThai_sync.sh` ✅. |
 | Thai time ISO | Patch `nowISO()` → `+07:00` in 5 Code nodes; add `GENERIC_TIMEZONE=Asia/Bangkok` to `.env` | CC | 2026-02-27 | `created_at_iso` was UTC; now returns `2026-02-27T10:xx:xx+07:00`; `verify_nowThai_sync.sh` ✅ |

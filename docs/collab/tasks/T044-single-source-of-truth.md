@@ -255,6 +255,8 @@ kmPayload.vendor_name = enriched.vendor_name;
 
 _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 
+- 2026-03-01 Codex: The provided `enrichFromVendorMap()` preserves any non-empty `existing_vendor_name`. That means Telegram gold payloads carrying a legal entity name may stay as the legal name instead of the short alias from `VENDOR_MAP` (for example `Caltex`). Proceeding with the helper exactly as specified to stay within scope.
+
 ---
 
 ## Test Plan
@@ -295,22 +297,22 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 ## Definition of Done
 
 **Implemented:**
-- [ ] Phase 1: `Code (Compute Diffs)` ใน `jmJHPPj0OM5LcZ0n` มี VENDOR_MAP lookup + accuracy calc
-- [ ] Phase 2: `Code (Prepare KM Log Payload)` ใน `KW0QRXxRh9MjdPaY` มี vendor enrichment
-- [ ] Phase 3: `Code (Analyze Patterns)` ใน `NkKd02QyzLRcpIJM` มี doc_type/vendor grouping + overall_accuracy
-- [ ] Phase 3: Telegram KPI message แสดง breakdown
+- [x] Phase 1: `Code (Compute Diffs)` ใน `jmJHPPj0OM5LcZ0n` มี VENDOR_MAP lookup + accuracy calc
+- [x] Phase 2: `Code (Prepare KM Log Payload)` ใน `KW0QRXxRh9MjdPaY` มี vendor enrichment
+- [x] Phase 3: `Code (Analyze Patterns)` ใน `NkKd02QyzLRcpIJM` มี doc_type/vendor grouping + overall_accuracy
+- [x] Phase 3: Telegram KPI message แสดง breakdown
 
 **Verified from system (required):**
-- [ ] TRAIN_CASES row ใหม่ (หลัง Phase 1): `doc_type` + `vendor_name` + `ocr_accuracy_pct` ไม่ว่าง
-- [ ] ocr-km-suggest response มี `accuracy_by_doc_type` + `accuracy_by_vendor`
+- [x] TRAIN_CASES row ใหม่ (หลัง Phase 1): `doc_type` + `vendor_name` + `ocr_accuracy_pct` ไม่ว่าง
+- [x] ocr-km-suggest response มี `accuracy_by_doc_type` + `accuracy_by_vendor`
 
 **E2E Passed:**
-- [ ] Exec ID: `_______` — Phase 1 T1 test
-- [ ] Exec ID: `_______` — Phase 3 T6 test
+- [x] Exec ID: `154810` — Phase 1 T1 test
+- [x] Exec ID: `154827` — Phase 3 T6 test
 
 **Docs synced:**
-- [ ] HANDOFF.md updated
-- [ ] `verify_nowThai_sync.sh` รัน ✅ (ถ้าแก้ Code nodes ที่มี nowThai)
+- [x] HANDOFF.md updated
+- [x] `verify_nowThai_sync.sh` รัน ✅ (ถ้าแก้ Code nodes ที่มี nowThai)
 
 ---
 
@@ -318,8 +320,8 @@ _Codex: เพิ่ม concerns ที่นี่ก่อน implement_
 *(Codex fill ก่อน push — บังคับ)*
 
 ```
-Runtime patched:
-Verified from:
-Docs synced:
-Remaining limits:
+Runtime patched: Patched live workflows via n8n REST API: `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)` + `continueOnFail=true` on both Google Sheets append nodes), `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)` + `continueOnFail=true` on `HTTP (POST ocr-km-log training)`), and `NkKd02QyzLRcpIJM` (`Code (Analyze Patterns)`, `Code (Build Telegram)`, webhook success/no-new-lessons responders).
+Verified from: T1 Caltex feedback exec `154810` → TRAIN_CASES row `request_id=t044_caltex_1772340457` stored `doc_type=fuel`, `vendor_name=Caltex`, `ocr_accuracy_pct=50`; T2 unknown vendor exec `154811` → TRAIN_CASES row `request_id=t044_unknown_1772340457` stored `doc_type=other`, `vendor_name=unknown`, `ocr_accuracy_pct=100`; T8 wrong-key `POST /webhook/ocr-km-suggest` returned 401; T6 success exec `154827` returned `overall_accuracy_pct=31`, `accuracy_by_doc_type`, and `accuracy_by_vendor`; `Code (Build Telegram)` output in exec `154827` contains doc_type/vendor KPI breakdown.
+Docs synced: Discussion note added; Definition of Done filled; HANDOFF.md updated; `./scripts/verify_nowThai_sync.sh` passed.
+Remaining limits: Historical `telegram_train` rows in TRAIN_CASES are still missing `ocr_accuracy_pct` (13 existing rows) because this task patched future writes only and did not backfill Sheets; Phase 2 Telegram trigger was not shell-invocable for E2E because the live Telegram webhook requires the secret token header; `Telegram (Admin Notify)` in exec `154827` built the KPI message but Telegram delivery returned `Bad Request: chat_id is empty` in the current environment.
 ```
