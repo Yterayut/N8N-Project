@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | _(none)_ |
 | **Codex Status** | T044 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-01 13:05 (FIELD_DIFFS source column backfill COMPLETE) |
+| **Last Sync** | 2026-03-01 13:20 (double Telegram bug fix in ocr-training) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| double-tg-fix | Fix double Telegram reply in ocr-training (`KW0QRXxRh9MjdPaY`). Root cause: `Code node: Build Examples API Command [out0]` was connected to BOTH `HTTP node: POST ocr-examples-api (command)` AND `Code node: Build Command Reply` — causing Telegram to fire once from the direct path and once from the km-log path. Fix: removed spurious direct connection to Build Command Reply. | CC | 2026-03-01 | Single Telegram reply ✅ |
 | fd-source | Add `source` column to FIELD_DIFFS rows. km-logger (`jmJHPPj0OM5LcZ0n`) `Code (Compute Diffs)` patched to include `source: trainCase.source`. Historical 197 rows recovered from SQLite km-logger execution history, enriched with source via TRAIN_CASES join → 241 rows restored (feedback_kpi=69, telegram_train=127, manual=1, unknown=44). Sheet OCR_TRAIN_FIELD_DIFFS restored. | CC | 2026-03-01 | 241 rows ✅, source column ✅ |
 | chat_id fix | Fix Telegram `chat_id is empty` in `ocr-km-suggest` (NkKd02QyzLRcpIJM) — root cause: Telegram node used `$env.TELEGRAM_ADMIN_CHAT_ID` (wrong var); Fix: changed to pass `telegram_chat_id: process.env.TELEGRAM_OCR_CHAT_ID` from `Code (Build Telegram)`, Telegram node reads `{{ $json.telegram_chat_id }}`. Also: N8N_RUNNERS_ENABLED changed false (process.env isolation fix); auth code now uses `$env.OCR_SHARED_API_KEY \|\| process.env.OCR_SHARED_API_KEY` | CC | 2026-03-01 | Auth ✅, workflow ok:true analyzed_cases:35 ✅ |
 | backfill | Backfill 13 historical `telegram_train` rows with blank `ocr_accuracy_pct` in OCR_TRAIN_CASES. Logic: `(4 - min(diff_count, 4)) / 4 * 100` via FIELD_DIFFS join. All 13 rows have ocr_accuracy_pct=0 (≥4 diffs each). GSheets Update ran via km-suggest backfill nodes (now removed). Dashboard now shows 32 scored / 39 total. | CC | 2026-03-01 | 13 rows updated ✅, GSheets OK ✅ |
@@ -291,6 +292,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-01 20:05 | sync | all | auto-sync |
+| 2026-03-01 20:05 | sync | all | auto-sync |
 | 2026-03-01 16:30 | sync | all | auto-sync |
 | 2026-03-01 16:28 | sync | all | auto-sync |
 | 2026-03-01 12:44 | sync | all | auto-sync |

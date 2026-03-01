@@ -122,10 +122,10 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 13:05
-- ✅ FIELD_DIFFS `source` column: km-logger patched, 241 rows recovered+restored to OCR_TRAIN_FIELD_DIFFS
-- ✅ km-suggest restored to 18 nodes (backfill nodes removed)
-- ⏭️ ไม่มีงาน active — รอ task ถัดไปจาก user
+## Last Checkpoint — 13:20
+- ✅ FIELD_DIFFS `source` column backfill complete (241 rows)
+- ✅ Double Telegram bug fixed: ocr-training removed spurious `Build Examples API Command → Build Command Reply` connection
+- ⏭️ ไม่มีงาน active
 
 ## Key Learnings This Session
 - **Bash `!` escaping via Claude Code tool**: แม้จะใช้ single quotes ใน curl, bash ก็ escape `!` เป็น `\!` ผ่าน Claude Code Bash tool → ใช้ Python urllib แทน curl เสมอเมื่อส่ง header ที่มี `!`
