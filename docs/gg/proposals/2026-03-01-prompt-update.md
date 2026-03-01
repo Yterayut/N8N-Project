@@ -55,7 +55,7 @@ I have analyzed the current OCR prompt and the provided error data. Based on the
 ---
 
 ## Approval Status *(CC fills)*
-- [ ] Approved → implemented in T0xx
+- [x] Approved → implemented 2026-03-02: PROMPTS GSheet updated (base + fuel rows)
 - [ ] Rejected → reason:
 - [ ] Pending review
 
