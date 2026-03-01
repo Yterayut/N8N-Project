@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | _(none)_ |
 | **Codex Status** | T044 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-01 (T044 COMPLETE — all phases done) |
+| **Last Sync** | 2026-03-01 12:35 (T044 COMPLETE — all phases done; /rrr + /forward done) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -288,6 +288,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-01 12:37 | sync | all | auto-sync |
+| 2026-03-01 12:11 | sync | all | auto-sync |
 | 2026-03-01 12:08 | sync | all | auto-sync |
 | 2026-03-01 12:04 | sync | all | auto-sync |
 | 2026-03-01 12:03 | sync | all | auto-sync |
