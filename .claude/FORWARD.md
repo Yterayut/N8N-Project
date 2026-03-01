@@ -113,9 +113,8 @@ curl -s "http://localhost:5678/webhook/ocr-dashboard?key=ocm-cabonrecipte!" | gr
 
 ---
 
-## Last Checkpoint — 2026-02-28
-- ✅ T042 dashboard live
-- ✅ Caltex swap fix: `Respond to Webhook6` now overrides `data.bills` with `$json.bills` (corrected by vendorCorrections)
-- ✅ Telegram webhook stable: restart-telegram-triggers.sh cycles only (n8n handles setWebhook+secret)
-- ✅ KM suggest: telegram_train threshold=1, auto-approved
-- ⏭️ Test Caltex bill via Telegram to confirm swap fix → write T042 review → Typhoon timeout
+## Last Checkpoint — 2026-03-01
+- ✅ gg-data-gateway: VENDOR_MAP output added (Code node, 5 vendors) — `GET /webhook/gg-data?sheet=VENDOR_MAP` ✅
+- ✅ T044 spec written: `docs/collab/tasks/T044-single-source-of-truth.md`
+- 🔄 Codex running T044 (Phase 1+2+3: vendor enrichment + accuracy calc + KPI grouping)
+- ⏭️ Wait for Codex T044 → CC review → merge → Phase 4 (dashboard switch to TRAIN_CASES)
