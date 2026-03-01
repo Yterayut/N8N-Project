@@ -122,10 +122,9 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 16:30
-- ✅ chat_id fix: Telegram notify ใช้ `$json.telegram_chat_id` แทน `$env.TELEGRAM_ADMIN_CHAT_ID`
-- ✅ Backfill 13 rows: ocr_accuracy_pct=0 ใน OCR_TRAIN_CASES — dashboard 32 scored / 39 total
-- ✅ N8N_RUNNERS_ENABLED=false: process.env isolation fix (local .env เท่านั้น ไม่ commit)
+## Last Checkpoint — 13:05
+- ✅ FIELD_DIFFS `source` column: km-logger patched, 241 rows recovered+restored to OCR_TRAIN_FIELD_DIFFS
+- ✅ km-suggest restored to 18 nodes (backfill nodes removed)
 - ⏭️ ไม่มีงาน active — รอ task ถัดไปจาก user
 
 ## Key Learnings This Session
