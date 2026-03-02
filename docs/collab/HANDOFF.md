@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| prod-hardening-r2 | Round 2 hardening: continueOnFail=True on 11 more nodes in `up1n75qEhbsXswii`: (1) 7 Gemini/Upload HTTP nodes — enables true Gemini→Typhoon fallback on HTTP error (previously IF(Gemini OK?) never ran on crash); (2) 2 Reshape Typhoon Code nodes — Typhoon fallback path now robust; (3) Code Set Done — fixes queue stale lock (row stuck in "processing" forever on crash); (4) Code(Apply Runtime Rules) — runtime rules no longer block OCR on error. nowThai ✅ | CC | 2026-03-02 | 11/11 ✅ |
 | prod-hardening | Production hardening: (1) `continueOnFail=True` on 9 GSheets nodes in `ocr-invoice-processor` (`up1n75qEhbsXswii`) — includes critical `Get row(s) in sheet (ดึง Prompt)` node, queue nodes (Get Pending, Set Processing, Set Done), dedup nodes; (2) `Code (Build Request)1` updated with `[PROMPT_CACHE] v1` — reads PROMPTS fresh from GSheets, caches in `staticData` (TTL 5 min), falls back to cache on GSheets 429/error. Before: single GSheets failure → entire OCR pipeline down. After: OCR survives GSheets quota events up to cached TTL. nowThai ✅ | CC | 2026-03-02 | 9 nodes ✅, cache code ✅, active ✅ |
 | gg-prompt | GG Role G prompt engineering: analyzed 37 wrong_value FIELD_DIFFS → 3 improvements: `base` vendor_tax_id (last-2-digit check, vendor vs buyer), `base` invoice_number (new rule: search "เลขที่"/"Invoice No.", keep prefix), `fuel` total (Grand Total anchor, reject Sub-total). PROMPTS GSheet updated live. Expected fix: 25+ of 37 wrong_value errors | CC | 2026-03-02 | PROMPTS updated ✅ |
 | double-tg-fix | Fix double Telegram reply in ocr-training (`KW0QRXxRh9MjdPaY`). Root cause: `Code node: Build Examples API Command [out0]` was connected to BOTH `HTTP node: POST ocr-examples-api (command)` AND `Code node: Build Command Reply` — causing Telegram to fire once from the direct path and once from the km-log path. Fix: removed spurious direct connection to Build Command Reply. | CC | 2026-03-01 | Single Telegram reply ✅ |
@@ -294,6 +295,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 08:09 | sync | all | auto-sync |
 | 2026-03-02 05:00 | sync | all | auto-sync |
 | 2026-03-01 23:47 | sync | all | auto-sync |
 | 2026-03-01 21:27 | sync | all | auto-sync |
