@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | _(none)_ |
 | **Codex Status** | T044 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-01 13:20 (double Telegram bug fix in ocr-training) |
+| **Last Sync** | 2026-03-02 (session wrap: prod-hardening R1+R2 + GG prompts + backfill + new training bill) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| new-training-bill | PT MAX LPG fuel bill sent via Telegram (2026-03-02). User confirmed "ถูก". System replied single "✅ บันทึก example สำเร็จ (confirm)". TRAIN_CASES: 43 scored / 43 total. Dashboard: fuel 25 @ 29.6%, other 18 @ 75.0%. Note: quantity=18.76... back-calculated (300÷15.99), Customer Name has OCR char errors but user accepted. | CC | 2026-03-02 | 43/43 ✅ |
 | accuracy-backfill-r2 | Backfill ocr_accuracy_pct for 7 blank TRAIN_CASES rows (source=feedback_kpi): all had wrong_value=0 in FIELD_DIFFS → 100% each. Sheet: OCR_TRAIN_CASES. Result: 41/41 scored (was 34/41). Dashboard: Overall 51.0% (fuel 32.2%, other 75.0%). Note: fuel 32.2% low due to 15 old telegram_train rows with 0% (early training before OCR could read fuel bills). | CC | 2026-03-02 | 41/41 ✅ |
 | prod-hardening-r2 | Round 2 hardening: continueOnFail=True on 11 more nodes in `up1n75qEhbsXswii`: (1) 7 Gemini/Upload HTTP nodes — enables true Gemini→Typhoon fallback on HTTP error (previously IF(Gemini OK?) never ran on crash); (2) 2 Reshape Typhoon Code nodes — Typhoon fallback path now robust; (3) Code Set Done — fixes queue stale lock (row stuck in "processing" forever on crash); (4) Code(Apply Runtime Rules) — runtime rules no longer block OCR on error. nowThai ✅ | CC | 2026-03-02 | 11/11 ✅ |
 | prod-hardening | Production hardening: (1) `continueOnFail=True` on 9 GSheets nodes in `ocr-invoice-processor` (`up1n75qEhbsXswii`) — includes critical `Get row(s) in sheet (ดึง Prompt)` node, queue nodes (Get Pending, Set Processing, Set Done), dedup nodes; (2) `Code (Build Request)1` updated with `[PROMPT_CACHE] v1` — reads PROMPTS fresh from GSheets, caches in `staticData` (TTL 5 min), falls back to cache on GSheets 429/error. Before: single GSheets failure → entire OCR pipeline down. After: OCR survives GSheets quota events up to cached TTL. nowThai ✅ | CC | 2026-03-02 | 9 nodes ✅, cache code ✅, active ✅ |
@@ -296,6 +297,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 11:47 | sync | all | auto-sync |
 | 2026-03-02 11:30 | sync | all | auto-sync |
 | 2026-03-02 08:09 | sync | all | auto-sync |
 | 2026-03-02 05:00 | sync | all | auto-sync |

@@ -122,12 +122,19 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 11:50
+## Last Checkpoint — session wrap (2026-03-02)
 - ✅ Round 1+2: production hardening ครบ (20 nodes patched total)
 - ✅ Accuracy backfill: 41/41 scored — Overall 51.0% (fuel 32.2%, other 75.0%)
 - ✅ gg-data errors: historical only (0 errors today) — no action needed
-- ⏭️ รอ user ส่งบิลใหม่ผ่าน Telegram → เปรียบ accuracy กับ baseline 51.0%
+- ✅ New PT MAX LPG bill via Telegram: user confirmed "ถูก" → case added → 43 scored / 43 total
+- **Dashboard now: fuel 25 @ 29.6%, other 18 @ 75.0% (Overall: ~50.7%)**
+- ⏭️ รอบิลใหม่เพิ่ม → ติดตาม fuel accuracy หลัง prompt update (target >85%)
 - 🎯 Target: fuel >85%, other >80% หลัง prompt ใหม่ใช้งาน
+
+### PT MAX LPG bill observation (for future prompt improvement)
+- `quantity: 18.76172607879925` = back-calculated (300÷15.99) — ไม่ได้อ่านจากบิล
+- `Customer Name: "มจ. ฤทธา จากัด"` — ผิด: ควรเป็น "บจ. ฤทธา จำกัด" (OCR misread บ→ม, ำ→า)
+- User confirmed "ถูก" → recorded as 100% accurate (training signal may be slightly noisy)
 
 ## Key Learnings This Session
 - **Bash `!` escaping via Claude Code tool**: แม้จะใช้ single quotes ใน curl, bash ก็ escape `!` เป็น `\!` ผ่าน Claude Code Bash tool → ใช้ Python urllib แทน curl เสมอเมื่อส่ง header ที่มี `!`
