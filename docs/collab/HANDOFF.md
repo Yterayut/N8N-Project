@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| vendor-ktb | Added `KTB Fleet` (0107537000882, fleet_card) to VENDOR_MAP in all 3 workflows. Also added `MEA` electricity bill to TRAIN_CASES (tc_1772445189818, doc_type=electricity, 100%). Dashboard: 37 scored / 48 total, fuel 97.9%, other 85.7%, electricity 1@100%. | CC | 2026-03-02 | ✅ |
 | T047 | Auto-detect doc_type from OCR output. Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) so Gemini emits `doc_type`; patched live workflows via n8n REST: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into bill JSON + top-level response, `jmJHPPj0OM5LcZ0n` now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` now forwards OCR bill `doc_type` to km-logger. Verification: live `/webhook/ocr-dev` fuel exec `155611` => `doc_type=fuel`, electricity exec `155614` => `doc_type=electricity`, fleet-card exec `155620` => `doc_type=fleet_card`; PROMPTS live readback + workflow re-fetch ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-02 | PASS |
 | T046 | Production recheck of all 2026-03-02 changes. Verified VENDOR_MAP sync in 3 workflows ✅, km-logger telegram_train/isRawTaxId fixes ✅, `up1n75qEhbsXswii` has 39 `continueOnFail=true` nodes ✅, TRAIN_CASES 11 excluded ✅, dashboard `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%` ✅. **CC final re-check (exec 155597)**: invoice_number `# *` rule confirmed live in Gemini prompt — new rule text present in execution data ✅. All 6 checks PASS. | CC | 2026-03-02 | CLOSED ✅ |
 | new-training-bill | PT MAX LPG fuel bill sent via Telegram (2026-03-02). User confirmed "ถูก". System replied single "✅ บันทึก example สำเร็จ (confirm)". TRAIN_CASES: 43 scored / 43 total. Dashboard: fuel 25 @ 29.6%, other 18 @ 75.0%. Note: quantity=18.76... back-calculated (300÷15.99), Customer Name has OCR char errors but user accepted. | CC | 2026-03-02 | 43/43 ✅ |
@@ -299,6 +300,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 16:28 | sync | all | auto-sync |
 | 2026-03-02 16:12 | sync | all | auto-sync |
 | 2026-03-02 16:12 | sync | all | auto-sync |
 | 2026-03-02 16:10 | sync | all | auto-sync |
