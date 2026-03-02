@@ -122,14 +122,11 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — session wrap (2026-03-02)
-- ✅ Round 1+2: production hardening ครบ (20 nodes patched total)
-- ✅ Accuracy backfill: 41/41 scored — Overall 51.0% (fuel 32.2%, other 75.0%)
-- ✅ gg-data errors: historical only (0 errors today) — no action needed
-- ✅ New PT MAX LPG bill via Telegram: user confirmed "ถูก" → case added → 43 scored / 43 total
-- **Dashboard now: fuel 25 @ 29.6%, other 18 @ 75.0% (Overall: ~50.7%)**
-- ⏭️ รอบิลใหม่เพิ่ม → ติดตาม fuel accuracy หลัง prompt update (target >85%)
-- 🎯 Target: fuel >85%, other >80% หลัง prompt ใหม่ใช้งาน
+## Last Checkpoint — 2026-03-02 16:15
+- ✅ CC re-check complete: all 6 T046 checks PASS (exec 155597 confirms # * rule live)
+- ✅ Dashboard: fuel 97.9% / other 85.7% / 36 scored / 47 total
+- ✅ T047 assigned to Codex (running: pid 49487)
+- ⏭️ Wait for Codex T047 → review → merge → test electricity bill
 
 ### PT MAX LPG bill observation (for future prompt improvement)
 - `quantity: 18.76172607879925` = back-calculated (300÷15.99) — ไม่ได้อ่านจากบิล
