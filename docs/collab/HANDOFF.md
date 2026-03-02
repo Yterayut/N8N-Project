@@ -109,7 +109,9 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-_(none)_
+| ID | Task | Owner | Assigned |
+|----|------|-------|---------|
+| T047 | Auto-detect doc_type from OCR output (Gemini classification) | Codex | 2026-03-02 |
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -119,6 +121,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T046 | Production recheck of all 2026-03-02 changes. Verified VENDOR_MAP sync in 3 workflows ✅, km-logger telegram_train/isRawTaxId fixes ✅, `up1n75qEhbsXswii` has 39 `continueOnFail=true` nodes ✅, TRAIN_CASES 11 excluded ✅, dashboard `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%` ✅. **CC final re-check (exec 155597)**: invoice_number `# *` rule confirmed live in Gemini prompt — new rule text present in execution data ✅. All 6 checks PASS. | CC | 2026-03-02 | CLOSED ✅ |
 | new-training-bill | PT MAX LPG fuel bill sent via Telegram (2026-03-02). User confirmed "ถูก". System replied single "✅ บันทึก example สำเร็จ (confirm)". TRAIN_CASES: 43 scored / 43 total. Dashboard: fuel 25 @ 29.6%, other 18 @ 75.0%. Note: quantity=18.76... back-calculated (300÷15.99), Customer Name has OCR char errors but user accepted. | CC | 2026-03-02 | 43/43 ✅ |
 | accuracy-backfill-r2 | Backfill ocr_accuracy_pct for 7 blank TRAIN_CASES rows (source=feedback_kpi): all had wrong_value=0 in FIELD_DIFFS → 100% each. Sheet: OCR_TRAIN_CASES. Result: 41/41 scored (was 34/41). Dashboard: Overall 51.0% (fuel 32.2%, other 75.0%). Note: fuel 32.2% low due to 15 old telegram_train rows with 0% (early training before OCR could read fuel bills). | CC | 2026-03-02 | 41/41 ✅ |
 | prod-hardening-r2 | Round 2 hardening: continueOnFail=True on 11 more nodes in `up1n75qEhbsXswii`: (1) 7 Gemini/Upload HTTP nodes — enables true Gemini→Typhoon fallback on HTTP error (previously IF(Gemini OK?) never ran on crash); (2) 2 Reshape Typhoon Code nodes — Typhoon fallback path now robust; (3) Code Set Done — fixes queue stale lock (row stuck in "processing" forever on crash); (4) Code(Apply Runtime Rules) — runtime rules no longer block OCR on error. nowThai ✅ | CC | 2026-03-02 | 11/11 ✅ |
@@ -297,6 +300,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 15:35 | sync | all | auto-sync |
+| 2026-03-02 15:35 | sync | all | auto-sync |
+| 2026-03-02 15:32 | sync | all | auto-sync |
 | 2026-03-02 15:20 | sync | all | auto-sync |
 | 2026-03-02 14:07 | sync | all | auto-sync |
 | 2026-03-02 14:04 | sync | all | auto-sync |
