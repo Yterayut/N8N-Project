@@ -122,11 +122,12 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 09:00
-- ✅ Round 1: continueOnFail 9 GSheets + prompt cache
-- ✅ Round 2: continueOnFail 11 nodes (Gemini HTTP x7, Typhoon Reshape x2, Code Set Done, Runtime Rules)
-- ✅ Typhoon fallback ใช้งานได้จริงแล้ว — queue stale lock ปิดแล้ว
-- ⏭️ ไม่มีงาน active — system production-ready ระดับ 9/10
+## Last Checkpoint — 11:50
+- ✅ Round 1+2: production hardening ครบ (20 nodes patched total)
+- ✅ Accuracy backfill: 41/41 scored — Overall 51.0% (fuel 32.2%, other 75.0%)
+- ✅ gg-data errors: historical only (0 errors today) — no action needed
+- ⏭️ รอ user ส่งบิลใหม่ผ่าน Telegram → เปรียบ accuracy กับ baseline 51.0%
+- 🎯 Target: fuel >85%, other >80% หลัง prompt ใหม่ใช้งาน
 
 ## Key Learnings This Session
 - **Bash `!` escaping via Claude Code tool**: แม้จะใช้ single quotes ใน curl, bash ก็ escape `!` เป็น `\!` ผ่าน Claude Code Bash tool → ใช้ Python urllib แทน curl เสมอเมื่อส่ง header ที่มี `!`

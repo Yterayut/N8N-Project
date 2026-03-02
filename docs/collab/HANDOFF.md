@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| accuracy-backfill-r2 | Backfill ocr_accuracy_pct for 7 blank TRAIN_CASES rows (source=feedback_kpi): all had wrong_value=0 in FIELD_DIFFS → 100% each. Sheet: OCR_TRAIN_CASES. Result: 41/41 scored (was 34/41). Dashboard: Overall 51.0% (fuel 32.2%, other 75.0%). Note: fuel 32.2% low due to 15 old telegram_train rows with 0% (early training before OCR could read fuel bills). | CC | 2026-03-02 | 41/41 ✅ |
 | prod-hardening-r2 | Round 2 hardening: continueOnFail=True on 11 more nodes in `up1n75qEhbsXswii`: (1) 7 Gemini/Upload HTTP nodes — enables true Gemini→Typhoon fallback on HTTP error (previously IF(Gemini OK?) never ran on crash); (2) 2 Reshape Typhoon Code nodes — Typhoon fallback path now robust; (3) Code Set Done — fixes queue stale lock (row stuck in "processing" forever on crash); (4) Code(Apply Runtime Rules) — runtime rules no longer block OCR on error. nowThai ✅ | CC | 2026-03-02 | 11/11 ✅ |
 | prod-hardening | Production hardening: (1) `continueOnFail=True` on 9 GSheets nodes in `ocr-invoice-processor` (`up1n75qEhbsXswii`) — includes critical `Get row(s) in sheet (ดึง Prompt)` node, queue nodes (Get Pending, Set Processing, Set Done), dedup nodes; (2) `Code (Build Request)1` updated with `[PROMPT_CACHE] v1` — reads PROMPTS fresh from GSheets, caches in `staticData` (TTL 5 min), falls back to cache on GSheets 429/error. Before: single GSheets failure → entire OCR pipeline down. After: OCR survives GSheets quota events up to cached TTL. nowThai ✅ | CC | 2026-03-02 | 9 nodes ✅, cache code ✅, active ✅ |
 | gg-prompt | GG Role G prompt engineering: analyzed 37 wrong_value FIELD_DIFFS → 3 improvements: `base` vendor_tax_id (last-2-digit check, vendor vs buyer), `base` invoice_number (new rule: search "เลขที่"/"Invoice No.", keep prefix), `fuel` total (Grand Total anchor, reject Sub-total). PROMPTS GSheet updated live. Expected fix: 25+ of 37 wrong_value errors | CC | 2026-03-02 | PROMPTS updated ✅ |
@@ -295,6 +296,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 11:30 | sync | all | auto-sync |
 | 2026-03-02 08:09 | sync | all | auto-sync |
 | 2026-03-02 05:00 | sync | all | auto-sync |
 | 2026-03-01 23:47 | sync | all | auto-sync |
