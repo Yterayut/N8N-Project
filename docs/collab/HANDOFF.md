@@ -119,6 +119,8 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| PAY-smoke | PAY Apps Script + Web App hardening smoke test. Live deploy through GAS `My Finance App` now at `@45 - web200.35`; n8n PAY workflow patched to send `api_key` + new JSON contract. Real-slip smoke: first send execs `155728` + `155729` both `status=ok` with `transaction_id` written; duplicate rerun execs `155733` + `155734` exposed ref-case / missing-bank dedupe gap; hotfix deployed and final duplicate smoke execs `155738` + `155739` both returned duplicate replies for refs `202603011mz5hgmksv2bbndq2` and `202603027vjtfctqohdn04dxw` ✅ | CC | 2026-03-02 | PASS ✅ |
+| vendor-scg | Added `SCG Prawet` (0135553012766, fuel) to VENDOR_MAP ×3. Fixed 2 TRAIN_CASES (frk82f, w2oupf) doc_type other→fuel. Excluded 4 test cases. Dashboard: fuel 31@96.5%, other 1@50%, electricity/fleet_card 1@100%. | CC | 2026-03-02 | ✅ |
 | vendor-ktb | Added `KTB Fleet` (0107537000882, fleet_card) to VENDOR_MAP in all 3 workflows. Also added `MEA` electricity bill to TRAIN_CASES (tc_1772445189818, doc_type=electricity, 100%). Dashboard: 37 scored / 48 total, fuel 97.9%, other 85.7%, electricity 1@100%. | CC | 2026-03-02 | ✅ |
 | T047 | Auto-detect doc_type from OCR output. Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) so Gemini emits `doc_type`; patched live workflows via n8n REST: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into bill JSON + top-level response, `jmJHPPj0OM5LcZ0n` now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` now forwards OCR bill `doc_type` to km-logger. Verification: live `/webhook/ocr-dev` fuel exec `155611` => `doc_type=fuel`, electricity exec `155614` => `doc_type=electricity`, fleet-card exec `155620` => `doc_type=fleet_card`; PROMPTS live readback + workflow re-fetch ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-02 | PASS |
 | T046 | Production recheck of all 2026-03-02 changes. Verified VENDOR_MAP sync in 3 workflows ✅, km-logger telegram_train/isRawTaxId fixes ✅, `up1n75qEhbsXswii` has 39 `continueOnFail=true` nodes ✅, TRAIN_CASES 11 excluded ✅, dashboard `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%` ✅. **CC final re-check (exec 155597)**: invoice_number `# *` rule confirmed live in Gemini prompt — new rule text present in execution data ✅. All 6 checks PASS. | CC | 2026-03-02 | CLOSED ✅ |
@@ -300,6 +302,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 17:09 | sync | all | auto-sync |
+| 2026-03-02 17:08 | sync | all | auto-sync |
+| 2026-03-02 17:03 | sync | all | auto-sync |
 | 2026-03-02 16:28 | sync | all | auto-sync |
 | 2026-03-02 16:12 | sync | all | auto-sync |
 | 2026-03-02 16:12 | sync | all | auto-sync |
