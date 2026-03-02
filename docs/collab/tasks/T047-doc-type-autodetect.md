@@ -164,20 +164,37 @@ EOF
 
 ## Definition of Done
 
-- [ ] base prompt มี doc_type classification rule
-- [ ] fuel/electricity/fleet_card JSON structure มี `"doc_type"` field
-- [ ] `Code (Parse Result)` extract doc_type จาก Gemini output
-- [ ] `Code in JavaScript9` extract doc_type จาก Gemini output
-- [ ] km-logger `Code (Compute Diffs)` prioritize OCR doc_type ก่อน VENDOR_MAP
-- [ ] Fuel bill regression: doc_type='fuel' ยังถูกต้อง
-- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน
-- [ ] HANDOFF.md updated
+- [x] base prompt มี doc_type classification rule
+- [x] fuel/electricity/fleet_card JSON structure มี `"doc_type"` field
+- [x] `Code (Parse Result)` extract doc_type จาก Gemini output
+- [x] `Code in JavaScript9` extract doc_type จาก Gemini output
+- [x] `Code in JavaScript24` extract doc_type จาก Gemini output
+- [x] km-logger `Code (Compute Diffs)` prioritize OCR doc_type ก่อน VENDOR_MAP
+- [x] `ocr-training` `Code (Prepare KM Log Payload)` forwards OCR doc_type and prioritizes it over VENDOR_MAP
+- [x] Fuel bill regression: doc_type='fuel' ยังถูกต้อง
+- [x] Electricity bill smoke: doc_type='electricity'
+- [x] Fleet card smoke: doc_type='fleet_card'
+- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน
+- [x] HANDOFF.md updated
 
 ---
 
 ## Discussion
 
 _(Codex ใส่ comment ก่อน implement ถ้ามี concern)_
+
+- 2026-03-02 (Codex): ไม่มี concern ที่ block implementation. ใน parse nodes patch ให้ normalize `bill.doc_type` ลงใน `raw_json` ด้วย ไม่ใช่แค่ top-level field เพื่อให้ downstream paths ใช้ค่า OCR doc_type เดียวกันได้จริง
+
+---
+
+## Closing Template
+
+```
+Runtime patched: Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) to include Gemini `doc_type` classification instructions and schema fields; patched live workflows via n8n REST API: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into each bill plus the top-level response fallback, `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`) now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) now forwards OCR bill `doc_type` and uses the same priority rule.
+Verified from: PROMPTS live readback shows base rule + all 3 schema fields present ✅; workflow re-fetch shows `VALID_DOC_TYPES` / OCR-priority logic in all 5 patched Code nodes ✅; live `/webhook/ocr-dev` smokes returned `doc_type=fuel` for `PTT-OR.pdf` request_id `1772443026476-71b0a647eb63f` exec `155611`, `doc_type=electricity` for `ใบแจ้งค่าไฟ_02.pdf` request_id `1772443038377-0e16376ccbf1d` exec `155614`, and `doc_type=fleet_card` for `บิลน้ำมัน_feedcard_02_KTB.pdf` request_id `1772443109653-ab2b75799b96a` exec `155620`; `./scripts/verify_nowThai_sync.sh` passed. Spec step 3 query returned latest km-logger execution `155418` (`2026-03-02 05:37:03.458`).
+Docs synced: This spec updated (DoD checked, Discussion note, Closing Template filled), `docs/gg/current-ocr-prompt.md` refreshed to match the live prompt additions, and `docs/collab/HANDOFF.md` moved T047 to Recently Completed.
+Remaining limits: No fresh `ocr-km-logger` webhook execution was triggered from this shell session, so km-logger verification for T047 is code-level plus latest-exec query rather than a new append-row runtime test.
+```
 
 ---
 
