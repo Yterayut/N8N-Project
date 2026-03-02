@@ -48,8 +48,8 @@ Claude review → merge → sync all
 | Field | Value |
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
-| **Active Agent** | _(none)_ |
-| **Codex Status** | T047 ✅ complete; Codex idle |
+| **Active Agent** | Codex (T048) |
+| **Codex Status** | T048 🔄 in progress — Telegram notify fix |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-03-02 (session wrap: prod-hardening R1+R2 + GG prompts + backfill + new training bill) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -106,10 +106,10 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| T048 | Fix Telegram notify chat_id empty in ocr-km-suggest | Codex | — |
 
 ### Pending (Codex)
-_(none)_
+| T049 | MEA VENDOR_MAP (3 workflows) + FIELD_DIFFS 16 test rows exclude | Codex | T048 done |
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -302,6 +302,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-03 05:49 | sync | all | auto-sync |
+| 2026-03-02 21:18 | sync | all | auto-sync |
 | 2026-03-02 21:15 | sync | all | auto-sync |
 | 2026-03-02 17:09 | sync | all | auto-sync |
 | 2026-03-02 17:08 | sync | all | auto-sync |
