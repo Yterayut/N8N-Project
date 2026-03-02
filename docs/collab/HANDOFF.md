@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T044 ✅ complete; Codex idle |
+| **Codex Status** | T047 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-03-02 (session wrap: prod-hardening R1+R2 + GG prompts + backfill + new training bill) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -109,9 +109,7 @@ _(none)_
 _(none)_
 
 ### Pending (Codex)
-| ID | Task | Owner | Assigned |
-|----|------|-------|---------|
-| T047 | Auto-detect doc_type from OCR output (Gemini classification) | Codex | 2026-03-02 |
+_(none)_
 
 ### Pending
 | ID | Task | Owner | Depends on |
@@ -121,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T047 | Auto-detect doc_type from OCR output. Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) so Gemini emits `doc_type`; patched live workflows via n8n REST: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into bill JSON + top-level response, `jmJHPPj0OM5LcZ0n` now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` now forwards OCR bill `doc_type` to km-logger. Verification: live `/webhook/ocr-dev` fuel exec `155611` => `doc_type=fuel`, electricity exec `155614` => `doc_type=electricity`, fleet-card exec `155620` => `doc_type=fleet_card`; PROMPTS live readback + workflow re-fetch ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-02 | PASS |
 | T046 | Production recheck of all 2026-03-02 changes. Verified VENDOR_MAP sync in 3 workflows ✅, km-logger telegram_train/isRawTaxId fixes ✅, `up1n75qEhbsXswii` has 39 `continueOnFail=true` nodes ✅, TRAIN_CASES 11 excluded ✅, dashboard `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%` ✅. **CC final re-check (exec 155597)**: invoice_number `# *` rule confirmed live in Gemini prompt — new rule text present in execution data ✅. All 6 checks PASS. | CC | 2026-03-02 | CLOSED ✅ |
 | new-training-bill | PT MAX LPG fuel bill sent via Telegram (2026-03-02). User confirmed "ถูก". System replied single "✅ บันทึก example สำเร็จ (confirm)". TRAIN_CASES: 43 scored / 43 total. Dashboard: fuel 25 @ 29.6%, other 18 @ 75.0%. Note: quantity=18.76... back-calculated (300÷15.99), Customer Name has OCR char errors but user accepted. | CC | 2026-03-02 | 43/43 ✅ |
 | accuracy-backfill-r2 | Backfill ocr_accuracy_pct for 7 blank TRAIN_CASES rows (source=feedback_kpi): all had wrong_value=0 in FIELD_DIFFS → 100% each. Sheet: OCR_TRAIN_CASES. Result: 41/41 scored (was 34/41). Dashboard: Overall 51.0% (fuel 32.2%, other 75.0%). Note: fuel 32.2% low due to 15 old telegram_train rows with 0% (early training before OCR could read fuel bills). | CC | 2026-03-02 | 41/41 ✅ |
@@ -300,6 +299,9 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-02 16:12 | sync | all | auto-sync |
+| 2026-03-02 16:12 | sync | all | auto-sync |
+| 2026-03-02 16:10 | sync | all | auto-sync |
 | 2026-03-02 15:35 | sync | all | auto-sync |
 | 2026-03-02 15:35 | sync | all | auto-sync |
 | 2026-03-02 15:32 | sync | all | auto-sync |
