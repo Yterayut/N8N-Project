@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T047 ✅ complete; Codex idle |
+| **Codex Status** | T048 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-03-02 (session wrap: prod-hardening R1+R2 + GG prompts + backfill + new training bill) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T048 | Fix Telegram `chat_id` fallback in `ocr-km-suggest` (`NkKd02QyzLRcpIJM`). Added `TELEGRAM_OCR_CHAT_ID=1776637578` to `.n8n-dev/.env`; patched `Code (Build Telegram)` via n8n REST to use `process.env.TELEGRAM_OCR_CHAT_ID \|\| '1776637578'`. Verification: workflow re-fetch shows fallback literal ✅; live webhook smoke with `x-api-key` returned `ok:true`, `new_lessons:0`, latest exec `155890` success ✅; `verify_nowThai_sync.sh` ✅. Note: this smoke run generated no new lessons, so Telegram notify branch was skipped by design. | Codex | 2026-03-02 | PASS |
 | T047 | Auto-detect doc_type from OCR output. Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) so Gemini emits `doc_type`; patched live workflows via n8n REST: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into bill JSON + top-level response, `jmJHPPj0OM5LcZ0n` now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` now forwards OCR bill `doc_type` to km-logger. Verification: live `/webhook/ocr-dev` fuel exec `155611` => `doc_type=fuel`, electricity exec `155614` => `doc_type=electricity`, fleet-card exec `155620` => `doc_type=fleet_card`; PROMPTS live readback + workflow re-fetch ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-02 | PASS |
 | T046 | Production recheck of all 2026-03-02 changes. Verified VENDOR_MAP sync in 3 workflows ✅, km-logger telegram_train/isRawTaxId fixes ✅, `up1n75qEhbsXswii` has 39 `continueOnFail=true` nodes including all critical nodes ✅, TRAIN_CASES exclusions ✅, dashboard `/webhook/ocr-dashboard` shows `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%` ✅. Finding: latest OCR execution `155441` still uses the old base `invoice_number` prompt text; the new `ห้ามนำสัญลักษณ์ # * ...` rule is not live yet. | Codex | 2026-03-02 | Recheck complete; 1 High finding |
 | new-training-bill | PT MAX LPG fuel bill sent via Telegram (2026-03-02). User confirmed "ถูก". System replied single "✅ บันทึก example สำเร็จ (confirm)". TRAIN_CASES: 43 scored / 43 total. Dashboard: fuel 25 @ 29.6%, other 18 @ 75.0%. Note: quantity=18.76... back-calculated (300÷15.99), Customer Name has OCR char errors but user accepted. | CC | 2026-03-02 | 43/43 ✅ |

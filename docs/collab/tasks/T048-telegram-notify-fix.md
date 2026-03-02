@@ -60,6 +60,10 @@ telegram_chat_id: process.env.TELEGRAM_OCR_CHAT_ID || '1776637578',
 3. Verify: อ่าน workflow กลับ ตรวจว่า `'1776637578'` อยู่ใน Code (Build Telegram)
 4. Trigger ทดสอบ: `POST /webhook/ocr-km-suggest?key=ocm-cabonrecipte!` แล้วตรวจ execution log ว่า Telegram node ได้รับ chat_id ถูกต้อง
 
+## Discussion
+
+- Live `Code (Auth + Config)` currently accepts webhook auth from `x-api-key` header only, not `?key=` query param. Verification used `POST /webhook/ocr-km-suggest` with header `x-api-key: $OCR_SHARED_API_KEY`.
+
 ---
 
 ## Verification
@@ -93,12 +97,21 @@ conn.close()
 
 ## Definition of Done
 
-- [ ] `TELEGRAM_OCR_CHAT_ID=1776637578` ต่อท้าย `.n8n-dev/.env`
-- [ ] `Code (Build Telegram)` node ใน `NkKd02QyzLRcpIJM` มี fallback `|| '1776637578'`
-- [ ] Workflow fetch verify: `'1776637578'` อยู่ใน jsCode
-- [ ] Trigger test execution สำเร็จ (ไม่ error ที่ Telegram node)
-- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node)
-- [ ] HANDOFF.md updated
+- [x] `TELEGRAM_OCR_CHAT_ID=1776637578` ต่อท้าย `.n8n-dev/.env`
+- [x] `Code (Build Telegram)` node ใน `NkKd02QyzLRcpIJM` มี fallback `|| '1776637578'`
+- [x] Workflow fetch verify: `'1776637578'` อยู่ใน jsCode
+- [x] Trigger test execution สำเร็จ (current data window returned `new_lessons=0`, so Telegram branch was skipped by design and no Telegram node error occurred)
+- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node)
+- [x] HANDOFF.md updated
+
+## Closing Template
+
+```
+Runtime patched: Created `/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/.n8n-dev/.env` with `TELEGRAM_OCR_CHAT_ID=1776637578`; patched live workflow `NkKd02QyzLRcpIJM` via n8n REST API so `Code (Build Telegram)` now uses `telegram_chat_id: process.env.TELEGRAM_OCR_CHAT_ID || '1776637578'`.
+Verified from: workflow re-fetch shows `process.env.TELEGRAM_OCR_CHAT_ID || '1776637578'` in `Code (Build Telegram)` ✅; live `POST /webhook/ocr-km-suggest` with `x-api-key` returned `{"ok":true,"new_lessons":0,"analyzed_cases":45,"overall_accuracy_pct":97,...}` and latest execution is `155890` (`2026-03-02 22:51:58.314`, success) ✅; `./scripts/verify_nowThai_sync.sh` passed ✅.
+Docs synced: This spec updated with Discussion, DoD checks, and Closing Template, and `docs/collab/HANDOFF.md` moved T048 to Recently Completed.
+Remaining limits: The verification run produced `new_lessons=0`, so the Telegram notify branch did not execute in exec `155890`; chat_id correctness is therefore verified from the patched node source rather than a fresh Telegram delivery attempt in this run.
+```
 
 ---
 
