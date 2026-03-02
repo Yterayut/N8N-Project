@@ -280,24 +280,49 @@ print(re.sub(r'\s+', ' ', text).strip()[:300])
 
 | # | Issue | Severity | Suggested Fix |
 |---|-------|----------|---------------|
-| (Codex fills) | | | |
+| 1 | `PROMPTS` base invoice_number rule is not live yet. Latest OCR execution `155441` still used the old text (`invoice_number: ให้ค้นหาคำว่า "เลขที่", "No.", "Invoice No.", "เลขที่ใบกำกับ" ...`) and did not contain `ห้ามนำสัญลักษณ์ # * หรือเครื่องหมายพิเศษอื่น ๆ มาใส่นำหน้าเลขที่`. `docs/gg/current-ocr-prompt.md` also still shows the old wording. | High | Update the `PROMPTS` Google Sheet `base` row with the exact new sentence, clear/refresh prompt cache in `Code (Build Request)1` or wait past TTL, then rerun one `/webhook/ocr-dev` smoke test to confirm the live prompt payload contains the new rule. |
 
 ---
 
 ## Definition of Done
 
 - [ ] Step 1-7 ทุก check ผ่าน
-- [ ] ไม่พบ bad placeholder (0107537000000, 0100000000000) ใน workflow ใด
-- [ ] km-logger bug fix verified (telegram_train + isRawTaxId)
-- [ ] 20+ nodes มี continueOnFail=True ใน ocr-invoice-processor
-- [ ] Dashboard แสดง fuel ≥ 95%, other ≥ 80%
-- [ ] ถ้าพบ issue → ระบุใน Issues Found table ด้านบน
+- [x] ไม่พบ bad placeholder (0107537000000, 0100000000000) ใน workflow ใด
+- [x] km-logger bug fix verified (telegram_train + isRawTaxId)
+- [x] 20+ nodes มี continueOnFail=True ใน ocr-invoice-processor
+- [x] Dashboard แสดง fuel ≥ 95%, other ≥ 80%
+- [x] ถ้าพบ issue → ระบุใน Issues Found table ด้านบน
+
+### Verification Notes
+
+- Step 1 passed: VENDOR_MAP sync verified on exact target nodes only:
+  - `XtaSg9pLDuPERtI8` `Code (VENDOR_MAP)` = 9 expected IDs
+  - `jmJHPPj0OM5LcZ0n` `Code (Compute Diffs)` = 9 expected IDs
+  - `KW0QRXxRh9MjdPaY` `Code (Prepare KM Log Payload)` = 9 expected IDs
+- Step 2 passed: km-logger `Code (Compute Diffs)` contains both `telegram_train` fallback baseline logic and `isRawTaxId` vendor-name guard.
+- Step 3 passed: `up1n75qEhbsXswii` currently has `39` nodes with `continueOnFail=true`; all critical nodes in the spec are true.
+- Step 4 passed: `Code (Build Request)1` contains `[PROMPT_CACHE] v1`, `getWorkflowStaticData`, and `promptCache`.
+- Step 5 passed: all 11 excluded `TRAIN_CASES` rows are `status=excluded` with blank `ocr_accuracy_pct`; `telegram_train_rows=21 scored=21 blank=0 zero_scores=0`.
+- Step 6 failed: `gg-data` webhook does not expose `PROMPTS` (`allowed=['TRAIN_CASES','FIELD_DIFFS','OCR_KM_RUNTIME_RULES','OCR_FEEDBACK','OCR_EXAMPLES','VENDOR_MAP']`), so prompt verification was done from live OCR execution `155441` plus `docs/gg/current-ocr-prompt.md`; both still show the old invoice-number rule.
+- Step 7 passed: live dashboard shows `Overall Accuracy (36 scored / 47 total bills)`, `fuel 29 97.9%`, `other 7 85.7%`.
 
 ---
 
 ## Discussion
 
 _(Codex ใส่ comment ก่อน implement ถ้ามี concern)_
+
+---
+
+## Closing Template
+*(Codex fill before push)*
+
+```
+Runtime verified: No workflow patch was applied in T046. SQLite `workflow_history` recheck confirms VENDOR_MAP sync across `XtaSg9pLDuPERtI8`, `jmJHPPj0OM5LcZ0n`, and `KW0QRXxRh9MjdPaY`; `jmJHPPj0OM5LcZ0n` still contains both the `telegram_train` baseline fallback and `isRawTaxId` vendor guard; `up1n75qEhbsXswii` has `39` nodes with `continueOnFail=true`, including all critical nodes named in the spec, and `Code (Build Request)1` still contains `[PROMPT_CACHE] v1` with static-data caching.
+Verified from: TRAIN_CASES gateway check confirmed all 11 excluded case IDs have `status=excluded` and blank `ocr_accuracy_pct`, and `telegram_train_rows=21 scored=21 blank=0 zero_scores=0`; live dashboard `/webhook/ocr-dashboard` shows `36 scored / 47 total`, `fuel 97.9%`, `other 85.7%`; latest OCR execution `155441` was inspected directly from `execution_data` and still contains the old `invoice_number` prompt text without the new `ห้ามนำสัญลักษณ์ # * ...` rule.
+Docs synced: This spec updated with the failing prompt finding, verification notes, and closing template; `docs/collab/HANDOFF.md` will be moved to Recently Completed.
+Remaining limits: Step 6 in the spec could not be executed verbatim because `gg-data` does not expose `PROMPTS`; prompt verification therefore used live OCR execution data plus `docs/gg/current-ocr-prompt.md`, which is stronger evidence for the runtime prompt but does not by itself edit the GSheet.
+```
 
 ---
 
