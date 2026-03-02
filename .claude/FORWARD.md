@@ -122,11 +122,11 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 2026-03-02 16:15
-- ✅ CC re-check complete: all 6 T046 checks PASS (exec 155597 confirms # * rule live)
-- ✅ Dashboard: fuel 97.9% / other 85.7% / 36 scored / 47 total
-- ✅ T047 assigned to Codex (running: pid 49487)
-- ⏭️ Wait for Codex T047 → review → merge → test electricity bill
+## Last Checkpoint — 2026-03-02 17:05
+- ✅ T047 COMPLETE: doc_type auto-detect live — fuel/electricity/fleet_card ขึ้นใน dashboard
+- ✅ VENDOR_MAP: 10 vendors (added KTB Fleet 0107537000882, fleet_card)
+- ✅ Dashboard: 38 scored / 48 total — fuel 97.9%, other 85.7%, electricity 100%, fleet_card 100%
+- ⏭️ รอบิลใหม่เพิ่ม — target: electricity/fleet_card มากกว่า 1 case
 
 ### PT MAX LPG bill observation (for future prompt improvement)
 - `quantity: 18.76172607879925` = back-calculated (300÷15.99) — ไม่ได้อ่านจากบิล
