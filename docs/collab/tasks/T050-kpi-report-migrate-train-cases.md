@@ -16,6 +16,10 @@
 
 **Source of truth ปัจจุบัน (ตั้งแต่ T044):** `TRAIN_CASES` + `FIELD_DIFFS`
 
+## Discussion
+
+- 2026-03-03 Codex: Live Google Sheets tabs still use the physical tab names `OCR_TRAIN_CASES` / `OCR_TRAIN_FIELD_DIFFS` even though gg-data and newer docs refer to them logically as `TRAIN_CASES` / `FIELD_DIFFS`. Implemented this task against the real tab name `OCR_TRAIN_CASES` so the workflow runs successfully while preserving the intended source-of-truth migration.
+
 ---
 
 ## Current Workflow Structure
@@ -196,13 +200,23 @@ print("Code has ocr_accuracy_pct:", 'ocr_accuracy_pct' in code['parameters']['js
 
 ## Definition of Done
 
-- [ ] `Google Sheets (OCR_FEEDBACK)` node อ่านจาก sheet `TRAIN_CASES`
-- [ ] `Code node: Aggregate KPI` ใช้ `ocr_accuracy_pct` + `vendor_name` + `status` filter
-- [ ] `nowThai()` block มี `// [SHARED]` comment
-- [ ] Workflow fetch verify: sheetName=TRAIN_CASES + `ocr_accuracy_pct` ใน code
-- [ ] Test run: total_feedback >= 33, doc_type มี fuel (ไม่ใช่แค่ other)
-- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน
-- [ ] HANDOFF.md updated
+- [x] `Google Sheets (OCR_FEEDBACK)` node อ่านจาก source-of-truth train-cases tab (`OCR_TRAIN_CASES` in live Sheets)
+- [x] `Code node: Aggregate KPI` ใช้ `ocr_accuracy_pct` + `vendor_name` + `status` filter
+- [x] `nowThai()` block มี `// [SHARED]` comment
+- [x] Workflow fetch verify: sheet source updated + `ocr_accuracy_pct` ใน code
+- [x] Test run: total_feedback >= 33, doc_type มี fuel (ไม่ใช่แค่ other)
+- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน
+- [x] HANDOFF.md updated
+
+---
+
+## Closing Template
+
+Runtime patched: Patched live workflow `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) via n8n REST API; migrated `Google Sheets (OCR_FEEDBACK)` from legacy `OCR_FEEDBACK` to live source-of-truth tab `OCR_TRAIN_CASES`, rewrote `Code node: Aggregate KPI` to aggregate `ocr_accuracy_pct` / `vendor_name` / `doc_type` from train-case rows, removed legacy field-breakdown logic, and set `continueOnFail=true` + `onError=continueRegularOutput` on the Google Sheets and Telegram nodes.
+
+Verified from: Workflow re-fetch shows the train-cases sheet source, `continueOnFail=true` on Sheets/Telegram, and new KPI code with `ocr_accuracy_pct` + `// [SHARED] nowThai`; manual REST execution `155925` succeeded and produced `overall=97`, `total_feedback=33`, `fuel=31`, `electricity=1`, `fleet_card=1`, with Telegram delivery `ok=true`; `./scripts/verify_nowThai_sync.sh` passed.
+
+Docs synced: This spec was updated with the live tab-name Discussion note, DoD checks, and Closing Template; `docs/collab/HANDOFF.md` moved T050 to Recently Completed.
 
 ---
 

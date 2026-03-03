@@ -49,9 +49,9 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T049 ✅ complete; Codex idle |
+| **Codex Status** | T050 ✅ complete; Codex idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-02 (session wrap: prod-hardening R1+R2 + GG prompts + backfill + new training bill) |
+| **Last Sync** | 2026-03-03 (T050 KPI report migrated to TRAIN_CASES source-of-truth tab; manual exec `155925` verified) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T050 | Migrate `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) from legacy `OCR_FEEDBACK` to source-of-truth train-cases data. Patched live workflow via n8n REST: Google Sheets node now reads `OCR_TRAIN_CASES`, `Code node: Aggregate KPI` now uses `ocr_accuracy_pct` / `vendor_name` / `doc_type` with `status != excluded`, and side-system Google Sheets + Telegram nodes now have `continueOnFail=true`. Verification: workflow re-fetch ✅; manual exec `155925` success with `overall=97`, `33 scored / 33 total`, doc types `fuel/electricity/fleet_card` ✅; Telegram send `ok=true` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T049 | MEA vendor cleanup + FIELD_DIFFS wrong-value cleanup. Patched live workflows via n8n REST: `XtaSg9pLDuPERtI8` (`Code (VENDOR_MAP)`), `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`), and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) to add `0994000165200 => MEA / electricity`. Ran disposable maintenance workflow `p0d9Bc5yzbilSzSE` exec `155916` to update 16 fake-vendor `wrong_value` rows in `OCR_TRAIN_FIELD_DIFFS` to `excluded_test`, then archived + deleted the helper workflow. Verification: `gg-data?sheet=VENDOR_MAP` returns MEA ✅; `gg-data?sheet=FIELD_DIFFS` now shows `excluded_test=16`, `wrong_value=21` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T048 | Fix Telegram `chat_id` fallback in `ocr-km-suggest` (`NkKd02QyzLRcpIJM`). Added `TELEGRAM_OCR_CHAT_ID=1776637578` to `.n8n-dev/.env`; patched `Code (Build Telegram)` via n8n REST to use `process.env.TELEGRAM_OCR_CHAT_ID \|\| '1776637578'`. Verification: workflow re-fetch shows fallback literal ✅; live webhook smoke with `x-api-key` returned `ok:true`, `new_lessons:0`, latest exec `155890` success ✅; `verify_nowThai_sync.sh` ✅. Note: this smoke run generated no new lessons, so Telegram notify branch was skipped by design. | Codex | 2026-03-02 | PASS |
 | T047 | Auto-detect doc_type from OCR output. Updated PROMPTS Google Sheet (`base`, `fuel`, `electricity`, `fleet_card`) so Gemini emits `doc_type`; patched live workflows via n8n REST: `up1n75qEhbsXswii` (`Code (Parse Result)`, `Code in JavaScript9`, `Code in JavaScript24`) now normalize OCR `doc_type` into bill JSON + top-level response, `jmJHPPj0OM5LcZ0n` now prioritizes OCR `doc_type` over VENDOR_MAP, and `KW0QRXxRh9MjdPaY` now forwards OCR bill `doc_type` to km-logger. Verification: live `/webhook/ocr-dev` fuel exec `155611` => `doc_type=fuel`, electricity exec `155614` => `doc_type=electricity`, fleet-card exec `155620` => `doc_type=fleet_card`; PROMPTS live readback + workflow re-fetch ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-02 | PASS |
