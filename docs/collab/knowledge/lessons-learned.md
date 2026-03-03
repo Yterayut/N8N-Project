@@ -344,3 +344,32 @@ OCR benchmark runner v1 ให้ score=0 และ `fail` เหมือนก
 ---
 
 *อัปเดตล่าสุด: 2026-02-27 by CC + Codex*
+
+---
+
+## LESSON-017: เมื่อ migrate data source ต้อง audit ทุก consumer พร้อมกัน
+
+**Contributor:** CC | **Session:** 2026-03-03 | **Ref:** T044 → T050
+
+### เกิดอะไรขึ้น
+T044 migrate feedback data source: `OCR_FEEDBACK` → `TRAIN_CASES`
+CC patch workflows หลัก (km-logger, ocr-training, ocr-dashboard) แต่ **ไม่ได้ search ว่ามี workflow อื่นที่ยังอ่าน `OCR_FEEDBACK`**
+→ `ocr-kpi-report` ส่ง Telegram KPI ทุกวัน 08:00 BKK ด้วยข้อมูลเก่า 2 วัน ก่อนที่ยุทจะแจ้ง
+
+### สิ่งที่ควรทำ (และไม่ทำ)
+- ❌ CC ทำ: patch workflows ที่รู้จัก → ปิด task
+- ✅ ควรทำ: search workflowทุกตัวที่ reference sheet/table เก่า ก่อนปิด task
+
+### Root Cause
+ไม่มี "consumer audit" step ใน task DoD สำหรับ data migration tasks
+
+### Lesson
+> **Data migration checklist (บังคับ):**
+> ทุกครั้งที่เปลี่ยน schema/sheet/table:
+> 1. `grep` หรือ query ทุก workflow ที่อ่านจาก source เดิม
+> 2. Migrate ทุก consumer พร้อมกัน หรือ list ไว้ใน HANDOFF
+> 3. ใน DoD ต้องมี: "ตรวจแล้วว่าไม่มี consumer อื่นที่ยังใช้ source เก่า"
+
+### Prevention
+- Spec template (`_TEMPLATE.md`) ควรมี section "Downstream consumers affected"
+- T046 production recheck ควรรวม "ตรวจ reports/notifications ว่าแสดงข้อมูลถูกต้อง" ไว้ด้วย
