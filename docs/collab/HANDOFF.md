@@ -302,6 +302,11 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-03 09:40 | sync | all | auto-sync |
+| 2026-03-03 09:40 | sync | all | auto-sync |
+| 2026-03-03 09:36 | sync | all | auto-sync |
+| 2026-03-03 09:36 | sync | all | auto-sync |
+| 2026-03-03 09:30 | sync | all | auto-sync |
 | 2026-03-02 15:20 | sync | all | auto-sync |
 | 2026-03-02 14:07 | sync | all | auto-sync |
 | 2026-03-02 14:04 | sync | all | auto-sync |

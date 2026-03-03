@@ -122,12 +122,15 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
-## Last Checkpoint — 2026-03-02 17:30
-- ✅ Dashboard clean: fuel 31@96.5%, electricity 1@100%, fleet_card 1@100% — no test/pre-fix noise
-- ✅ VENDOR_MAP: 11 vendors (added SCG Prawet 0135553012766 fuel, KTB Fleet 0107537000882 fleet_card)
-- ✅ Excluded 5 stale/test cases total (4 test + 1 pre-fix wpz601)
-- ✅ 33 scored / 49 total — all real bills
-- ⏭️ รอบิลใหม่ผ่าน Telegram — electricity/fleet_card ต้องการ more training data
+## Last Checkpoint — 2026-03-03 (session close)
+- ✅ T048: Telegram chat_id fallback fixed ใน ocr-km-suggest
+- ✅ T049: MEA เพิ่มใน VENDOR_MAP (3 workflows) + FIELD_DIFFS excluded_test=16, wrong_value=21
+- ✅ T050: ocr-kpi-report migrated → OCR_TRAIN_CASES; exec 155925 → overall=97%, 33 scored, fuel=31 ✅
+- ✅ Daily health fixes: OCM-Chat-BOT continueOnFail, POC schema, GSheets→Supabase continueOnFail, GG Health timeout 60s
+- ✅ wait-for-codex.sh: background polling script สำหรับ CC auto-detect Codex completion
+- ✅ LESSON-017: consumer audit บังคับเมื่อ migrate data source
+- ⏭️ PAY workflow: OAuth expired — user ต้อง re-auth credential `IYyt3qEQVk3xfjcF` "Google Drive account" ใน n8n UI
+- ⏭️ Electricity/fleet_card ต้องการ training data เพิ่ม
 
 ### PT MAX LPG bill observation (for future prompt improvement)
 - `quantity: 18.76172607879925` = back-calculated (300÷15.99) — ไม่ได้อ่านจากบิล
