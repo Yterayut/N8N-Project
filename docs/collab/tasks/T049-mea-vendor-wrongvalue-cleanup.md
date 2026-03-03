@@ -6,6 +6,12 @@
 
 ---
 
+## Discussion
+
+- 2026-03-03 Codex: Live `FIELD_DIFFS` rows expose `correct_value` rather than `user_value`, and the spec's expected outcome (`excluded_test: 16`, `wrong_value: 21`) matches only the 16 fake-vendor rows that are currently `diff_type='wrong_value'`. Proceeding with that narrower filter and leaving the fake-vendor `missing` / `format_error` rows untouched.
+
+---
+
 ## Part A — เพิ่ม MEA ใน VENDOR_MAP (3 workflows)
 
 ### Problem
@@ -134,12 +140,23 @@ Expected: `excluded_test: 16, wrong_value: 21`
 
 ## Definition of Done
 
-- [ ] MEA (`0994000165200`) อยู่ใน VENDOR_MAP ทั้ง 3 workflows (gg-data-gateway, km-logger, ocr-training)
-- [ ] gg-data-gateway VENDOR_MAP readback แสดง MEA entry
-- [ ] FIELD_DIFFS: 16 test rows เปลี่ยนเป็น `diff_type=excluded_test`
-- [ ] FIELD_DIFFS: wrong_value เหลือ 21 rows (จาก 37)
-- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน
-- [ ] HANDOFF.md updated
+- [x] MEA (`0994000165200`) อยู่ใน VENDOR_MAP ทั้ง 3 workflows (gg-data-gateway, km-logger, ocr-training)
+- [x] gg-data-gateway VENDOR_MAP readback แสดง MEA entry
+- [x] FIELD_DIFFS: 16 test rows เปลี่ยนเป็น `diff_type=excluded_test`
+- [x] FIELD_DIFFS: wrong_value เหลือ 21 rows (จาก 37)
+- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน
+- [x] HANDOFF.md updated
+
+---
+
+## Closing Template
+
+```
+Runtime patched: Patched live workflows via n8n REST API: `XtaSg9pLDuPERtI8` (`Code (VENDOR_MAP)`), `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`), and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) now all include `0994000165200 => MEA / electricity`. Ran a one-shot maintenance workflow `tmp-t049-field-diffs-cleanup` (`p0d9Bc5yzbilSzSE`) via `/rest/workflows/{id}/run` execution `155916` to update the 16 fake-vendor `wrong_value` rows in `OCR_TRAIN_FIELD_DIFFS` by matching `row_number`, then archived and deleted the helper workflow.
+Verified from: `GET /webhook/gg-data?sheet=VENDOR_MAP` now returns `{'vendor_tax_id':'0994000165200','vendor_name':'MEA','doc_type':'electricity'}` ✅; `GET /webhook/gg-data?sheet=FIELD_DIFFS` now reports `excluded_test: 16` and `wrong_value: 21`, with excluded row numbers `[2,3,4,6,10,15,16,234,235,236,237,238,239,240,241,242]` ✅; `./scripts/verify_nowThai_sync.sh` passed ✅.
+Docs synced: This spec updated (Discussion note + DoD + Closing Template filled) and `docs/collab/HANDOFF.md` moved T049 to Recently Completed.
+Remaining limits: The cleanup workflow was intentionally temporary and has already been deleted, so post-run verification relies on sheet readback plus execution `155916` rather than a preserved helper workflow definition.
+```
 
 ---
 
