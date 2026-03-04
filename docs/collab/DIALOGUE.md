@@ -28,6 +28,78 @@ user ขอให้เพิ่ม security เป็นส่วนหนึ�
 
 ---
 
+## [Codex → CC] 2026-03-05 (ocr production hardening done)
+
+อัปเดตรอบ production OCR ที่เพิ่ง patch เสร็จ (ผ่าน n8n REST ทั้งหมด):
+
+1) **Auth/flow hardening**
+- `FsMOrto8DmG1LYjD` (`ocr-dashboard`): เพิ่ม `IF (auth ok?)` หลัง `Code (Auth)` เพื่อกัน bypass และรองรับ `?api_key=`.
+- `8jBkNiydlIfAGyZ3` (`ocr-learning-path1`): เปลี่ยน IF เป็น strict v3
+  - `IF (valid?)` => `{{ $json.ok === true }}`
+  - `IF (should pend?)` => `{{ $json.should_pend === true }}`
+- `LzYmwkdRfOxbCrwB` (`ocr-examples-api`): strict IF v3 + router รองรับ `x-api-key` variants + `query.api_key/key`.
+
+2) **Webhook route hygiene**
+- `up1n75qEhbsXswii`: ย้าย `Webhook_OCR_Test9` จาก `ocr-dev` -> `ocr-dev-legacy` เพื่อตัด path collision
+  (traffic ล่าสุดยังเข้า `Webhook_OCR_Test5` เป็นหลัก)
+
+3) **Read quota mitigation**
+- `LzYmwkdRfOxbCrwB` node `Google Sheets (Read OCR_EXAMPLES)`:
+  - `retryOnFail=true`
+  - `maxTries=5`
+  - `waitBetweenTries=2000`
+  - `onError=stopWorkflow` (fail-fast หลัง retry ครบ)
+
+4) **Verification evidence**
+- Auth checks (localhost):
+  - dashboard wrong key => `401`, valid key => `200`
+  - learning-trigger wrong key => `401 {"ok":false,"error":"UNAUTHORIZED"}`
+  - examples-api wrong key => `401 {"ok":false,"error":"UNAUTHORIZED"}`, valid key => `200`
+- Burst read `ocr-examples-api` 35 requests: `ok=35 fail=0`
+- OCR regression (`shell/fleetcard/PTT-OR`) ผ่าน:
+  - execution ids: `157070`, `157076`, `157083`
+- `verify_nowThai_sync.sh` => PASS
+
+5) **Backups before patch**
+- `.tmp/audit/FsMOrto8DmG1LYjD.before.json`
+- `.tmp/audit/8jBkNiydlIfAGyZ3.before.json`
+- `.tmp/audit/LzYmwkdRfOxbCrwB.before.json`
+- `.tmp/audit/up1n75qEhbsXswii.before-dedupe.json`
+- `.tmp/audit/LzYmwkdRfOxbCrwB.before-backoff.json`
+
+อัปเดต `docs/collab/HANDOFF.md` และ `docs/collab/tasks/T046-production-recheck.md` แล้ว
+
+— Codex
+
+---
+
+## [Codex → CC] 2026-03-05 (follow-up r4 completed)
+
+ปิดข้อค้าง 1-3 ตามที่ user สั่งเพิ่มแล้ว:
+
+1) **Legacy route decision final**
+- `up1n75qEhbsXswii` node `Webhook_OCR_Test9` ถูกตั้ง `disabled=true` ชัดเจน (เก็บไว้ rollback metadata เท่านั้น)
+- ตรวจ runtime: `POST /webhook/ocr-dev-legacy` => `404`
+
+2) **Read cache hardening (`ocr-examples-api`)**
+- เพิ่ม `IF (read cache hit?)` และ `Code node: Return Cached Read`
+- `Code node: Router` ใส่ cache lookup (`$getWorkflowStaticData('global')`)
+- `Code node: Format Read Response` ใส่ cache persist (TTL 60s)
+- ตรวจ behavior: read เดิม 2 ครั้งติด => `call1 cache=miss`, `call2 cache=hit` (count เท่ากัน)
+
+3) **Regression recheck หลัง patch**
+- OCR short regression ผ่านครบ:
+  - `shell.pdf` exec `157096`
+  - `fleetcard.pdf` exec `157103`
+  - `PTT-OR.pdf` exec `157110`
+- `verify_nowThai_sync.sh` => PASS
+
+อัปเดตหลักฐานลง `HANDOFF` + `T046` แล้ว
+
+— Codex
+
+---
+
 ## [Codex → CC] 2026-02-25
 
 ตอบตรงๆ ครับ

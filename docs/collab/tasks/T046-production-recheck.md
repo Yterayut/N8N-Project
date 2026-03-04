@@ -281,6 +281,8 @@ print(re.sub(r'\s+', ' ', text).strip()[:300])
 | # | Issue | Severity | Suggested Fix |
 |---|-------|----------|---------------|
 | 1 | **Resolved 2026-03-05:** Runtime prompt guard for invoice number was patched in `up1n75qEhbsXswii` node `Code (Build Request)1` to always append `ห้ามนำสัญลักษณ์ # * หรือเครื่องหมายพิเศษอื่น ๆ มาใส่นำหน้าเลขที่` when missing from sheet prompt rows. New `/webhook/ocr-dev` smoke request (`request_id=1772659268372-37e4ee41491b5`) completed successfully and execution `156616` contains both the request ID and the new rule text in execution data. | High (closed) | Keep guard logic in `Code (Build Request)1` and optionally sync the same sentence in PROMPTS sheet `base` for consistency. |
+| 2 | **Resolved 2026-03-05:** Auth/flow hardening round completed for OCR adjacent endpoints. `ocr-dashboard` had auth bypass risk (auth computed but not gated), `ocr-learning-path1`/`ocr-examples-api` used legacy IF conditions causing unstable unauthorized behavior, and `up1n75qEhbsXswii` had duplicate `ocr-dev` webhook path. | High (closed) | Patched live via n8n REST: strict IF v3 auth gates + standardized 401 JSON path; moved legacy webhook path from `ocr-dev` to `ocr-dev-legacy` to remove collision. |
+| 3 | **Mitigated 2026-03-05:** `ocr-examples-api` read path intermittently hit Google Sheets per-user read quota (`429`) under burst load. | Medium (mitigated) | Added node-level retry/backoff on `Google Sheets (Read OCR_EXAMPLES)` (`retryOnFail=true`, `maxTries=5`, `waitBetweenTries=2000`) while keeping workflow fail-fast after retries (`onError=stopWorkflow`). |
 
 ---
 
@@ -305,6 +307,18 @@ print(re.sub(r'\s+', ' ', text).strip()[:300])
 - Step 5 passed: all 11 excluded `TRAIN_CASES` rows are `status=excluded` with blank `ocr_accuracy_pct`; `telegram_train_rows=21 scored=21 blank=0 zero_scores=0`.
 - Step 6 follow-up passed (2026-03-05): patched `Code (Build Request)1` with runtime invoice-number guard text, then verified via live `/webhook/ocr-dev` smoke (`request_id=1772659268372-37e4ee41491b5`) and execution `156616` evidence containing the new sentence.
 - Step 7 passed: live dashboard shows `Overall Accuracy (36 scored / 47 total bills)`, `fuel 29 97.9%`, `other 7 85.7%`.
+- Follow-up security/runtime pass (2026-03-05):
+  - `ocr-dashboard` auth checks now return `401` for wrong key (`?key=` and `?api_key=`) and `200` for valid key.
+  - `ocr-learning-trigger` wrong key returns `401 {"ok":false,"error":"UNAUTHORIZED"}` and no longer reaches example-create path (verified execution `157023`).
+  - `ocr-examples-api` wrong key returns stable `401 {"ok":false,"error":"UNAUTHORIZED"}`; valid key returns `200`.
+  - `up1n75qEhbsXswii` route hygiene: `Webhook_OCR_Test9` path moved to `ocr-dev-legacy`; `/webhook/ocr-dev` remains active and healthy (`202`).
+  - `ocr-examples-api` burst test (35 consecutive reads) after backoff patch: `ok=35 fail=0`.
+  - OCR short regression rerun passed (`shell/fleetcard/PTT-OR`) with execution ids `157070`, `157076`, `157083`.
+- Follow-up completion pass (2026-03-05, round r4):
+  - Legacy route decision finalized: `up1n75qEhbsXswii` node `Webhook_OCR_Test9` explicitly set `disabled=true` (metadata rollback only), runtime check `/webhook/ocr-dev-legacy` => `404`.
+  - Added read-cache guard in `LzYmwkdRfOxbCrwB` (`ocr-examples-api`) with new nodes `IF (read cache hit?)` + `Code node: Return Cached Read` and staticData cache writes in `Code node: Format Read Response` (TTL 60s).
+  - Cache behavior verified live: same `read` filter call #1 => `cache=miss`, call #2 => `cache=hit`, identical row count.
+  - OCR short regression rerun passed again (`shell/fleetcard/PTT-OR`) with execution ids `157096`, `157103`, `157110`.
 
 ---
 
