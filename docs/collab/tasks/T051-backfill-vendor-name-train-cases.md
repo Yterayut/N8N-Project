@@ -221,21 +221,12 @@ print(f"Excluded rows: {len(excl)}")                 # expect ≥1 (T032 + any p
 
 ## Definition of Done
 
-- [x] Group A: 10 blank vendor_name rows → filled with correct vendor_name
-- [x] Group C: 9 raw tax ID rows → replaced with correct vendor_name
-- [x] Group D: T032 Smoke row → `status = 'excluded'`
-- [x] Verification script: `blank=≤3`, `raw=0`, `T032 Smoke active=0`
-- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node)
-- [x] HANDOFF.md updated
-
-## Closing Template
-
-```
-Runtime patched: Created one-shot maintenance workflow `tmp-t051-backfill-vendor` (`IocTDzYIMHvj1bIT`) via n8n REST API, with `continueOnFail=true` on all Google Sheets nodes. The workflow read `OCR_TRAIN_CASES`, normalized 12-digit tax IDs to 13 digits inside `Code (Build Updates)`, backfilled 11 blank `vendor_name` rows and 9 raw-tax-id `vendor_name` rows, and updated row 9 (`tc_1772034775859_h12o6d`) to `status=excluded`. Ran it via `POST /rest/workflows/IocTDzYIMHvj1bIT/run` using full `workflowData` + `triggerToStartFrom: {name:'Manual Trigger'}`; execution `156250` finished with `status=success`. Archived and deleted the helper workflow afterward; `GET /rest/workflows/IocTDzYIMHvj1bIT` now returns `404`.
-Verified from: `GET /webhook/gg-data?sheet=TRAIN_CASES` now reports `blank_active=2`, `raw_active=0`, `T032 Smoke active=0` ✅. Remaining blank rows are only row 24 (`vendor_tax_id=105536080112`) and row 25 (`vendor_tax_id=105532107890`); row 6 was already `status=excluded`, so it is not counted as active. Spot-check rows confirm row 10/19/22 => `Succo/Socco`, 11/20/21 => `Caltex`, 23/44 => `OR`, 26/27/42/45 => `Shell`, 28/29/43 => `PT MAX LPG`, 47 => `Bangchak`, 48 => `Siam Gas`, 49 => `MEA`, 50 => `KTB Fleet`, and row 9 now has `status=excluded` ✅. `./scripts/verify_nowThai_sync.sh` passed ✅.
-Docs synced: This spec updated (DoD checked + Closing Template filled) and `docs/collab/HANDOFF.md` moved T051 to Recently Completed.
-Remaining limits: The helper workflow was intentionally deleted after execution, so post-run evidence is based on execution `156250`, REST cleanup checks, and `gg-data` sheet readback rather than a preserved workflow definition.
-```
+- [ ] Group A: 10 blank vendor_name rows → filled with correct vendor_name
+- [ ] Group C: 9 raw tax ID rows → replaced with correct vendor_name
+- [ ] Group D: T032 Smoke row → `status = 'excluded'`
+- [ ] Verification script: `blank=≤3`, `raw=0`, `T032 Smoke active=0`
+- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node)
+- [ ] HANDOFF.md updated
 
 ---
 

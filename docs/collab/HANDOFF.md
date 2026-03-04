@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T046-followup-r2 | Closed OCR follow-up hardening after prompt-rule incident: synced `PROMPTS` (`key=base`) with one-shot maintenance workflow (`tmp-t046-sync-prompts-base-guard`) execution `156655` (`base_has_rule=true`), patched `up1n75qEhbsXswii` node `Code (Normalize + Validate)` so every canonical bill carries `doc_type`, and added executable regression script `scripts/tests/ocr_prompt_guard_regression.sh` to assert HTTP 202 + `success=true` + rule-text presence in `execution_data`. Regression run passed on `shell.pdf` (`156694`), `fleetcard.pdf` (`156700`), and `PTT-OR.pdf` (`156707`); post-patch bill doc_type smoke passed for `shell/fleetcard/PTT-OR` (`request_id` `1772660266951-ed7b387e44582`, `1772660318277-008077c3752c1`, `1772660336160-5761be3446f68`) with `all_bills_have_doc_type=true`. | Codex | 2026-03-05 | PASS |
 | T051 | Backfill `vendor_name` + exclude T032 smoke row in `OCR_TRAIN_CASES`. Verification readback confirms active rows now have no raw-tax-id vendors and no active `T032 Smoke`: `blank_active=2` (rows 24,25 only), `raw_active=0`, `T032 Smoke active=0`; spot checks show row 49=`MEA`, row 50=`KTB Fleet`, row 9=`status=excluded`. | Codex | 2026-03-05 | PASS |
 | T050 | Migrate `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) from legacy `OCR_FEEDBACK` to source-of-truth train-cases data. Patched live workflow via n8n REST: Google Sheets node now reads `OCR_TRAIN_CASES`, `Code node: Aggregate KPI` now uses `ocr_accuracy_pct` / `vendor_name` / `doc_type` with `status != excluded`, and side-system Google Sheets + Telegram nodes now have `continueOnFail=true`. Verification: workflow re-fetch ✅; manual exec `155925` success with `overall=97`, `33 scored / 33 total`, doc types `fuel/electricity/fleet_card` ✅; Telegram send `ok=true` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T049 | MEA vendor cleanup + FIELD_DIFFS wrong-value cleanup. Patched live workflows via n8n REST: `XtaSg9pLDuPERtI8` (`Code (VENDOR_MAP)`), `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`), and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) to add `0994000165200 => MEA / electricity`. Ran disposable maintenance workflow `p0d9Bc5yzbilSzSE` exec `155916` to update 16 fake-vendor `wrong_value` rows in `OCR_TRAIN_FIELD_DIFFS` to `excluded_test`, then archived + deleted the helper workflow. Verification: `gg-data?sheet=VENDOR_MAP` returns MEA ✅; `gg-data?sheet=FIELD_DIFFS` now shows `excluded_test=16`, `wrong_value=21` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
@@ -303,6 +304,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-05 04:28 | sync | all | auto-sync |
 | 2026-03-04 06:09 | sync | all | auto-sync |
 | 2026-03-03 09:46 | sync | all | auto-sync |
 | 2026-03-03 09:40 | sync | all | auto-sync |
