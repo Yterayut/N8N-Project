@@ -280,13 +280,13 @@ print(re.sub(r'\s+', ' ', text).strip()[:300])
 
 | # | Issue | Severity | Suggested Fix |
 |---|-------|----------|---------------|
-| 1 | `PROMPTS` base invoice_number rule is not live yet. Latest OCR execution `155441` still used the old text (`invoice_number: ให้ค้นหาคำว่า "เลขที่", "No.", "Invoice No.", "เลขที่ใบกำกับ" ...`) and did not contain `ห้ามนำสัญลักษณ์ # * หรือเครื่องหมายพิเศษอื่น ๆ มาใส่นำหน้าเลขที่`. `docs/gg/current-ocr-prompt.md` also still shows the old wording. | High | Update the `PROMPTS` Google Sheet `base` row with the exact new sentence, clear/refresh prompt cache in `Code (Build Request)1` or wait past TTL, then rerun one `/webhook/ocr-dev` smoke test to confirm the live prompt payload contains the new rule. |
+| 1 | **Resolved 2026-03-05:** Runtime prompt guard for invoice number was patched in `up1n75qEhbsXswii` node `Code (Build Request)1` to always append `ห้ามนำสัญลักษณ์ # * หรือเครื่องหมายพิเศษอื่น ๆ มาใส่นำหน้าเลขที่` when missing from sheet prompt rows. New `/webhook/ocr-dev` smoke request (`request_id=1772659268372-37e4ee41491b5`) completed successfully and execution `156616` contains both the request ID and the new rule text in execution data. | High (closed) | Keep guard logic in `Code (Build Request)1` and optionally sync the same sentence in PROMPTS sheet `base` for consistency. |
 
 ---
 
 ## Definition of Done
 
-- [ ] Step 1-7 ทุก check ผ่าน
+- [x] Step 1-7 ทุก check ผ่าน
 - [x] ไม่พบ bad placeholder (0107537000000, 0100000000000) ใน workflow ใด
 - [x] km-logger bug fix verified (telegram_train + isRawTaxId)
 - [x] 20+ nodes มี continueOnFail=True ใน ocr-invoice-processor
@@ -303,7 +303,7 @@ print(re.sub(r'\s+', ' ', text).strip()[:300])
 - Step 3 passed: `up1n75qEhbsXswii` currently has `39` nodes with `continueOnFail=true`; all critical nodes in the spec are true.
 - Step 4 passed: `Code (Build Request)1` contains `[PROMPT_CACHE] v1`, `getWorkflowStaticData`, and `promptCache`.
 - Step 5 passed: all 11 excluded `TRAIN_CASES` rows are `status=excluded` with blank `ocr_accuracy_pct`; `telegram_train_rows=21 scored=21 blank=0 zero_scores=0`.
-- Step 6 failed: `gg-data` webhook does not expose `PROMPTS` (`allowed=['TRAIN_CASES','FIELD_DIFFS','OCR_KM_RUNTIME_RULES','OCR_FEEDBACK','OCR_EXAMPLES','VENDOR_MAP']`), so prompt verification was done from live OCR execution `155441` plus `docs/gg/current-ocr-prompt.md`; both still show the old invoice-number rule.
+- Step 6 follow-up passed (2026-03-05): patched `Code (Build Request)1` with runtime invoice-number guard text, then verified via live `/webhook/ocr-dev` smoke (`request_id=1772659268372-37e4ee41491b5`) and execution `156616` evidence containing the new sentence.
 - Step 7 passed: live dashboard shows `Overall Accuracy (36 scored / 47 total bills)`, `fuel 29 97.9%`, `other 7 85.7%`.
 
 ---
