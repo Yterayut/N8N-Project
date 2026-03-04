@@ -39,7 +39,7 @@ Claude review → merge → sync all
 
 **ก่อน start งาน:** ต้องมี spec ที่ `docs/collab/tasks/T0xx-*.md` ก่อนเสมอ — ถ้าไม่มีหรือ spec ไม่ชัด ให้ comment กลับมาใน task file แทนที่จะเดาเอง
 
-### งานที่ assigned ตอนนี้: T036 (Codex เสร็จ — รอ CC review)
+### งานที่ assigned ตอนนี้: _(none)_
 
 ---
 
@@ -49,9 +49,9 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T051 assigned — backfill vendor_name in TRAIN_CASES |
+| **Codex Status** | Idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-03 (T050 KPI report migrated to TRAIN_CASES source-of-truth tab; manual exec `155925` verified) |
+| **Last Sync** | 2026-03-04 (T051 vendor_name backfill complete; manual exec `156250` verified) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -106,9 +106,7 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-| ID | Task | Assigned |
-|----|------|----------|
-| T051 | Backfill vendor_name + exclude T032 Smoke in TRAIN_CASES | 2026-03-04 |
+_(none)_
 
 ### Pending (Codex)
 _(none)_
@@ -121,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T051 | Backfill `vendor_name` + exclude T032 smoke row in `OCR_TRAIN_CASES`. Created one-shot maintenance workflow `tmp-t051-backfill-vendor` (`IocTDzYIMHvj1bIT`) via n8n REST, read `OCR_TRAIN_CASES`, normalized 12-digit tax IDs in `Code (Build Updates)`, updated 11 blank `vendor_name` rows plus 9 raw-tax-id `vendor_name` rows, and set row 9 (`tc_1772034775859_h12o6d`) to `status=excluded`. Ran helper via manual REST execution `156250` (success), then archived + deleted the workflow (`GET` returns 404). Verification: `gg-data?sheet=TRAIN_CASES` now shows `blank_active=2` (rows 24,25 only), `raw_active=0`, `T032 Smoke active=0`; row 49 => `MEA`, row 50 => `KTB Fleet`; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-04 | PASS |
 | T050 | Migrate `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) from legacy `OCR_FEEDBACK` to source-of-truth train-cases data. Patched live workflow via n8n REST: Google Sheets node now reads `OCR_TRAIN_CASES`, `Code node: Aggregate KPI` now uses `ocr_accuracy_pct` / `vendor_name` / `doc_type` with `status != excluded`, and side-system Google Sheets + Telegram nodes now have `continueOnFail=true`. Verification: workflow re-fetch ✅; manual exec `155925` success with `overall=97`, `33 scored / 33 total`, doc types `fuel/electricity/fleet_card` ✅; Telegram send `ok=true` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T049 | MEA vendor cleanup + FIELD_DIFFS wrong-value cleanup. Patched live workflows via n8n REST: `XtaSg9pLDuPERtI8` (`Code (VENDOR_MAP)`), `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`), and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) to add `0994000165200 => MEA / electricity`. Ran disposable maintenance workflow `p0d9Bc5yzbilSzSE` exec `155916` to update 16 fake-vendor `wrong_value` rows in `OCR_TRAIN_FIELD_DIFFS` to `excluded_test`, then archived + deleted the helper workflow. Verification: `gg-data?sheet=VENDOR_MAP` returns MEA ✅; `gg-data?sheet=FIELD_DIFFS` now shows `excluded_test=16`, `wrong_value=21` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T048 | Fix Telegram `chat_id` fallback in `ocr-km-suggest` (`NkKd02QyzLRcpIJM`). Added `TELEGRAM_OCR_CHAT_ID=1776637578` to `.n8n-dev/.env`; patched `Code (Build Telegram)` via n8n REST to use `process.env.TELEGRAM_OCR_CHAT_ID \|\| '1776637578'`. Verification: workflow re-fetch shows fallback literal ✅; live webhook smoke with `x-api-key` returned `ok:true`, `new_lessons:0`, latest exec `155890` success ✅; `verify_nowThai_sync.sh` ✅. Note: this smoke run generated no new lessons, so Telegram notify branch was skipped by design. | Codex | 2026-03-02 | PASS |
