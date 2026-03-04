@@ -51,7 +51,7 @@ Claude review → merge → sync all
 | **Active Agent** | _(none)_ |
 | **Codex Status** | Idle |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-04 (T051 vendor_name backfill complete; manual exec `156250` verified) |
+| **Last Sync** | 2026-03-04 (T051 reviewed + merged to local `stable`; backfill exec `156250` already verified) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T051-review | Reviewed [`d45c7bd`] against [`stable`] acting for CC while CC is limited until 2026-03-06 10:00. Findings: no blocking issues; merge path is fast-forward only. Local `stable` advanced to the reviewed commit, and review record saved in `docs/collab/reviews/T051-review.md` for CC follow-up/sync. | Codex | 2026-03-04 | APPROVED |
 | T051 | Backfill `vendor_name` + exclude T032 smoke row in `OCR_TRAIN_CASES`. Created one-shot maintenance workflow `tmp-t051-backfill-vendor` (`IocTDzYIMHvj1bIT`) via n8n REST, read `OCR_TRAIN_CASES`, normalized 12-digit tax IDs in `Code (Build Updates)`, updated 11 blank `vendor_name` rows plus 9 raw-tax-id `vendor_name` rows, and set row 9 (`tc_1772034775859_h12o6d`) to `status=excluded`. Ran helper via manual REST execution `156250` (success), then archived + deleted the workflow (`GET` returns 404). Verification: `gg-data?sheet=TRAIN_CASES` now shows `blank_active=2` (rows 24,25 only), `raw_active=0`, `T032 Smoke active=0`; row 49 => `MEA`, row 50 => `KTB Fleet`; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-04 | PASS |
 | T050 | Migrate `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) from legacy `OCR_FEEDBACK` to source-of-truth train-cases data. Patched live workflow via n8n REST: Google Sheets node now reads `OCR_TRAIN_CASES`, `Code node: Aggregate KPI` now uses `ocr_accuracy_pct` / `vendor_name` / `doc_type` with `status != excluded`, and side-system Google Sheets + Telegram nodes now have `continueOnFail=true`. Verification: workflow re-fetch ✅; manual exec `155925` success with `overall=97`, `33 scored / 33 total`, doc types `fuel/electricity/fleet_card` ✅; Telegram send `ok=true` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
 | T049 | MEA vendor cleanup + FIELD_DIFFS wrong-value cleanup. Patched live workflows via n8n REST: `XtaSg9pLDuPERtI8` (`Code (VENDOR_MAP)`), `jmJHPPj0OM5LcZ0n` (`Code (Compute Diffs)`), and `KW0QRXxRh9MjdPaY` (`Code (Prepare KM Log Payload)`) to add `0994000165200 => MEA / electricity`. Ran disposable maintenance workflow `p0d9Bc5yzbilSzSE` exec `155916` to update 16 fake-vendor `wrong_value` rows in `OCR_TRAIN_FIELD_DIFFS` to `excluded_test`, then archived + deleted the helper workflow. Verification: `gg-data?sheet=VENDOR_MAP` returns MEA ✅; `gg-data?sheet=FIELD_DIFFS` now shows `excluded_test=16`, `wrong_value=21` ✅; `verify_nowThai_sync.sh` ✅. | Codex | 2026-03-03 | PASS |
