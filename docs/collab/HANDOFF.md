@@ -49,7 +49,7 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | T050 ✅ complete; Codex idle |
+| **Codex Status** | T051 assigned — backfill vendor_name in TRAIN_CASES |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
 | **Last Sync** | 2026-03-03 (T050 KPI report migrated to TRAIN_CASES source-of-truth tab; manual exec `155925` verified) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
@@ -106,7 +106,9 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Assigned |
+|----|------|----------|
+| T051 | Backfill vendor_name + exclude T032 Smoke in TRAIN_CASES | 2026-03-04 |
 
 ### Pending (Codex)
 _(none)_
@@ -302,6 +304,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-04 06:09 | sync | all | auto-sync |
+| 2026-03-03 09:46 | sync | all | auto-sync |
 | 2026-03-03 09:40 | sync | all | auto-sync |
 | 2026-03-03 09:40 | sync | all | auto-sync |
 | 2026-03-03 09:36 | sync | all | auto-sync |
