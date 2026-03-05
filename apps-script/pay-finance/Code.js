@@ -1110,28 +1110,16 @@ function classifyTransactionRecord(record) {
   let type = normalizeTxType(rawType, amount);
   let finalCategory = inferCategory(category, receiverName, receiverBank, type, cfg);
 
-  if (receiverIsOwner && !senderIsOwner) {
+  if (senderIsOwner && receiverIsOwner) {
+    ruleHits.push('both_owner_transfer');
+    type = 'transfer';
+  } else if (receiverIsOwner && !senderIsOwner) {
     ruleHits.push('receiver_is_owner');
     type = 'income';
-  } else if (senderIsOwner && !receiverIsOwner) {
-    if (walletTopup || donation || merchant) {
-      ruleHits.push('owner_to_expense_target');
-      type = 'expense';
-    } else if (personalReceiver) {
-      ruleHits.push('owner_to_personal_receiver');
-      type = 'transfer';
-    } else if (type === 'income') {
-      ruleHits.push('income_reclassified_transfer');
-      type = 'transfer';
-    }
   } else {
-    if (walletTopup || donation || merchant) {
-      ruleHits.push('heuristic_expense_target');
-      if (type !== 'income') type = 'expense';
-    } else if (personalReceiver && type === 'income' && rawType.toLowerCase() === 'transfer') {
-      ruleHits.push('income_transfer_personal');
-      type = 'transfer';
-    }
+    // New policy: if receiver is not owner, classify as expense.
+    ruleHits.push('receiver_not_owner_expense');
+    type = 'expense';
   }
 
   if (walletTopup) {
