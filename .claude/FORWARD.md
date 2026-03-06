@@ -122,6 +122,15 @@ curl -s "http://localhost:5678/webhook/gg-data?sheet=FIELD_DIFFS" \
 
 ---
 
+## Last Checkpoint — 2026-03-06 (mid-session)
+- ✅ T051: backfill vendor_name TRAIN_CASES — blank=2, raw=0, T032 excluded
+- ✅ T052C: bug fix — `inferredType` alias removed, exec 158066 success
+- ✅ T052A: review 8/10 APPROVED — 89% true baseline, minor: ocr-training missing case_class
+- ✅ T052B: review 9/10 APPROVED — canonical routing live, PTT OR consolidated
+- ⏭️ T052C review: write formal review file (bug fixed this session)
+- ⏭️ T052D/E/F reviews: pending
+- ⏭️ PTG missing from canonical map: add to next window
+
 ## Last Checkpoint — 2026-03-03 (session close)
 - ✅ T048: Telegram chat_id fallback fixed ใน ocr-km-suggest
 - ✅ T049: MEA เพิ่มใน VENDOR_MAP (3 workflows) + FIELD_DIFFS excluded_test=16, wrong_value=21
