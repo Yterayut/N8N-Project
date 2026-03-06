@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="brand_cream">#F8F6F2</color>
+    <color name="brand_gold">#D4A017</color>
+    <color name="brand_navy">#14213D</color>
+    <color name="brand_slate">#2B3A55</color>
+    <color name="white">#FFFFFFFF</color>
+    <string name="app_name">PAY Ledger</string>
+    <style name="Theme.PAY" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/brand_navy</item>
+        <item name="android:navigationBarColor">@color/brand_cream</item>
+    </style>
+</resources>

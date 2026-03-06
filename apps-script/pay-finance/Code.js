@@ -1232,9 +1232,14 @@ function isPersonalReceiver(receiverName, cfg) {
 
 function inferCategory(currentCategory, receiverName, receiverBank, type, cfg) {
   const category = cleanCategory(currentCategory);
+  const normalizedCategory = normalizeComparableText(category);
+  const transferCategoryTokens = ['transfer', 'โอน', 'โอนเงิน'];
+  const categoryLooksTransfer = transferCategoryTokens.some(token => normalizedCategory === token || normalizedCategory.indexOf(token) !== -1);
+  const effectiveCategory = categoryLooksTransfer ? '' : category;
+
   if (category && category !== 'ไม่ระบุ' && category !== 'อื่นๆ') {
-    if (type === 'transfer' && category === 'Transfer') return 'Transfer';
-    if (type !== 'transfer') return category;
+    if (type === 'transfer') return 'Transfer';
+    if (!categoryLooksTransfer) return category;
   }
 
   const value = normalizeComparableText(receiverName + ' ' + receiverBank + ' ' + category);
@@ -1245,7 +1250,8 @@ function inferCategory(currentCategory, receiverName, receiverBank, type, cfg) {
   if (containsAny(value, cfg.billKeywords)) return 'Bill Payment';
   if (containsAny(value, cfg.shoppingKeywords)) return 'Shopping';
   if (type === 'transfer') return 'Transfer';
-  return category || 'Transfer';
+  if (type === 'income') return effectiveCategory || 'Income';
+  return effectiveCategory || 'Food';
 }
 
 function normalizeComparableText(value) {

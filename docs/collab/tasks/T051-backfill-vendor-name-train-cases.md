@@ -221,12 +221,18 @@ print(f"Excluded rows: {len(excl)}")                 # expect ≥1 (T032 + any p
 
 ## Definition of Done
 
-- [ ] Group A: 10 blank vendor_name rows → filled with correct vendor_name
-- [ ] Group C: 9 raw tax ID rows → replaced with correct vendor_name
-- [ ] Group D: T032 Smoke row → `status = 'excluded'`
-- [ ] Verification script: `blank=≤3`, `raw=0`, `T032 Smoke active=0`
-- [ ] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node)
-- [ ] HANDOFF.md updated
+- [x] Group A: 10 blank vendor_name rows → filled with correct vendor_name
+- [x] Group C: 9 raw tax ID rows → replaced with correct vendor_name
+- [x] Group D: T032 Smoke row → `status = 'excluded'`
+- [x] Verification script: `blank=≤3`, `raw=0`, `T032 Smoke active=0`
+- [x] `./scripts/verify_nowThai_sync.sh` ผ่าน (ถ้า patch Code node) — N/A (no code-node patch in this closeout)
+- [x] HANDOFF.md updated
+
+## Closing Notes
+
+Runtime status: Existing TRAIN_CASES data already reflects the T051 backfill and exclusion outcomes.
+Verified from: `GET /webhook/gg-data?sheet=TRAIN_CASES` (`x-api-key`) on 2026-03-05 returned `blank_active=2` (rows 24, 25), `raw_active=0`, and `T032 Smoke active=0`; row 9 is `status=excluded`, and spot-check rows 10/11/23/26/28/42/47/49/50 resolve to `Succo/Socco`, `Caltex`, `OR`, `Shell`, `PT MAX LPG`, `Shell`, `Bangchak`, `MEA`, `KTB Fleet` respectively.
+Remaining limits: unresolved unknown-vendor blanks remain only the non-mapped rows (24, 25), consistent with Group B scope.
 
 ---
 

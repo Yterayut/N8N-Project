@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Finance App</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    * { font-family: 'Sarabun', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding-bottom: 100px; margin: 0; }
+    .app-container { max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 50px rgba(0,0,0,0.3); position: relative; overflow-x: hidden; }
+    .page { min-height: 100vh; padding-bottom: 80px; display: none; }
+    .page.active { display: block; }
+    
+    /* Header */
+    .app-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .app-header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    .profile-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    
+    /* Balance Card */
+    .balance-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 15px; margin: -15px 15px 15px 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+    .balance-label { font-size: 13px; opacity: 0.9; margin-bottom: 5px; }
+    .balance-amount { font-size: 32px; font-weight: 700; margin: 0; color: white; word-break: break-all; }
+    
+    /* Month Selector */
+    .month-selector { padding: 0 15px 15px 15px; }
+    .month-selector select, .year-selector select { border-radius: 10px; border: 2px solid #e5e7eb; padding: 10px 15px; font-size: 15px; font-weight: 600; width: 100%; }
+    
+    /* Summary Cards */
+    .summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px 15px 15px; }
+    .summary-card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 2px solid #f3f4f6; }
+    .summary-card-label { font-size: 13px; color: #6b7280; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .summary-card-amount { font-size: 20px; font-weight: 700; margin: 0; word-break: break-all; }
+    .summary-card-amount.income { color: #10b981; }
+    .summary-card-amount.expense { color: #ef4444; }
+    
+    /* Chart */
+    .chart-section { padding: 0 15px 15px 15px; }
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .chart-container { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 2px solid #f3f4f6; }
+    
+    /* Transactions */
+    .recent-transactions { padding: 0 15px 30px 15px; }
+    .transaction-item { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f3f4f6; position: relative; }
+    .transaction-icon { width: 40px; height: 40px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .transaction-icon.income { background: #d1fae5; }
+    .transaction-icon.expense { background: #fee2e2; }
+    .transaction-details { flex: 1; min-width: 0; }
+    .transaction-category { font-size: 15px; font-weight: 600; margin: 0 0 3px 0; }
+    .transaction-date { font-size: 12px; color: #6b7280; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .transaction-amount { font-size: 16px; font-weight: 700; white-space: nowrap; }
+    .transaction-amount.income { color: #10b981; }
+    .transaction-amount.expense { color: #ef4444; }
+    
+    /* Delete Button */
+    .delete-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11px; cursor: pointer; display: none; }
+    .transaction-item:hover .delete-btn { display: block; }
+    
+    /* Filters */
+    .filters-section { padding: 12px 15px; background: #f9fafb; }
+    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .filter-input { padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; width: 100%; }
+    
+    /* FAB */
+    .fab { position: fixed; bottom: 90px; right: 15px; width: 55px; height: 55px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6); cursor: pointer; border: none; z-index: 1000; }
+    
+    /* Bottom Nav */
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 480px; width: 100%; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; }
+    .nav-item { flex: 1; text-align: center; padding: 6px; color: #6b7280; cursor: pointer; text-decoration: none; }
+    .nav-item.active { color: #667eea; }
+    .nav-item i { font-size: 22px; display: block; margin-bottom: 3px; }
+    .nav-item span { font-size: 11px; font-weight: 600; }
+    
+    /* Loading & Empty */
+    .loading { text-align: center; padding: 40px 20px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+    .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.3; }
+    
+    /* Stats Cards */
+    .stats-card { background: white; border-radius: 12px; padding: 15px; margin: 0 5px 12px 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .stats-card-title { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .stats-card-value { font-size: 20px; font-weight: 700; margin: 0; word-break: break-all; }
+    
+    /* Year Selector */
+    .year-selector { padding: 0 15px 15px 15px; }
+    
+    /* Top Categories */
+    .category-rank { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+    .rank-number { width: 28px; height: 28px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .category-info { flex: 1; min-width: 0; }
+    .category-label { font-size: 15px; font-weight: 600; margin: 0; }
+    .category-amount { font-size: 13px; color: #6b7280; margin: 0; }
+    .category-bar { height: 6px; background: #f3f4f6; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+    .category-bar-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); }
+    
+    /* Responsive */
+    @media (max-width: 400px) {
+      .balance-amount { font-size: 28px; }
+      .summary-card-amount { font-size: 18px; }
+      .stats-card-value { font-size: 18px; }
+      .app-header h1 { font-size: 16px; }
+      .transaction-category { font-size: 14px; }
+      .transaction-date { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ========== DASHBOARD PAGE ========== -->
+    <div id="dashboardPage" class="page active">
+      <div class="app-header">
+        <div><i class="bi bi-list" style="font-size: 24px;"></i></div>
+        <h1>My Finance App</h1>
+        <div class="profile-icon"><i class="bi bi-person-fill"></i></div>
+      </div>
+      
+      <div class="balance-card">
+        <div class="balance-label">ยอดคงเหลือปัจจุบัน</div>
+        <h2 class="balance-amount" id="currentBalance">฿ 0.00</h2>
+        <div style="font-size: 14px; opacity: 0.8; margin-top: 10px;">
+          <span id="greetingText">สวัสดี</span> 👋
+        </div>
+      </div>
+      
+      <div class="month-selector">
+        <select class="form-select" id="monthSelector" onchange="loadDashboard()">
+          <option value="1">มกราคม</option>
+          <option value="2">กุมภาพันธ์</option>
+          <option value="3">มีนาคม</option>
+          <option value="4">เมษายน</option>
+          <option value="5">พฤษภาคม</option>
+          <option value="6">มิถุนายน</option>
+          <option value="7">กรกฎาคม</option>
+          <option value="8">สิงหาคม</option>
+          <option value="9">กันยายน</option>
+          <option value="10">ตุลาคม</option>
+          <option value="11">พฤศจิกายน</option>
+          <option value="12">ธันวาคม</option>
+        </select>
+      </div>
+      
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="summary-card-label">
+            <i class="bi bi-arrow-down-circle-fill" style="color: #10b981;"></i>
+            รายรับ
+          </div>
+          <h3 class="summary-card-amount income" id="totalIncome">฿ 0</h3>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">
+            <i class="bi bi-arrow-up-circle-fill" style="color: #ef4444;"></i>
+            รายจ่าย
+          </div>
+          <h3 class="summary-card-amount expense" id="totalExpense">฿ 0</h3>
+        </div>
+      </div>
+      
+      <div class="chart-section">
+        <div class="section-title">
+          <i class="bi bi-pie-chart-fill" style="color: #667eea;"></i>
+          การวิเคราะห์รายจ่าย
+        </div>
+        <div class="chart-container">
+          <canvas id="expenseChart" style="max-height: 250px;"></canvas>
+        </div>
+      </div>
+      
+      <div class="recent-transactions">
+        <div class="section-title">
+          <i class="bi bi-clock-history" style="color: #667eea;"></i>
+          รายการล่าสุด
+        </div>
+        <div id="recentTransactionsList">
+          <div class="loading">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-3">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      </div>
+      
+      <button class="fab"><i class="bi bi-plus-lg"></i></button>
+    </div>
+    
+    <!-- ========== TRANSACTION LIST PAGE ========== -->
+    <div id="transactionsPage" class="page">
+      <div class="app-header">
+        <div><i class="bi bi-arrow-left" style="font-size: 24px; cursor: pointer;" onclick="showPage('dashboard')"></i></div>
+        <h1>รายการทั้งหมด</h1>
+        <div class="profile-icon"><i class="bi bi-funnel-fill"></i></div>
+      </div>
+      
+      <div class="filters-section">
+        <input type="text" id="searchInput" class="filter-input" placeholder="🔍 ค้นหา..." style="width: 100%; margin-bottom: 10px;">
+        
+        <div class="filter-row">
+          <select id="typeFilter" class="filter-input" onchange="applyFilters()">
+            <option value="all">ทุกประเภท</option>
+            <option value="income">รายรับ</option>
+            <option value="expense">รายจ่าย</option>
+            <option value="transfer">โอนย้าย</option>
+          </select>
+          
+          <select id="categoryFilter" class="filter-input" onchange="applyFilters()">
+            <option value="all">ทุกหมวดหมู่</option>
+          </select>
+        </div>
+        
+        <div class="filter-row">
+          <input type="date" id="startDateFilter" class="filter-input" onchange="applyFilters()">
+          <input type="date" id="endDateFilter" class="filter-input" onchange="applyFilters()">
+        </div>
+      </div>
+      
+      <div id="transactionsList" style="padding: 0 15px;">
+        <div class="loading">
+          <div class="spinner-border text-primary"></div>
+          <p class="mt-3">กำลังโหลด...</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== STATISTICS PAGE ========== -->
+    <div id="statisticsPage" class="page">
+      <div class="app-header">
+        <div><i class="bi bi-arrow-left" style="font-size: 24px; cursor: pointer;" onclick="showPage('dashboard')"></i></div>
+        <h1>สถิติ</h1>
+        <div class="profile-icon"><i class="bi bi-graph-up"></i></div>
+      </div>
+      
+      <div class="year-selector">
+        <select class="form-select" id="yearSelector" onchange="loadStatistics()">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px 15px 15px;">
+        <div class="stats-card">
+          <div class="stats-card-title">รายรับรวม</div>
+          <div class="stats-card-value income" id="yearIncome" style="font-size: 18px;">฿0</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-title">รายจ่ายรวม</div>
+          <div class="stats-card-value expense" id="yearExpense" style="font-size: 18px;">฿0</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-title">คงเหลือ</div>
+          <div class="stats-card-value" id="yearBalance" style="font-size: 18px;">฿0</div>
+        </div>
+      </div>
+      
+      <div class="chart-section">
+        <div class="section-title">
+          <i class="bi bi-bar-chart-fill" style="color: #667eea;"></i>
+          เปรียบเทียบรายเดือน
+        </div>
+        <div class="chart-container">
+          <canvas id="monthlyChart" style="max-height: 300px;"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-section">
+        <div class="section-title">
+          <i class="bi bi-trophy-fill" style="color: #667eea;"></i>
+          Top 5 หมวดหมู่ที่ใช้จ่ายมากสุด
+        </div>
+        <div class="chart-container" id="topCategoriesList">
+          <div class="loading">
+            <div class="spinner-border text-primary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <a href="#" class="nav-item" id="navDashboard" onclick="showPage('dashboard'); return false;">
+        <i class="bi bi-house-fill"></i>
+        <span>หน้าหลัก</span>
+      </a>
+      <a href="#" class="nav-item" id="navTransactions" onclick="showPage('transactions'); return false;">
+        <i class="bi bi-list-ul"></i>
+        <span>รายการ</span>
+      </a>
+      <a href="#" class="nav-item" id="navStatistics" onclick="showPage('statistics'); return false;">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>สถิติ</span>
+      </a>
+      <a href="#" class="nav-item" onclick="showSettings(); return false;">
+        <i class="bi bi-gear-fill"></i>
+        <span>ตั้งค่า</span>
+      </a>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Global Variables
+    let currentMonth = new Date().getMonth() + 1;
+    let currentYear = new Date().getFullYear();
+    let currentPage = 'dashboard';
+    let expenseChart = null;
+    let monthlyChart = null;
+    let allTransactions = [];
+    let allCategories = [];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('monthSelector').value = currentMonth;
+      document.getElementById('yearSelector').value = currentYear;
+      loadUserInfo();
+      loadDashboard();
+      loadCategories();
+      
+      // Search input listener
+      document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 500));
+    });
+    
+    // Page Navigation
+    function showPage(page) {
+      currentPage = page;
+      
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      if (page === 'dashboard') {
+        document.getElementById('dashboardPage').classList.add('active');
+        document.getElementById('navDashboard').classList.add('active');
+        loadDashboard();
+      } else if (page === 'transactions') {
+        document.getElementById('transactionsPage').classList.add('active');
+        document.getElementById('navTransactions').classList.add('active');
+        loadAllTransactions();
+      } else if (page === 'statistics') {
+        document.getElementById('statisticsPage').classList.add('active');
+        document.getElementById('navStatistics').classList.add('active');
+        loadStatistics();
+      }
+    }
+    
+    // Load User Info
+    function loadUserInfo() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.displayName) {
+            document.getElementById('greetingText').textContent = getGreeting() + ', ' + result.displayName;
+          }
+        })
+        .getUserInfo();
+    }
+    
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'สวัสดีตอนเช้า';
+      if (hour < 18) return 'สวัสดีตอนบ่าย';
+      return 'สวัสดีตอนเย็น';
+    }
+    
+    // Load Dashboard
+    function loadDashboard() {
+      const month = parseInt(document.getElementById('monthSelector').value);
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (!result || !result.success) {
+            alert('ไม่สามารถโหลดข้อมูลได้');
+            return;
+          }
+          updateDashboard(result);
+        })
+        .getDashboardData(month, currentYear);
+    }
+    
+    function updateDashboard(data) {
+      document.getElementById('currentBalance').textContent = '฿ ' + formatNumber(data.balance);
+      document.getElementById('totalIncome').textContent = '฿ ' + formatNumber(data.income);
+      document.getElementById('totalExpense').textContent = '฿ ' + formatNumber(data.expense);
+      
+      updateExpenseChart(data.categoryExpenses);
+      updateRecentTransactions(data.recentTransactions);
+    }
+    
+    function updateExpenseChart(categoryExpenses) {
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      
+      if (expenseChart) expenseChart.destroy();
+      
+      const categories = Object.keys(categoryExpenses);
+      const amounts = Object.values(categoryExpenses);
+      
+      if (categories.length === 0) {
+        document.getElementById('expenseChart').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('expenseChart').style.display = 'block';
+      
+      const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+      
+      expenseChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: categories,
+          datasets: [{
+            data: amounts,
+            backgroundColor: colors.slice(0, categories.length),
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { padding: 15, font: { family: 'Sarabun', size: 13 } }
+            }
+          }
+        }
+      });
+    }
+    
+    function updateRecentTransactions(transactions) {
+      const container = document.getElementById('recentTransactionsList');
+      
+      if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="bi bi-inbox"></i><p>ยังไม่มีรายการในเดือนนี้</p></div>';
+        return;
+      }
+      
+      let html = '';
+      transactions.forEach(t => {
+        const isIncome = t.type === 'income';
+        const icon = getCategoryIcon(t.category);
+        const sign = isIncome ? '+' : '-';
+        const amountClass = isIncome ? 'income' : 'expense';
+        
+        html += `
+          <div class="transaction-item">
+            <div class="transaction-icon ${amountClass}">${icon}</div>
+            <div class="transaction-details">
+              <p class="transaction-category">${t.category}</p>
+              <p class="transaction-date">${t.date} ${t.time}</p>
+            </div>
+            <div class="transaction-amount ${amountClass}">${sign}฿${formatNumber(t.amount)}</div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Load All Transactions
+    function loadAllTransactions() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            allTransactions = result.transactions;
+            displayTransactions(allTransactions);
+          }
+        })
+        .getAllTransactions({});
+    }
+    
+    function displayTransactions(transactions) {
+      const container = document.getElementById('transactionsList');
+      
+      if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="bi bi-inbox"></i><p>ไม่พบรายการ</p></div>';
+        return;
+      }
+      
+      let html = '';
+      transactions.forEach(t => {
+        const isIncome = t.type === 'income';
+        const icon = getCategoryIcon(t.category);
+        const sign = isIncome ? '+' : '-';
+        const amountClass = isIncome ? 'income' : 'expense';
+        
+        html += `
+          <div class="transaction-item">
+            <div class="transaction-icon ${amountClass}">${icon}</div>
+            <div class="transaction-details">
+              <p class="transaction-category">${t.category}</p>
+              <p class="transaction-date">${t.date} ${t.time}</p>
+            </div>
+            <div class="transaction-amount ${amountClass}">${sign}฿${formatNumber(t.amount)}</div>
+            <button class="delete-btn" onclick="deleteTransaction(${t.rowIndex})">ลบ</button>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value;
+      const type = document.getElementById('typeFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+      const startDate = document.getElementById('startDateFilter').value;
+      const endDate = document.getElementById('endDateFilter').value;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            displayTransactions(result.transactions);
+          }
+        })
+        .getAllTransactions({ search, type, category, startDate, endDate });
+    }
+    
+    function deleteTransaction(index) {
+      if (!confirm('ต้องการลบรายการนี้?')) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            alert('ลบสำเร็จ');
+            loadAllTransactions();
+          } else {
+            alert('ลบไม่สำเร็จ: ' + (result.error || ''));
+          }
+        })
+        .deleteTransactionByRow(index);
+    }
+    
+    // Load Categories
+    function loadCategories() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            allCategories = result.categories;
+            const select = document.getElementById('categoryFilter');
+            result.categories.forEach(cat => {
+              const option = document.createElement('option');
+              option.value = cat;
+              option.textContent = cat;
+              select.appendChild(option);
+            });
+          }
+        })
+        .getUniqueCategories();
+    }
+    
+    // Load Statistics
+    function loadStatistics() {
+      const year = parseInt(document.getElementById('yearSelector').value);
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            updateStatistics(result);
+          }
+        })
+        .getStatisticsData(year);
+    }
+    
+    function updateStatistics(data) {
+      // Update yearly totals
+      document.getElementById('yearIncome').textContent = '฿' + formatNumber(data.yearlyTotal.income);
+      document.getElementById('yearExpense').textContent = '฿' + formatNumber(data.yearlyTotal.expense);
+      document.getElementById('yearBalance').textContent = '฿' + formatNumber(data.yearlyTotal.balance);
+      
+      // Update monthly chart
+      updateMonthlyChart(data.monthlyData);
+      
+      // Update top categories
+      updateTopCategories(data.topCategories);
+    }
+    
+    function updateMonthlyChart(monthlyData) {
+      const ctx = document.getElementById('monthlyChart').getContext('2d');
+      
+      if (monthlyChart) monthlyChart.destroy();
+      
+      const labels = monthlyData.map(m => m.monthName);
+      const incomeData = monthlyData.map(m => m.income);
+      const expenseData = monthlyData.map(m => m.expense);
+      
+      monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'รายรับ',
+              data: incomeData,
+              backgroundColor: '#10b981',
+              borderRadius: 8
+            },
+            {
+              label: 'รายจ่าย',
+              data: expenseData,
+              backgroundColor: '#ef4444',
+              borderRadius: 8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+    
+    function updateTopCategories(categories) {
+      const container = document.getElementById('topCategoriesList');
+      
+      if (!categories || categories.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>ไม่มีข้อมูล</p></div>';
+        return;
+      }
+      
+      const maxAmount = categories[0].amount;
+      
+      let html = '';
+      categories.forEach((cat, index) => {
+        const percentage = (cat.amount / maxAmount) * 100;
+        html += `
+          <div class="category-rank">
+            <div class="rank-number">${index + 1}</div>
+            <div class="category-info" style="flex: 1;">
+              <p class="category-label">${cat.category}</p>
+              <p class="category-amount">฿${formatNumber(cat.amount)}</p>
+              <div class="category-bar">
+                <div class="category-bar-fill" style="width: ${percentage}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Helpers
+    function getCategoryIcon(category) {
+      const icons = {
+        'Food': '🍔', 'Transport': '🚗', 'Home': '🏠', 'Entertainment': '🎮',
+        'Health': '💊', 'Shopping': '🛒', 'Bills': '💡', 'Education': '📚',
+        'Salary': '💰', 'Bonus': '💼', 'Investment': '📈', 'Gift': '🎁',
+        'Internal Move': '🔄', 'Transfer': '🏦', 'Payment': '💳',
+        'Telecommunications': '📱', 'Parking Fee': '🅿️'
+      };
+      return icons[category] || '➕';
+    }
+    
+    function formatNumber(num) {
+      return new Intl.NumberFormat('th-TH', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+    
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    
+    function showSettings() {
+      alert('⚙️ ตั้งค่า\n\n' +
+            '📱 เวอร์ชัน: 1.0.0\n' +
+            '👤 ผู้ใช้: ' + (document.getElementById('greetingText').textContent.split(', ')[1] || 'User') + '\n' +
+            '📊 Spreadsheet ID: ...YhyIds\n\n' +
+            'ฟีเจอร์ที่กำลังพัฒนา:\n' +
+            '• เพิ่ม/แก้ไขรายการ\n' +
+            '• LINE Notification\n' +
+            '• สแกนสลิป OCR\n' +
+            '• Export PDF/Excel');
+    }
+  </script>
+</body>
+</html>
