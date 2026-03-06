@@ -312,6 +312,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-06 21:40 | sync | all | auto-sync |
 | 2026-03-06 20:00 | sync | all | auto-sync |
 | 2026-03-06 17:23 | sync | all | auto-sync |
 | 2026-03-06 17:21 | sync | all | auto-sync |
