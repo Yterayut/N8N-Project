@@ -49,9 +49,9 @@ Claude review → merge → sync all
 |-------|-------|
 | **Phase** | Health fixes ✅ — /health Telegram ✅, GG Data (OCR_EXAMPLES) Switch bug fixed ✅ |
 | **Active Agent** | _(none)_ |
-| **Codex Status** | Awaiting CC review handoff — T052A–T052F implemented + verified complete (see `docs/collab/reviews/T052A-review.md` ... `T052F-review.md`) |
+| **Codex Status** | Awaiting CC review handoff — T052A–T052F + T052D-fix implemented and verified complete |
 | **GG Status** | Ground truth batch 21/21 complete ✅ — caltex re-run ✅, shell Tax ID fixed ✅ |
-| **Last Sync** | 2026-03-06 (T052A–T052F delivery + evidence docs updated; pending CC full review) |
+| **Last Sync** | 2026-03-06 (T052D-fix active_for_prompt backfill delivered; pending CC review) |
 | **Completed tasks archive** | `docs/collab/completed-tasks.md` (T001–T028) |
 
 ---
@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T052D-fix | Backfilled `OCR_EXAMPLES` `active_for_prompt` + trust/canonical metadata for historical active rows via temporary n8n workflow `tmp-t052d-fix-examples` (`5fSm6Nr733RRtp2x`). Runtime result `updates=28`; verification via `gg-data?sheet=OCR_EXAMPLES` shows `active_for_prompt=True: 30/30`, `excluded: 0`, vendor distribution now spans `unknown`, `ptt_or`, `caltex`, `susco`, `shell`, `pt_max_lpg`, `bangchak`, `siam_gas`, `mea`, `ktb_fleet`. Temporary workflow archived + deleted after run. | Codex | 2026-03-06 | PASS |
 | T052F | Holdout benchmark + release gate contract in `ocr-benchmark-runner` (`vkIBCzSBUDVZH5kQ`). Patched `Code (Prepare Cases)`, `Code (Compare vs Ground Truth)`, `Code (Build Summary)` to emit contract fields (`benchmark_run_id`, `critical_field_accuracy`, `by_vendor`, `by_layout`, `transport_fail_count`, `parse_fail_count`, `scored_count`, `holdout_pass`, `release_gate`) and support dataset routing from sheet `set_name` or `notes` tag (`set_name=...`). Verification: `/webhook/ocr-benchmark` exec `157794` returned full contract and blocked gate scenario (`release_gate.gate_status=blocked`, `reason=unknown_vendor_rate_rise`) ✅; holdout run exec `157819` (`dataset=holdout_gold`, `filter_benchmark_id=bm_shell01`) returned `holdout_pass=true` ✅; benchmark rows now carry split tags (dev/holdout/train) in notes for 19/20 rows (1 fixture skip) ✅. | Codex | 2026-03-06 | PASS |
 | T052E | Admin feedback rule-learning pipeline (`ocr-km-suggest`, `NkKd02QyzLRcpIJM`) updated to canonical cluster key (`vendor_code+layout_id+field_name+diff_type`) with thresholds 3/5/10 => `suggestion`/`draft_rule_candidate`/`canary_eligible`. Verification: webhook exec `157791` success (`new_lessons=36`), execution_data contains `cluster_key`, `vendor_code`, `layout_id`, and all 3 statuses ✅; anti-noise verification exec `157984` confirms no generated lesson below threshold (`min_support_count=3`, `lessons_with_support_lt3=0`) ✅. | Codex | 2026-03-06 | PASS |
 | T052D | Trusted example memory implemented across `ocr-examples-api` + OCR few-shot read path. Added trust metadata fields (`example_class`, `trust_level`, `source_case_class`, `canonical_vendor`, `layout_id`, `active_for_prompt`), ranking (trusted_gold > accepted_example > experimental), prompt cap=5, runtime stale/dedupe pruning. Verification: examples API create/read execs `157811`, `157812` show trusted row ranked first ✅. | Codex | 2026-03-06 | PASS |

@@ -217,13 +217,26 @@ print(f"vendor dist: {dict(Counter(r.get('canonical_vendor','?') for r in active
 
 ## Definition of Done
 
-- [ ] `active_for_prompt=TRUE` สำหรับ 28 rows (active=TRUE, was blank)
-- [ ] `example_class` + `trust_level` backfilled ตาม source mapping ครบ
-- [ ] `canonical_vendor` + `layout_id` backfilled ตาม tax_id mapping ครบ
-- [ ] Verification: `active_for_prompt=True` count = 30, `excluded` = 0
-- [ ] Verification: vendor distribution มี shell/caltex/susco/ptt_or/pt_max_lpg ฯลฯ ≠ ptt_or only
-- [ ] Temporary workflow ถูกลบหลังรัน
-- [ ] HANDOFF.md updated
+- [x] `active_for_prompt=TRUE` สำหรับ 28 rows (active=TRUE, was blank)
+- [x] `example_class` + `trust_level` backfilled ตาม source mapping ครบ
+- [x] `canonical_vendor` + `layout_id` backfilled ตาม tax_id mapping ครบ
+- [x] Verification: `active_for_prompt=True` count = 30, `excluded` = 0
+- [x] Verification: vendor distribution มี shell/caltex/susco/ptt_or/pt_max_lpg ฯลฯ ≠ ptt_or only
+- [x] Temporary workflow ถูกลบหลังรัน
+- [x] HANDOFF.md updated
+
+---
+
+## Closing (Codex)
+
+- Implemented via temporary workflow `tmp-t052d-fix-examples` (`id=5fSm6Nr733RRtp2x`) using n8n REST API only.
+- Triggered via `POST /webhook/tmp-t052d-fix-examples` and received `{\"ok\": true, \"updates\": 28}`.
+- Post-check with Python `urllib` against `gg-data?sheet=OCR_EXAMPLES`:
+  - `active rows: 30`
+  - `active_for_prompt=True: 30`
+  - `still excluded: 0`
+  - `vendor dist: {'unknown': 5, 'ptt_or': 5, 'caltex': 4, 'susco': 5, 'shell': 5, 'pt_max_lpg': 2, 'bangchak': 1, 'siam_gas': 1, 'mea': 1, 'ktb_fleet': 1}`
+- Temporary workflow cleanup completed: deactivated + archived + deleted (`DELETE /rest/workflows/5fSm6Nr733RRtp2x` => `{\"data\": true}`).
 
 ---
 
