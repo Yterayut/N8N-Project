@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T052-minor-fixes | (1) `case_class: 'accepted'` added to `Code (Prepare KM Log Payload)` in ocr-training (`KW0QRXxRh9MjdPaY`) — T052A minor fix. (2) PTG (`0107538000703`) added to `CANONICAL_VENDOR_BY_TAX`, `CANONICAL_ALIAS`, `CANONICAL_VENDOR_NAME` in `Code (Normalize+Validate)` of main OCR (`up1n75qEhbsXswii`) — T052B minor fix. (3) Activated `currency → THB` canary_eligible lesson: appended `rule-currency-default-thb-v1` to `OCR_KM_RUNTIME_RULES` (row 17, `status=active`, `scope=post_normalize`, `rule_type=field_default`, `field=currency`, `default=THB`). Source lesson: `ls_1772761121817_oifgf1` (21x pattern, unknown+layout_unknown_v1). | CC | 2026-03-07 | PASS |
 | T052D-fix | Backfilled `OCR_EXAMPLES` `active_for_prompt` + trust/canonical metadata for historical active rows via temporary n8n workflow `tmp-t052d-fix-examples` (`5fSm6Nr733RRtp2x`). Runtime result `updates=28`; verification via `gg-data?sheet=OCR_EXAMPLES` shows `active_for_prompt=True: 30/30`, `excluded: 0`, vendor distribution now spans `unknown`, `ptt_or`, `caltex`, `susco`, `shell`, `pt_max_lpg`, `bangchak`, `siam_gas`, `mea`, `ktb_fleet`. Temporary workflow archived + deleted after run. | Codex | 2026-03-06 | PASS |
 | T052F | Holdout benchmark + release gate contract in `ocr-benchmark-runner` (`vkIBCzSBUDVZH5kQ`). Patched `Code (Prepare Cases)`, `Code (Compare vs Ground Truth)`, `Code (Build Summary)` to emit contract fields (`benchmark_run_id`, `critical_field_accuracy`, `by_vendor`, `by_layout`, `transport_fail_count`, `parse_fail_count`, `scored_count`, `holdout_pass`, `release_gate`) and support dataset routing from sheet `set_name` or `notes` tag (`set_name=...`). Verification: `/webhook/ocr-benchmark` exec `157794` returned full contract and blocked gate scenario (`release_gate.gate_status=blocked`, `reason=unknown_vendor_rate_rise`) ✅; holdout run exec `157819` (`dataset=holdout_gold`, `filter_benchmark_id=bm_shell01`) returned `holdout_pass=true` ✅; benchmark rows now carry split tags (dev/holdout/train) in notes for 19/20 rows (1 fixture skip) ✅. | Codex | 2026-03-06 | PASS |
 | T052E | Admin feedback rule-learning pipeline (`ocr-km-suggest`, `NkKd02QyzLRcpIJM`) updated to canonical cluster key (`vendor_code+layout_id+field_name+diff_type`) with thresholds 3/5/10 => `suggestion`/`draft_rule_candidate`/`canary_eligible`. Verification: webhook exec `157791` success (`new_lessons=36`), execution_data contains `cluster_key`, `vendor_code`, `layout_id`, and all 3 statuses ✅; anti-noise verification exec `157984` confirms no generated lesson below threshold (`min_support_count=3`, `lessons_with_support_lt3=0`) ✅. | Codex | 2026-03-06 | PASS |
@@ -313,6 +314,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-06 21:41 | sync | all | auto-sync |
+| 2026-03-06 21:41 | sync | all | auto-sync |
 | 2026-03-06 21:41 | sync | all | auto-sync |
 | 2026-03-06 21:41 | sync | all | auto-sync |
 | 2026-03-06 21:40 | sync | all | auto-sync |
