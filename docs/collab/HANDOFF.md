@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| caltex-probe-cleanup | Caltex `Code (Parse Result)` investigation: fix IS already applied (unit_price↔quantity swap for items[], list_detail[], line_items[]). 2 low-accuracy feedback_kpi cases (50%/75%) were maintenance probes from T044/T052A — NOT real bills. Both set `status=excluded`. Real Caltex bills (telegram_train ×3) = 100% avg ✅. No code change needed. | CC | 2026-03-07 | PASS |
 | scg-prawet-cleanup | scg_prawet TRAIN_CASES cleanup: 2 historical `pending_review` rows (`tc_1772101155160_frk82f`, `tc_1772105278482_w2oupf`) set to `status=excluded, ocr_accuracy_pct=''` — both had `field_diffs=null` (logged before VENDOR_MAP was set up) and 75% accuracy without field-level diff detail. VENDOR_MAP confirmed complete in all 4 locations (Normalize+Validate, km-logger Compute Diffs, gg-data-gateway VENDOR_MAP, GSheets). New scg_prawet bills will route correctly. | CC | 2026-03-07 | PASS |
 | CC-v2.1-enhancements | Claude Code v2.1 enhancements for OCR system: (1) **Hooks** — PreToolUse guards (`pre-bash-guard.sh` blocks force-push/sed-on-workflow/sqlite-direct; `pre-write-guard.sh` blocks .env/sqlite writes), PostToolUse auto-verify (`post-bash-verify.sh` runs `verify_nowThai_sync.sh` after n8n PATCH), PreCompact auto-checkpoint (`pre-compact-checkpoint.sh` saves FORWARD.md), Stop HANDOFF check (`stop-handoff-check.sh`), InstructionsLoaded confirm (`instructions-loaded.sh`). All hooks rewritten to use Python instead of `jq` (not installed). (2) **Sub-agents** — `ocr-executor` (Haiku), `ocr-reviewer` (Sonnet), `ocr-validator` (Haiku), `ocr-analyst` (Sonnet) at `.claude/agents/`. (3) **MCP SQLite** — `.mcp.json` with `mcp-server-sqlite` connected to `.n8n-dev/.n8n/database.sqlite`. (4) **Skills** — `/review-task`, `/assign-codex`, `/smoke-test`, `/benchmark`, `/sync-check` at `.claude/commands/`. (5) **`.claude/settings.json`** — hooks config live. | CC | 2026-03-07 | PASS |
 | T052-minor-fixes | (1) `case_class: 'accepted'` added to `Code (Prepare KM Log Payload)` in ocr-training (`KW0QRXxRh9MjdPaY`) — T052A minor fix. (2) PTG (`0107538000703`) added to `CANONICAL_VENDOR_BY_TAX`, `CANONICAL_ALIAS`, `CANONICAL_VENDOR_NAME` in `Code (Normalize+Validate)` of main OCR (`up1n75qEhbsXswii`) — T052B minor fix. (3) Activated `currency → THB` canary_eligible lesson: appended `rule-currency-default-thb-v1` to `OCR_KM_RUNTIME_RULES` (row 17, `status=active`, `scope=post_normalize`, `rule_type=field_default`, `field=currency`, `default=THB`). Source lesson: `ls_1772761121817_oifgf1` (21x pattern, unknown+layout_unknown_v1). | CC | 2026-03-07 | PASS |
@@ -316,6 +317,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-07 15:19 | sync | all | auto-sync |
+| 2026-03-07 14:35 | sync | all | auto-sync |
 | 2026-03-07 14:00 | sync | all | auto-sync |
 | 2026-03-07 06:26 | sync | all | auto-sync |
 | 2026-03-06 21:41 | sync | all | auto-sync |
