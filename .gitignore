@@ -43,8 +43,11 @@
 backups/
 logs/
 
-# Agent worktrees
-agents/
+# Agent worktrees (top-level only)
+/agents/
+# Allow .claude/agents/ sub-agents
+!.claude/agents/
+!.claude/agents/**
 .tmp/
 cookie.txt
 tmp/

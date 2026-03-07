@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ocr-db": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-sqlite",
+        "--db-path",
+        "/home/oneclimate-uat/Project-Yterayut/N8N-AUTO-RESPONSE/.n8n-dev/.n8n/database.sqlite"
+      ]
+    }
+  }
+}
