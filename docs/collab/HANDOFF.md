@@ -119,6 +119,9 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| fix-examples-api-reject | Fixed `ocr-examples-api` reject flow: added `active_for_prompt` to GSheets Update node schema + value mapping in workflow `LzYmwkdRfOxbCrwB`. Previously reject only set `active=False` but `active_for_prompt` stayed True. Now both fields updated atomically. | CC | 2026-03-08 | PASS |
+| gg-curation-review | GG Curation Report 2026-02-25 reviewed: all 4 recommendations already implemented — `tc_1772008956515_cov52h` (lazy labeling) already excluded, 3 high-quality PTT cases kept. No new actions needed. Report closed. | CC | 2026-03-08 | DONE |
+| tc-audited | Updated `tc_1772897090067_kdtmr2` (SCG Prawet 50% admin feedback) from `pending_review` → `audited`. `metric_eligible=True`. | CC | 2026-03-08 | PASS |
 | T053 | Accuracy Push: TRAIN_CASES 99% → 100% (33 real bills). Root cause: 2 synthetic probe rows dragging score — `tc_1772007451073_yn04ia` (T029A rerun seed, fake vendor_tax_id=107537000000) and `tc_1772761059238_r7ouku` (T052A probe t052_probe_diff_01). Both excluded (exec 158869 ✅). OCR_EXAMPLES PTT OR cleanup: deactivated 2 duplicate invoice_number=100628 rows + 2 synthetic ZZ01/ZZ02 examples (wrong total=900 was teaching Gemini incorrectly). OCR_EXAMPLES now: 26/65 active_for_prompt. 1 real PTT OR bill active. nowThai ✅. | CC | 2026-03-07 | 100% ✅ |
 | caltex-probe-cleanup | Caltex `Code (Parse Result)` investigation: fix IS already applied (unit_price↔quantity swap for items[], list_detail[], line_items[]). 2 low-accuracy feedback_kpi cases (50%/75%) were maintenance probes from T044/T052A — NOT real bills. Both set `status=excluded`. Real Caltex bills (telegram_train ×3) = 100% avg ✅. No code change needed. | CC | 2026-03-07 | PASS |
 | scg-prawet-cleanup | scg_prawet TRAIN_CASES cleanup: 2 historical `pending_review` rows (`tc_1772101155160_frk82f`, `tc_1772105278482_w2oupf`) set to `status=excluded, ocr_accuracy_pct=''` — both had `field_diffs=null` (logged before VENDOR_MAP was set up) and 75% accuracy without field-level diff detail. VENDOR_MAP confirmed complete in all 4 locations (Normalize+Validate, km-logger Compute Diffs, gg-data-gateway VENDOR_MAP, GSheets). New scg_prawet bills will route correctly. | CC | 2026-03-07 | PASS |
@@ -318,6 +321,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-07 21:43 | sync | all | auto-sync |
 | 2026-03-07 15:52 | sync | all | auto-sync |
 | 2026-03-07 15:42 | sync | all | auto-sync |
 | 2026-03-07 15:19 | sync | all | auto-sync |
