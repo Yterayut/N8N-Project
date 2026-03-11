@@ -1,17 +1,18 @@
-## Last Checkpoint — 2026-03-07 BKK
+## Last Checkpoint — 2026-03-12 BKK
 
 ### Git State
 - Branch: `stable`
-- Last commit: `6cd6c84 fix(caltex): verify Code (Parse Result) — no fix needed, probe rows excluded`
+- Last commit: `d48508b docs(retro): session retrospective 2026-03-08-data-quality-push`
 
 ### Status
-- ✅ CC v2.1 hooks + agents + MCP + skills — ติดตั้งและทดสอบแล้ว
-- ✅ scg_prawet — 2 rows excluded (field_diffs=null historical)
-- ✅ caltex probe rows — 2 rows excluded (maintenance probes t044/t052a)
-- ✅ gg-data 401 — ไม่มีปัญหา (n8n process มี OCR_SHARED_API_KEY จาก root .env แล้ว)
-- ⏭️ ไม่มี task ค้างอยู่ — พร้อมรับ task ใหม่
+- ✅ OCR system healthy — 0 errors since 2026-03-07, nowThai sync OK
+- ✅ `up1n75qEhbsXswii` renamed back to `ocr-invoice-processor` (via REST API)
+- ✅ KPI 94% analyzed — legitimate (8-case sample, 1 real 50% SCG Prawet case)
+- ⚠️ POC + PAY Google OAuth expired — Yut ต้อง reconnect ใน n8n UI
+- ⚠️ OCM-Chat-BOT typeValidation=strict — 17% error rate (chronic, ไม่ใช่ OCR)
+- ⏭️ ไม่มี task ค้างอยู่ใน OCR — พร้อมรับ task ใหม่
 
 ### Key Context
-- gg-data gateway: ทำงาน 200 OK — auth ผ่านแล้ว
-- VENDOR_MAP ครบ 10 vendors ใน 3 workflows + GSheets
-- Custom sub-agents ใน `.claude/agents/` ไม่สามารถ invoke ผ่าน Agent tool `subagent_type` ได้ — Claude invoke อัตโนมัติตาม description
+- tc_1772897090067_kdtmr2 = 50% LEGITIMATE (6 real diffs: total=650→970, invoice_number wrong, date wrong, etc.)
+- request 1772976773470 (SCG Prawet 100% test) = NOT in TRAIN_CASES (no formal admin feedback)
+- KPI uses status=audited only — 25 user_accepted cases not counted → sample=8 เท่านั้น

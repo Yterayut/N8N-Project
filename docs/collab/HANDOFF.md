@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| health-kpi-analysis | KPI 94% diagnosed: 8-case sample + legitimate 50% SCG Prawet (6 real diffs confirmed). OCR system health check: all workflows healthy, 0 errors since 2026-03-07. Renamed `up1n75qEhbsXswii` back to `ocr-invoice-processor` (was mistakenly `ocr-training`). Non-OCR issues found: POC/PAY OAuth expired (Yut action needed), OCM-Chat-BOT typeValidation chronic. | CC | 2026-03-12 | DONE |
 | fix-examples-api-reject | Fixed `ocr-examples-api` reject flow: added `active_for_prompt` to GSheets Update node schema + value mapping in workflow `LzYmwkdRfOxbCrwB`. Previously reject only set `active=False` but `active_for_prompt` stayed True. Now both fields updated atomically. | CC | 2026-03-08 | PASS |
 | gg-curation-review | GG Curation Report 2026-02-25 reviewed: all 4 recommendations already implemented — `tc_1772008956515_cov52h` (lazy labeling) already excluded, 3 high-quality PTT cases kept. No new actions needed. Report closed. | CC | 2026-03-08 | DONE |
 | tc-audited | Updated `tc_1772897090067_kdtmr2` (SCG Prawet 50% admin feedback) from `pending_review` → `audited`. `metric_eligible=True`. | CC | 2026-03-08 | PASS |
@@ -321,6 +322,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-08 21:52 | sync | all | auto-sync |
 | 2026-03-08 21:22 | sync | all | auto-sync |
 | 2026-03-07 21:43 | sync | all | auto-sync |
 | 2026-03-07 15:52 | sync | all | auto-sync |
