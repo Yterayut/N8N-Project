@@ -196,7 +196,7 @@ No concerns — proceeding as spec draft for CC review before implementation.
 - [x] KPI report shows audited vs accepted split + coverage metrics
 
 **E2E Passed:**
-- [ ] Exec ID: `161890` — Nexgen trained bill pass with non-empty customer/address
+- [x] Exec ID: `161956` — Nexgen trained bill: `few_shot_count=1`, `retrieval_mode=strict`, `coverage_status=learning`, `customer_name` + `address` filled, `decision=auto_pass` ✅
 - [x] Exec ID: `161862` — Unknown vendor correctly gated to needs_review
 
 **Docs synced:**
@@ -229,8 +229,13 @@ Docs synced:
 - `docs/collab/reviews/T054-review.md` Codex Response filled.
 - `docs/collab/HANDOFF.md` moved T054 to Recently Completed.
 
-Remaining limits:
-- `OCR_COVERAGE_REGISTRY` physical sheet tab is not available in this environment; gateway now serves fallback default registry rows to keep read path deterministic until tab is created.
-- Nexgen happy-path target (`few_shot_count>0` + customer/address non-empty) did not pass on current sample run; response fields are present but retrieval stayed `none` for tested Nexgen documents.
-- Telegram end-to-end delivery was not exercised from live Telegram transport in this shell session; parser behavior was validated by executing the live parser JS with Telegram-shaped payloads.
+Remaining limits (Codex):
+- `OCR_COVERAGE_REGISTRY` physical sheet tab not created by Codex.
+- Nexgen happy-path target not met in Codex session.
+- Telegram end-to-end delivery not exercised from live Telegram transport.
+
+Post-fix (CC, 2026-03-14):
+- Created `OCR_COVERAGE_REGISTRY` tab in OCM-INFRA spreadsheet (sheetId 1781006429), 12 vendor rows, status=learning.
+- Fixed `Code (Document Classifier)` nexgen filename/text hint branch to set `vendorCode='inet'` + `layoutId='inet_nexgen_v1'`. Root cause of `few_shot_count=0` was empty vendor_code in hint branch.
+- Nexgen E2E verified: exec `161956` — `few_shot_count=1`, `retrieval_mode=strict`, `coverage_status=learning`, customer/address filled, `decision=auto_pass` ✅.
 ```
