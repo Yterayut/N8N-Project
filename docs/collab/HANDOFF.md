@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| save-prediction-401-fix | Fixed `HTTP Save Prediction` node in `up1n75qEhbsXswii`: added `x-api-key: $env.OCR_FEEDBACK_API_KEY` header (was missing → 401 UNAUTHORIZED on every OCR run). Verified exec `162004`: 0 401 errors ✅. | CC | 2026-03-14 | DONE |
 | nexgen-example-fix | Fixed 1st nexgen example (`ex_1773338904205_234d`): `doc_type: other→nexgen`, `layout_id: ptt_or_fuel_v1→inet_nexgen_v1`. Also patched `ocr-examples-api` (`LzYmwkdRfOxbCrwB`) GSheets Update node to include `layout_id` + `doc_type` in column mapping (was missing → update action silently skipped those fields). Verified via examples-api read after 65s cache TTL. | CC | 2026-03-14 | DONE |
 | T054 | OCR Coverage Matrix + PDCA Training Loop Hardening — **COMPLETE**. (Codex) Patched 5 live workflows. (CC post-fix 2026-03-14) (1) Created `OCR_COVERAGE_REGISTRY` tab in OCM-INFRA spreadsheet (sheetId 1781006429) with 12 vendor rows — all status=learning, thresholds 5/10/98/99; gg-data-gateway now reads real sheet instead of fallback. (2) Fixed `Code (Document Classifier)` in `up1n75qEhbsXswii`: nexgen filename/text hint branch now sets `vendorCode='inet'` + `layoutId='inet_nexgen_v1'` (was only setting `docType='nexgen'`). Root cause of `few_shot_count=0`: classifier detected nexgen via filename but left vendor_code empty → two-pass selector had empty wantedVendor → 0 matches. Post-fix exec `161956`: `few_shot_count=1`, `retrieval_mode=strict`, `coverage_status=learning`, `customer_name=อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน)`, `address` filled, `decision=auto_pass` ✅. T1 (nexgen happy-path) PASSED. nowThai ✅. Remaining: Yut reconnect POC+PAY OAuth; 1st nexgen example layout_id fix (minor). | CC+Codex | 2026-03-14 | PASS ✅ |
 | invoice-contamination-fix | Fixed few-shot example contamination causing Gemini to copy `invoice_number` from training examples to new bills. (1) Patched `Code (Build Request)` in `up1n75qEhbsXswii`: replaced weak "Do not copy unrelated values" with explicit rule "CRITICAL: Do NOT copy invoice_number, invoice_date_th, total_amount, or any field values from examples — Every field value MUST be extracted from the actual document image". (2) Updated 2 stale Caltex examples (`ex_1772244664476_2682`, `ex_1772236024817_ee46`) gold_json: `invoice_date_th` corrected from `"2025-01-25"` (ISO) → `"25/01/2568"` (DD/MM/YYYY Thai year) via examples-api update action. Root cause: few-shot prompt included real `invoice_number` values from example gold_json, Gemini copied them verbatim to new bills instead of reading from document. | CC | 2026-03-13 | DONE |
@@ -327,6 +328,10 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-14 01:53 | sync | all | auto-sync |
+| 2026-03-14 01:53 | sync | all | auto-sync |
+| 2026-03-14 01:51 | sync | all | auto-sync |
+| 2026-03-14 01:51 | sync | all | auto-sync |
 | 2026-03-14 01:30 | sync | all | auto-sync |
 | 2026-03-14 01:24 | sync | all | auto-sync |
 | 2026-03-14 00:52 | sync | all | auto-sync |
