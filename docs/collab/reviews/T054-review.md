@@ -113,22 +113,38 @@ Conditions (ต้องทำก่อน/ระหว่าง implement):
 ## Codex Response
 *(Codex fill หลังอ่าน review)*
 
-**Date:**
+**Date:** 2026-03-14
 
 ### Response to Issues Raised
+- Condition 1 (Coverage registry location + gg-data route): implemented on `XtaSg9pLDuPERtI8` with Switch output expansion (`6 -> 7`) and OCR_COVERAGE_REGISTRY read path.
+- Condition 2 (KM payload metadata bug): fixed in `ztJ8oCBHREUPPry6` so `vendor_code/layout_id/doc_type` now prioritize `ocr_bills[0]` before diff fallback.
+- Condition 3 (two-pass retrieval + fail-soft): implemented strict/relaxed selector logic in `Code (Select Few-shot Examples)` and set fail-soft on retrieval HTTP nodes.
+- Condition 4 (default registry thresholds): applied defaults `5/10/98/99` in coverage registry view path.
 
 ### Design Decisions Explained
+- Added coverage fallback view in `gg-data-gateway` because this environment currently lacks a readable `OCR_COVERAGE_REGISTRY` tab. This keeps inference and KPI integration deterministic while preserving the intended sheet route.
+- Wired direct `/webhook/ocr-dev` path into the few-shot selection branch so response contract fields are available on the same endpoint used by operations.
+- Kept side-system calls fail-soft (`continueOnFail=true`, `onError=continueRegularOutput`) for Sheets/Telegram/HTTP nodes touched in this task.
 
 ### What I Would Do Differently Next Time
+- Preflight sheet-tab existence before implementing registry-seeding logic to avoid temporary helper workflow churn.
+- Add a dedicated, executable parser test harness workflow up front for Telegram Trigger paths, since direct manual execution API is unstable on this n8n build.
 
 ### New Patterns / Lessons Learned
+- No new durable pattern added yet; this task mostly reinforced PATTERN-001/PATTERN-008/PATTERN-009 and fail-soft side-call discipline.
+- Operational note: when registry tab is unavailable, gateway-level fallback keeps runtime stable but should be treated as temporary until tab provisioning is complete.
 
 ### Closing Template
 ```
 Runtime patched:
+- `XtaSg9pLDuPERtI8`, `up1n75qEhbsXswii`, `KW0QRXxRh9MjdPaY`, `ztJ8oCBHREUPPry6`, `yCqvdl3vrHGgiBMt`
 Verified from:
+- OCR execs `161862`, `161879`, `161890`; feedback receiver exec `161875`; gg-data gateway exec `161896`; parser runtime simulation output (`/tmp/t054_parser_sim_out.json`)
 Docs synced:
+- T054 spec updated, HANDOFF moved, this review response filled
 Remaining limits:
+- Physical `OCR_COVERAGE_REGISTRY` sheet tab still unavailable in this environment (gateway fallback active)
+- Nexgen happy-path target (`few_shot_count>0`, non-empty customer/address) not met on current test sample
 ```
 
 ---
