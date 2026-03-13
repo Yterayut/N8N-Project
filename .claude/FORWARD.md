@@ -12,7 +12,7 @@
 - ✅ HTTP Read OCR_EXAMPLES x-api-key header fixed (was 401)
 - ✅ Coverage URL double-param bug fixed (was OCR_COVERAGE_REGISTRY,OCR_COVERAGE_REGISTRY)
 - ⚠️ POC + PAY Google OAuth expired — Yut ต้อง reconnect ใน n8n UI
-- ⚠️ First nexgen example layout_id=ptt_or_fuel_v1 (wrong, should be inet_nexgen_v1) — minor
+- ✅ First nexgen example `ex_1773338904205_234d` fixed: doc_type=nexgen, layout_id=inet_nexgen_v1
 
 ### Key Context
 - T054 fully complete: OCR_COVERAGE_REGISTRY tab live + nexgen E2E passing
@@ -20,6 +20,5 @@
 - OCR_EXAMPLES HTTP node now has x-api-key header (was getting 401 silently → 0 examples)
 
 ### Next Actions
-1. Optionally: fix 1st nexgen example layout_id via examples-api reject+recreate (minor, low priority)
-2. Yut: reconnect POC+PAY Google OAuth in n8n UI (Yut action required)
-3. Next task: check HANDOFF.md pending queue
+1. Yut: reconnect POC+PAY Google OAuth in n8n UI (Yut action required)
+2. Next task: check HANDOFF.md pending queue
