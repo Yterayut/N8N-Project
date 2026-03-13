@@ -1,0 +1,163 @@
+{
+  "createdAt": "2025-11-06T08:05:00.208Z",
+  "updatedAt": "2025-11-23T07:50:58.000Z",
+  "id": "Yh60Vf9W8tYrxaWa",
+  "name": "FB Like Test",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fb-like-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "fca8586f-d9f8-4311-b5b3-a78865f73596",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -224
+      ],
+      "webhookId": "c0042c4b-a259-4a87-ac91-2cf2191da9f8"
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst results = [];\n\nconst version = ($env.FB_GRAPH_API_VERSION || 'v19.0').replace(/^v?/i, 'v');\n\nfor (const item of items) {\n  const payload = item.json.body ?? item.json;\n  const commentId = payload.commentId || payload.facebook?.commentId || '';\n  const pageId = payload.pageId || payload.facebook?.pageId || '';\n  let pageAccessToken = payload.pageAccessToken || payload.facebook?.pageAccessToken || '';\n\n  if (!pageAccessToken && pageId) {\n    const envKey = `FB_PAGE_ACCESS_TOKEN_${pageId}`;\n    pageAccessToken = ($env[envKey] || '').trim();\n  }\n  if (!pageAccessToken) {\n    pageAccessToken = ($env.FB_PAGE_ACCESS_TOKEN || '').trim();\n  }\n\n  if (!commentId || !pageAccessToken) {\n    throw new Error('commentId หรือ pageAccessToken ว่าง – กรุณาส่งค่ามาด้วย');\n  }\n\n  const url = `https://graph.facebook.com/${version}/${encodeURIComponent(commentId)}/likes`;\n\n  results.push({\n    json: {\n      commentId,\n      pageId,\n      likeUrl: url,\n      pageAccessToken\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "id": "904ee623-3b6a-4cac-88a9-fe126b292447",
+      "name": "Prepare Like Request",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.likeUrl }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.pageAccessToken }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "6776a42b-1eb5-4496-b3c7-2f5cd6c18df5",
+      "name": "FB Graph Like Comment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        752,
+        -224
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1e0ddfa7-6327-4dac-a0f7-cc5275fdbf5d",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "35608143-07fe-4b75-859c-534cb8cf5306",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -224
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Like Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Like Request": {
+      "main": [
+        [
+          {
+            "node": "FB Graph Like Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Graph Like Comment": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "96bc3707-9359-48f0-806f-28f79a25f399",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-06T08:05:00.225Z",
+      "updatedAt": "2025-11-06T08:05:00.225Z",
+      "role": "workflow:owner",
+      "workflowId": "Yh60Vf9W8tYrxaWa",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

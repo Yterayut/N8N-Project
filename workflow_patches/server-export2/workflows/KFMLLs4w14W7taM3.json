@@ -1,0 +1,274 @@
+{
+  "createdAt": "2026-01-29T08:35:05.555Z",
+  "updatedAt": "2026-01-29T08:39:22.000Z",
+  "id": "KFMLLs4w14W7taM3",
+  "name": "BOT-Kiriyah",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "keep-pic-and-file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2336,
+        -240
+      ],
+      "id": "18ed885f-2058-4f9a-98bb-e21cb7254058",
+      "name": "Webhook1",
+      "webhookId": "8b836b8f-f291-4c0d-b2f4-fc019842c289"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer PLngaZ2Z2sfEfre3qdeZAVxTuVQdJ/uUUIXiQcFprJmvy9ESvs7ql6iqP3sxaiFUkV2VfjynR6tBYrwOR5fY8HXcCgty1N9/0VKi2r25zNU7kI7OT87NhW3SDa2CdcabYDNrQbTrFLw3Wi15gkIfjAdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Code in JavaScript18').item.json.line_payload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5184,
+        912
+      ],
+      "id": "1996a5c2-f303-4304-adeb-85c8492d2367",
+      "name": "HTTP Request13"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f367d7d2-4ddf-4906-b0f7-af43db4700a6",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "image|file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        2656,
+        -240
+      ],
+      "id": "dca53c8b-2119-4802-ad37-9d2dc1d7dab1",
+      "name": "Master Router"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Type",
+              "value": "= application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer xb7OaOzijVaBsoWXp0zSTgZh2E/EQ1cCHSqoIWotnvRMUNk2qt3ULjGq5ePltEWe8npp1z/Wr257f1A7lnatt9KDRTpQqdB42XmW1VigOPhUYQqgHjjD0u5H3fuyoKm2yxcorQ6pIzZUwhiciIdwzgdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2976,
+        -240
+      ],
+      "id": "e1542d92-616c-45a3-8b82-07f53a42c696",
+      "name": "HTTP Request25"
+    },
+    {
+      "parameters": {
+        "jsCode": "// รับข้อมูล Event จาก Node เริ่มต้น (แก้ชื่อ 'Master Router' ถ้าท่านใช้ชื่ออื่น)\nconst event = $('Master Router').first().json.body.events[0];\nconst message = event.message;\nconst messageId = message.id;\n\n// 1. สร้างชื่อจากวันและเวลา (เช่น 2026-01-29_15-30)\nconst msgDate = new Date(event.timestamp);\n// ตั้งค่าเวลาเป็นไทย\nconst dateStr = msgDate.toLocaleString(\"en-GB\", { timeZone: \"Asia/Bangkok\", hour12: false })\n                  .replace(/\\//g, '-')   // เปลี่ยน / เป็น -\n                  .replace(/:/g, '-')    // เปลี่ยน : เป็น -\n                  .replace(', ', '_');   // เปลี่ยนช่องว่าง เป็น _\n\n// 2. ตรวจสอบประเภทไฟล์\nlet filename = `unknown_${messageId}`;\n\nif (message.type === 'image') {\n  // ตั้งชื่อรูปเป็น: วันเวลา_IMAGE.jpg\n  filename = `${dateStr}_IMAGE.jpg`; \n} \nelse if (message.type === 'file') {\n  // ถ้าเป็นไฟล์ ให้ใช้ชื่อเดิมที่คนส่งตั้งมา แต่เติมวันที่ข้างหน้า\n  const originalName = message.fileName || `file_${messageId}`;\n  filename = `${dateStr}_${originalName}`;\n}\n\n// 3. ยัดชื่อใหม่ใส่เข้าไปในไฟล์\nconst item = $input.item;\nconst binaryData = item.binary.data;\nbinaryData.fileName = filename;\n\nreturn {\n  json: {\n    original_filename: filename // ส่งชื่อไปให้ Google Drive ใช้\n  },\n  binary: {\n    data: binaryData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        -240
+      ],
+      "id": "b2edab21-c9bf-409e-af82-a69df6f789c9",
+      "name": "Code in JavaScript30"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.original_filename }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1KqHuiSTHrSO1JSxRtRmIbZs1yoEO7tiq",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3632,
+        -240
+      ],
+      "id": "1ae07e2c-3da4-4a7c-96dc-f356cb42b2be",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "IYyt3qEQVk3xfjcF",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Master Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request13": {
+      "main": [
+        []
+      ]
+    },
+    "Master Router": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request25": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript30": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger2": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger3": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger4": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "091f30bd-07f5-4619-8c00-a9ae941db33c",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2026-01-29T08:35:05.560Z",
+      "updatedAt": "2026-01-29T08:35:05.560Z",
+      "role": "workflow:owner",
+      "workflowId": "KFMLLs4w14W7taM3",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

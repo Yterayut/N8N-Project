@@ -1,0 +1,396 @@
+{
+  "createdAt": "2025-11-21T10:18:28.710Z",
+  "updatedAt": "2025-12-22T15:59:06.000Z",
+  "id": "oCJOrxO3rb2EFonb",
+  "name": "OCM-Attendance",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Income-PAY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        32
+      ],
+      "id": "1a51f728-2bb0-4e4e-8024-14c089f4a766",
+      "name": "Webhook",
+      "webhookId": "c8c7b37f-b2f3-4740-86ff-24e922e20b15"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "You are an HR Assistant responsible for processing attendance data. Your goal is to parse raw input and output a JSON object optimized for **Google Sheets recording** and **LINE Notification**.\n\n### INPUT DATA\nYou will receive data containing: Date, Team, Names, Statuses, and Reasons.\n\n### PROCESSING LOGIC\n1. **Analyze Status & Reason:**\n   - **Present:** Keywords like \"Present\", \"มา\", \"Work\". -> Status = \"present\", Reason = \"\" (empty string).\n   - **Leave:** Keywords like \"Leave\", \"ลา\". -> Status = \"leave\", Reason = \"specific reason found\" (e.g., \"ลาป่วย\").\n   - **Missing:** Keywords like \"Pending\", \"Unknown\", \"ยังไม่แจ้ง\". -> Status = \"missing\", Reason = \"\" (empty string).\n2. **Map Columns:** Ensure data maps to: `date`, `team`, `name`, `status`, `reason`.\n3. **Date Format:** Convert all dates to \"YYYY-MM-DD\" for the sheet.\n\n### OUTPUT FORMAT (Strict JSON)\nReturn a single JSON object with two main keys:\n1. `google_sheet_rows`: An array of objects where **Keys match Google Sheet Headers exactly**.\n2. `line_notification`: The summary message for chat apps.\n\n**Required JSON Structure:**\n{\n  \"google_sheet_rows\": [\n    {\n      \"date\": \"YYYY-MM-DD\",\n      \"team\": \"String\",\n      \"name\": \"String\",\n      \"status\": \"String (present/leave/missing)\",\n      \"reason\": \"String (or empty string if none)\"\n    },\n    { ...next person... }\n  ],\n  \"line_notification\": {\n     \"message\": \"String (The full formatted summary text)\",\n     \"stats\": {\n        \"present\": Number,\n        \"leave\": Number,\n        \"missing\": Number\n     }\n  }\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        32
+      ],
+      "id": "6c065922-7f9b-478e-9413-fe5639df464b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        240
+      ],
+      "id": "8cbe7ae3-bdf0-46e0-8b8a-e6570c591970",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.parse($json.output.match(/{.*}/s)[0]) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        32
+      ],
+      "id": "fe6140a6-2c8a-462f-878e-81be8154fa5b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ",
+          "mode": "list",
+          "cachedResultName": "Attendance-Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "attendance_log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date(YYYY-MM-DD)": "={{ $json.google_sheet_rows.date }}",
+            "team": "={{ $json.google_sheet_rows.team }}",
+            "name": "={{ $json.google_sheet_rows.name }}",
+            "status": "={{ $json.google_sheet_rows.status }}",
+            "reason": "={{ $json.google_sheet_rows.reason }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date(YYYY-MM-DD)",
+              "displayName": "date(YYYY-MM-DD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "team",
+              "displayName": "team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        80
+      ],
+      "id": "c8f79ade-c63d-4fbe-8cab-ca878a8313ee",
+      "name": "Append row in Detail",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ",
+          "mode": "list",
+          "cachedResultName": "Attendance-Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 212215872,
+          "mode": "list",
+          "cachedResultName": "daily_summary",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nZycd5sOhuMN8S0mp_enkzq5Ej2DFDg0fMsSPY4HpxQ/edit#gid=212215872"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date(YYYY-MM-DD)": "={{ $json.google_sheet_rows[0].date }}",
+            "team": "={{ $json.google_sheet_rows[0].team }}",
+            "present_count": "={{ $json.line_notification.stats.present }}",
+            "leave_count": "={{ $json.line_notification.stats.leave }}",
+            "not_reported_count": "={{ $json.line_notification.stats.missing }}",
+            "user_id": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date(YYYY-MM-DD)",
+              "displayName": "date(YYYY-MM-DD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "team",
+              "displayName": "team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "present_count",
+              "displayName": "present_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "leave_count",
+              "displayName": "leave_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_reported_count",
+              "displayName": "not_reported_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "9d4f1ed4-0e79-48cd-b799-5cc291f2b0fe",
+      "name": "Append row in Summary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "google_sheet_rows",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        448,
+        80
+      ],
+      "id": "b47d1e7b-f3d2-4ba3-8e15-3bf387dd572f",
+      "name": "Split Out"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in Summary": {
+      "main": [
+        []
+      ]
+    },
+    "Append row in Detail": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Append row in Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b38a2982-469c-461b-890d-5da1f02f75a9",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-21T10:18:28.754Z",
+      "updatedAt": "2025-11-21T10:18:28.754Z",
+      "role": "workflow:owner",
+      "workflowId": "oCJOrxO3rb2EFonb",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

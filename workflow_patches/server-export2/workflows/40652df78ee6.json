@@ -1,0 +1,466 @@
+{
+  "createdAt": "2025-11-05T14:17:09.617Z",
+  "updatedAt": "2025-11-08T03:06:18.000Z",
+  "id": "40652df78ee6",
+  "name": "Credential Smoke Test",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "noop",
+      "name": "NoOp",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        224,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date();\nconst bangkok = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(now);\nconst isoThailand = new Date(now.getTime() + (7 * 60 * 60 * 1000)).toISOString();\nconst targets = ($env.LINE_ALERT_USER_IDS || '').split(',').map((id) => id.trim()).filter(Boolean);\nconst token = ($env.LINE_CHANNEL_ACCESS_TOKEN || '').trim() || ($env.LINE_CHANNEL_ACCESS_TOKEN_840212645843493 || '').trim() || ($env.LINE_CHANNEL_ACCESS_TOKEN_889083480945134 || '').trim();\nconst sheetNotifiedChannel = targets.length > 1 ? 'LINE(multicast)' : (targets.length === 1 ? 'LINE(push)' : '');\nreturn [{ json: {\n  sheetTimestamp: bangkok,\n  isoTimestamp: isoThailand,\n  sheetPageId: 'SMOKE_TEST_PAGE',\n  sheetPostId: 'SMOKE_TEST_POST',\n  sheetCommentId: `SMOKE_TEST_${isoThailand}`,\n  sheetUserName: 'Smoke Tester',\n  sheetUserId: targets[0] || 'SMOKE_TEST_USER',\n  sheetType: 'SMOKE_TEST',\n  sheetOriginalComment: 'Smoke test comment',\n  sheetReplyMessage: 'Smoke test reply from n8n',\n  commentUrl: 'https://example.com/smoke-test',\n  sheetStatus: 'SMOKE_TEST_OK',\n  sheetNotifiedChannel,\n  facebook: { commentUrl: 'https://example.com/smoke-test' },\n  line: {\n    enabled: Boolean(token && targets.length),\n    targets,\n    channelAccessToken: token,\n    message: `[SMOKE TEST] ${isoThailand}`\n  }\n}}];"
+      },
+      "id": "prepare",
+      "name": "Prepare Payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        480,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+          "mode": "list",
+          "cachedResultName": " LINE Messages Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 501571293,
+          "mode": "list",
+          "cachedResultName": "FB Comment Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=501571293"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.sheetTimestamp || '' }}",
+            "ISO_Timestamp": "={{ $json.isoTimestamp || '' }}",
+            "PageID": "={{ $json.sheetPageId || '' }}",
+            "PostID": "={{ $json.sheetPostId || '' }}",
+            "CommentID": "={{ $json.sheetCommentId || '' }}",
+            "UserName": "={{ $json.sheetUserName || '' }}",
+            "UserID": "={{ $json.sheetUserId || '' }}",
+            "Type": "={{ $json.sheetType || '' }}",
+            "OriginalComment": "={{ $json.sheetOriginalComment || '' }}",
+            "ReplyMessage": "={{ $json.sheetReplyMessage || '' }}",
+            "CommentURL": "={{ $json.commentUrl || '' }}",
+            "NotifiedChannel": "={{ $json.sheetNotifiedChannel || '' }}",
+            "Facebook_Reply_Sent": "={{ $json.sheetStatus ? 'TRUE' : '' }}",
+            "LINE_Notify_Sent": "={{ $json.sheetNotifiedChannel ? 'TRUE' : '' }}",
+            "Status": "={{ $json.sheetStatus || '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ISO_Timestamp",
+              "displayName": "ISO_Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PageID",
+              "displayName": "PageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PostID",
+              "displayName": "PostID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CommentID",
+              "displayName": "CommentID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UserName",
+              "displayName": "UserName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UserID",
+              "displayName": "UserID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "OriginalComment",
+              "displayName": "OriginalComment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReplyMessage",
+              "displayName": "ReplyMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CommentURL",
+              "displayName": "CommentURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NotifiedChannel",
+              "displayName": "NotifiedChannel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Facebook_Reply_Sent",
+              "displayName": "Facebook_Reply_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LINE_Notify_Sent",
+              "displayName": "LINE_Notify_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "sheet",
+      "name": "Google Sheets (Test)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1264,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XGBMdKMEVdsMQqBP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\nfor (const item of items) {\n  const data = JSON.parse(JSON.stringify(item.json || {}));\n  const line = data.line || {};\n  const targets = Array.isArray(line.targets) ? line.targets.filter(Boolean) : [];\n  const token = (line.channelAccessToken || '').trim();\n  const message = line.message;\n  if (line.enabled && token && targets.length && message) {\n    const endpoint = line.endpoint || (targets.length > 1 ? 'https://api.line.me/v2/bot/message/multicast' : 'https://api.line.me/v2/bot/message/push');\n    const payload = targets.length > 1\n      ? { to: targets, messages: [{ type: 'text', text: message }], notificationDisabled: false }\n      : { to: targets[0], messages: [{ type: 'text', text: message }], notificationDisabled: false };\n    try {\n      await this.helpers.httpRequest({ method: 'POST', url: endpoint, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: payload, json: true });\n      data.sheetNotifiedChannel = data.sheetNotifiedChannel || (targets.length > 1 ? 'LINE(multicast)' : 'LINE(push)');\n      data.sheetStatus = data.sheetStatus || 'SMOKE_TEST_OK';\n    } catch (error) {\n      const err = error?.response?.data ? JSON.stringify(error.response.data) : (error.message || JSON.stringify(error));\n      data.sheetStatus = `${data.sheetStatus || 'SMOKE_TEST'}|LINE_ERROR`;\n      data.actionError = err;\n    }\n  }\n  if (data.line) delete data.line.channelAccessToken;\n  results.push({ json: data });\n}\nreturn results;"
+      },
+      "id": "line",
+      "name": "LINE Notify (Test)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        416
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+          "mode": "list",
+          "cachedResultName": " LINE Messages Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 0,
+          "mode": "id",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.sheetTimestamp || '' }}",
+            "User ID": "={{ $json.sheetUserId || '' }}",
+            "Message": "={{ $json.sheetReplyMessage || ($json.line && $json.line.message) || '' }}",
+            "Type": "SMOKE_TEST"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "id": "sheet1",
+      "name": "Google Sheets (Sheet1 Test)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1264,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XGBMdKMEVdsMQqBP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        208
+      ],
+      "id": "6825399d-dbee-4cf8-98cf-a4dc5cc4e361",
+      "name": "Wait",
+      "webhookId": "1b3c76c4-44dd-4df4-be81-03cb374a9ddc"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        0
+      ],
+      "id": "697f8c9b-75fa-43ac-8d76-33285f706e1a",
+      "name": "Wait1",
+      "webhookId": "1b3c76c4-44dd-4df4-be81-03cb374a9ddc"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        416
+      ],
+      "id": "1ebf63ec-bdca-43fe-8304-308ed10ae75e",
+      "name": "Wait2",
+      "webhookId": "1b3c76c4-44dd-4df4-be81-03cb374a9ddc"
+    }
+  ],
+  "connections": {
+    "NoOp": {
+      "main": [
+        [
+          {
+            "node": "Prepare Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Payload": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets (Sheet1 Test)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "LINE Notify (Test)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets (Test)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "f1b3362c-4eb8-46e6-b16e-48824c6e5dc9",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-05T14:48:30.131Z",
+      "updatedAt": "2025-11-05T14:48:30.131Z",
+      "role": "workflow:owner",
+      "workflowId": "40652df78ee6",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

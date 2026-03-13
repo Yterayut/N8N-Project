@@ -1,0 +1,37 @@
+{
+  "createdAt": "2025-10-20T10:40:50.928Z",
+  "updatedAt": "2025-11-05T09:39:42.000Z",
+  "id": "WNWewthEgk7UVOOw",
+  "name": "test-workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "a5d7e5dd-31ba-4c53-aa56-bb75ba80c44d",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-10-20T10:40:50.986Z",
+      "updatedAt": "2025-10-20T10:40:50.986Z",
+      "role": "workflow:owner",
+      "workflowId": "WNWewthEgk7UVOOw",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

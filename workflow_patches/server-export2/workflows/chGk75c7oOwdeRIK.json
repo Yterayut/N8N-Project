@@ -1,0 +1,560 @@
+{
+  "createdAt": "2025-11-19T06:32:10.652Z",
+  "updatedAt": "2025-12-22T15:59:04.000Z",
+  "id": "chGk75c7oOwdeRIK",
+  "name": "OCM-customer-feedback",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "OCM-Feedback",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -320
+      ],
+      "id": "fa502228-2ff6-4bee-843d-fe6a6303b0fb",
+      "name": "Webhook",
+      "webhookId": "a9d766e8-3b91-4e85-86f8-dd10ef45e479"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "systemMessage": "You are an expert Customer Experience Analyst for \"Oneclimate\". Your task is to analyze customer satisfaction survey data and output the results in a strict JSON format.\n\nSURVEY STRUCTURE & INPUT MAPPING\nThe input JSON contains arrays for service, support, and overall. You must map them as follows:\n\nSection 1: Service (System Efficiency)\n\nInput Source: service array (Items 1.1 - 1.6)\n\nTotal Items: 6\n\nMax Score: 30 (6 items * 5)\n\nSection 2: Support & Satisfaction (Customer Service)\n\nInput Source: Combine support array (Items 2.1 - 2.6) AND overall array (Items 3.1 - 3.2)\n\nTotal Items: 8 (6 from support + 2 from overall)\n\nMax Score: 40 (8 items * 5)\n\nSCORING SCALE\n1 = Very Bad (0-20%) 2 = Bad (21-40%) 3 = Fair (41-60%) 4 = Good (61-80%) 5 = Very Good (81-100%)\n\nCALCULATION INSTRUCTIONS (CRITICAL)\nCalculate Section 1 Percent: (Sum of 'service' scores / 30) * 100\n\nCalculate Section 2 Percent: ((Sum of 'support' scores + Sum of 'overall' scores) / 40) * 100\n\nCalculate Section 3 (Overall Performance) Percent: (Section 1 Percent + Section 2 Percent) / 2\n\nCalculate Total Average Score (1-5 Scale): (Sum of ALL scores from service, support, and overall) / 14\n\nANALYSIS INSTRUCTIONS\nAnalyze Sentiment: Based on the calculated percentages.\n\nIdentify Insights:\n\nStrengths: Items with score 5 (or 4 if no 5s).\n\nWeaknesses: Items with score 1 or 2. Note: When referencing strengths/weaknesses in Section 2, treat the 'overall' items (3.1, 3.2) as part of the Support/Service aspect.\n\nOUTPUT FORMAT\nReturn ONLY a raw JSON object. Do not include markdown formatting. The values inside the JSON must be in THAI language.\n\nRequired JSON Structure: { \"calculations\": { \"section_1_service_percent\": Number (2 decimal places), \"section_2_support_percent\": Number (2 decimal places), \"section_3_overall_percent\": Number (2 decimal places, Avg of Sec1 & Sec2), \"total_average_score\": Number (2 decimal places, 1-5 scale) }, \"analysis\": { \"overall_sentiment_level\": \"String (ดีมาก | ดี | พอใช้ | แย่ | แย่มาก)\", \"summary_thai\": \"String (Summarize the feedback in Thai. Mention that Overall Score is the average of Service and Support sections)\", \"strengths_thai\": [\"String (List specific positive points)\"], \"weaknesses_thai\": [\"String (List specific negative points)\"], \"suggestion_thai\": \"String (Actionable advice for Oneclimate)\" } }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        -320
+      ],
+      "id": "1bd110e7-4ceb-469b-bee8-714c670230e4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -80
+      ],
+      "id": "62cc09e3-49d1-4b59-b111-572b9916f132",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.parse($json.output.match(/{.*}/s)[0]) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        -320
+      ],
+      "id": "623382a7-88a6-4326-8ec9-03465a2cc601",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f15edb97-cf50-4707-b7d5-a6db4e01b5c4",
+              "leftValue": "={{ $json.analysis.overall_sentiment_level }}",
+              "rightValue": "แย่มาก",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "7c6b1139-cbcc-4740-8457-9feefef09469",
+              "leftValue": "={{ $json.analysis.overall_sentiment_level }}",
+              "rightValue": "แย่",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "799938e2-2dd1-4120-a605-24afb50e5dc7",
+              "leftValue": "={{ $json.analysis.overall_sentiment_level }}",
+              "rightValue": "พอใช้",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "68d2fec4-9024-4d7e-95b0-59b98e32d10e",
+              "leftValue": "={{ $json.analysis.overall_sentiment_level }}",
+              "rightValue": "ดี",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c6ea306e-e12c-490f-a702-a477f8488935",
+              "leftValue": "={{ $json.analysis.overall_sentiment_level }}",
+              "rightValue": "ดีมาก",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        -320
+      ],
+      "id": "2c9cf520-9a7c-4b1b-b1dd-bfc9aea83795",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "support-oneclimate@one.th",
+        "subject": "มีลูกค้าประเมินความพึงพอใจมา !!!!!!!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: 'Sarabun', sans-serif; color: #333; line-height: 1.6; }\n  .container { max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }\n  .header { background-color: #005f73; color: white; padding: 20px; text-align: center; }\n  .content { padding: 20px; background-color: #ffffff; }\n  .score-box { background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 5px solid #0a9396; margin-bottom: 20px; }\n  .section-title { font-size: 16px; font-weight: bold; color: #005f73; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }\n  .table-score { width: 100%; border-collapse: collapse; margin-top: 10px; }\n  .table-score td { padding: 8px; border-bottom: 1px solid #eee; }\n  .table-score td:last-child { font-weight: bold; text-align: right; }\n  .badge { display: inline-block; padding: 5px 10px; border-radius: 4px; color: white; font-weight: bold; font-size: 14px; }\n  .badge-bad { background-color: #ae2012; }\n  .badge-neutral { background-color: #ee9b00; }\n  .badge-good { background-color: #0a9396; }\n  \n  /* CSS กล่องข้อมูลลูกค้า */\n  .customer-info { background-color: #e3f2fd; border-radius: 6px; padding: 12px; margin-bottom: 20px; border: 1px solid #bbdefb; }\n  .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }\n  .info-label { color: #555; font-size: 14px; }\n  .info-value { font-weight: bold; color: #005f73; font-size: 14px; text-align: right; }\n\n  ul { margin-top: 5px; padding-left: 20px; }\n</style>\n</head>\n<body>\n\n<div class=\"container\">\n  <div class=\"header\">\n    <h2 style=\"margin:0;\">Oneclimate Customer Feedback</h2>\n    <p style=\"margin:5px 0 0;\">รายงานสรุปผลความพึงพอใจลูกค้า</p>\n  </div>\n\n  <div class=\"content\">\n    <p>เรียน ทีมงาน,</p>\n    \n    <p>มีลูกค้าทำแบบประเมินเข้ามาใหม่ โดยภาพรวมอยู่ในระดับ: \n      <span class=\"badge {{ $('Edit Fields').item.json.analysis.overall_sentiment_level.includes('แย่') ? 'badge-bad' : ($('Edit Fields').item.json.analysis.overall_sentiment_level.includes('พอใช้') ? 'badge-neutral' : 'badge-good') }}\">\n        {{ $('Edit Fields').item.json.analysis.overall_sentiment_level }}\n      </span>\n    </p>\n\n    <div class=\"customer-info\">\n        <div style=\"font-size: 12px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;\">👤 ข้อมูลผู้ให้ข้อมูล (Respondent)</div>\n        \n        <div class=\"info-row\">\n            <span class=\"info-label\">ชื่อ/บริษัท:</span>\n            <span class=\"info-value\">{{ $('Webhook').item.json.body.name || '-' }}</span> \n        </div>\n        \n        <div class=\"info-row\">\n            <span class=\"info-label\">เบอร์โทรศัพท์:</span>\n            <span class=\"info-value\">{{ $('Webhook').item.json.body.phone || '-' }}</span>\n        </div>\n\n        <div class=\"info-row\" style=\"margin-bottom: 0;\">\n             <span class=\"info-label\">วันที่ส่งข้อมูล:</span>\n             <span class=\"info-value\">{{ $now.toFormat('dd/MM/yyyy HH:mm') }}</span>\n        </div>\n    </div>\n    <div class=\"score-box\">\n      <strong>📝 บทสรุปผู้บริหาร (Summary):</strong><br>\n      {{ $('Edit Fields').item.json.analysis.summary_thai }}\n    </div>\n\n    <div class=\"section-title\">📊 คะแนนการประเมิน (Scoring)</div>\n    <table class=\"table-score\">\n      <tr>\n        <td>ระบบ (Service)</td>\n        <td>{{ $('Edit Fields').item.json.calculations.section_1_service_percent }}%</td>\n      </tr>\n      <tr>\n        <td>การให้บริการ (Support)</td>\n        <td>{{ $('Edit Fields').item.json.calculations.section_2_support_percent }}%</td>\n      </tr>\n      <tr>\n        <td>ภาพรวม (Overall)</td>\n        <td>{{ $('Edit Fields').item.json.calculations.section_3_overall_percent }}%</td>\n      </tr>\n      <tr style=\"background-color: #f0f0f0;\">\n        <td><strong>คะแนนเฉลี่ยรวม (เต็ม 5)</strong></td>\n        <td><strong>{{ $('Edit Fields').item.json.calculations.total_average_score }} / 5.00</strong></td>\n      </tr>\n    </table>\n\n    <div class=\"section-title\">👍 จุดแข็ง (Strengths)</div>\n    <ul>\n      {{ $('Edit Fields').item.json.analysis.strengths_thai.map(item => \"<li>\" + item + \"</li>\").join(\"\") }}\n    </ul>\n\n    <div class=\"section-title\">👎 จุดที่ควรปรับปรุง (Weaknesses)</div>\n    <ul>\n      {{ $('Edit Fields').item.json.analysis.weaknesses_thai.map(item => \"<li>\" + item + \"</li>\").join(\"\") }}\n    </ul>\n\n    <div class=\"section-title\">💡 ข้อเสนอแนะ (Suggestion)</div>\n    <p style=\"background-color: #e9f5f5; padding: 10px; border-radius: 4px;\">\n      {{ $('Edit Fields').item.json.analysis.suggestion_thai }}\n    </p>\n\n    <hr style=\"border: 0; border-top: 1px solid #eee; margin-top: 30px;\">\n    <p style=\"font-size: 12px; color: #999; text-align: center;\">\n      This email was sent automatically by Oneclimate Automation System (n8n).\n    </p>\n  </div>\n</div>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        -480
+      ],
+      "id": "21fd1305-b049-49f0-86ac-b6824fcfd2e6",
+      "name": "Send a message",
+      "webhookId": "dd5f4e09-cb5a-4dde-8c2d-27e707d0d30a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yIbMbTRL73e76jKR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GH4U3opsnzcD3f_EZPZSA2nrKSQFUGTwgux6IQNwMGY",
+          "mode": "list",
+          "cachedResultName": "แบบสำรวจ Customer Satisfaction",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GH4U3opsnzcD3f_EZPZSA2nrKSQFUGTwgux6IQNwMGY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1808953691,
+          "mode": "list",
+          "cachedResultName": "ผลการประเมิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GH4U3opsnzcD3f_EZPZSA2nrKSQFUGTwgux6IQNwMGY/edit#gid=1808953691"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ลูกค้า": "={{ $('Webhook').item.json.body.name }}",
+            "Service#1": "={{ $('Webhook').item.json.body.service[0] }}",
+            "Service#2": "={{ $('Webhook').item.json.body.service[1] }}",
+            "Service#3": "={{ $('Webhook').item.json.body.service[2] }}",
+            "Service#4": "={{ $('Webhook').item.json.body.service[3] }}",
+            "Service#5": "={{ $('Webhook').item.json.body.service[4] }}",
+            "Service#6": "={{ $('Webhook').item.json.body.service[5] }}",
+            "support#1": "={{ $('Webhook').item.json.body.service[0] }}",
+            "support#2": "={{ $('Webhook').item.json.body.service[1] }}",
+            "support#3": "={{ $('Webhook').item.json.body.service[2] }}",
+            "support#4": "={{ $('Webhook').item.json.body.service[3] }}",
+            "support#5": "={{ $('Webhook').item.json.body.service[4] }}",
+            "support#6": "={{ $('Webhook').item.json.body.service[5] }}",
+            "comment": "={{ $('Webhook').item.json.body.comment }}",
+            "tel": "={{ $('Webhook').item.json.body.phone }}",
+            "ภาพรวม service %": "={{ $('Edit Fields').item.json.calculations.section_1_service_percent }}",
+            "ภาพรวม support %": "={{ $('Edit Fields').item.json.calculations.section_2_support_percent }}",
+            "overall %": "={{ $('Edit Fields').item.json.calculations.section_3_overall_percent }}",
+            "ระดับ": "={{ $('Edit Fields').item.json.analysis.overall_sentiment_level }}",
+            "วันที่": "={{ $now.format('yyyy-MM-dd') }}",
+            "สรุป": "={{ $json.analysis.summary_thai }}",
+            "support#7": "={{ $('Webhook').item.json.body.overall[0] }}",
+            "support#8": "={{ $('Webhook').item.json.body.overall[1] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ลูกค้า",
+              "displayName": "ลูกค้า",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#1",
+              "displayName": "Service#1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#2",
+              "displayName": "Service#2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#3",
+              "displayName": "Service#3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#4",
+              "displayName": "Service#4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#5",
+              "displayName": "Service#5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service#6",
+              "displayName": "Service#6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#1",
+              "displayName": "support#1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#2",
+              "displayName": "support#2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#3",
+              "displayName": "support#3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#4",
+              "displayName": "support#4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#5",
+              "displayName": "support#5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#6",
+              "displayName": "support#6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support#7",
+              "displayName": "support#7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "support#8",
+              "displayName": "support#8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "comment",
+              "displayName": "comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tel",
+              "displayName": "tel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ภาพรวม service %",
+              "displayName": "ภาพรวม service %",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ภาพรวม support %",
+              "displayName": "ภาพรวม support %",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall %",
+              "displayName": "overall %",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ระดับ",
+              "displayName": "ระดับ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สรุป",
+              "displayName": "สรุป",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        -304
+      ],
+      "id": "f4f6492f-dc12-4ad5-b806-6770c9bf40d1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "437e2416-5249-4181-878e-7399cb374f47",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-19T06:32:10.689Z",
+      "updatedAt": "2025-11-19T06:32:10.689Z",
+      "role": "workflow:owner",
+      "workflowId": "chGk75c7oOwdeRIK",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

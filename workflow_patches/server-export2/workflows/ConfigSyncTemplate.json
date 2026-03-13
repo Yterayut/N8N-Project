@@ -1,0 +1,167 @@
+{
+  "createdAt": "2025-12-01T10:56:31.469Z",
+  "updatedAt": "2025-12-01T11:11:34.000Z",
+  "id": "ConfigSyncTemplate",
+  "name": "Config Sync (Sheet → Cache)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        272,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+          "mode": "list",
+          "cachedResultName": " LINE Messages Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1244515382,
+          "mode": "list",
+          "cachedResultName": "FB_Keywords_Config",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=1244515382"
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Google Sheets Keywords",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.1,
+      "position": [
+        544,
+        416
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q",
+          "mode": "list",
+          "cachedResultName": " LINE Messages Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1679767040,
+          "mode": "list",
+          "cachedResultName": "FB_Replies_Config",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uiVmR84NpN8q8A3byW2NKAnnZ1vlF3q5Ev93L-0Qk9Q/edit#gid=1679767040"
+        },
+        "options": {}
+      },
+      "id": "3",
+      "name": "Google Sheets Replies",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.1,
+      "position": [
+        528,
+        64
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build cache from two sheet reads and write to file.\nconst fs = require('fs');\nconst path = require('path');\n\nfunction normBool(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return !/^false$/i.test(v.trim()) && v.trim() !== '';\n  return Boolean(v);\n}\n\nfunction safeSplit(text) {\n  if (text == null) return [];\n  if (Array.isArray(text)) return text.map(String).map((s) => s.trim()).filter(Boolean);\n  return String(text)\n    .split(/\\r?\\n|\\|\\||,/)\n    .map((s) => s.trim())\n    .filter(Boolean);\n}\n\nfunction collectKeywords(rows) {\n  const out = {};\n  for (const row of rows) {\n    const category = (row.Category || row.category || '').trim();\n    if (!category) continue;\n    if (!normBool(row.Active ?? true)) continue;\n    const keyword = (row.Keyword || row.keyword || '').trim();\n    if (!keyword) continue;\n    if (!out[category]) out[category] = [];\n    out[category].push(keyword);\n  }\n  return out;\n}\n\nfunction collectReplies(rows) {\n  const out = {};\n  for (const row of rows) {\n    const category = (row.Category || row.category || '').trim();\n    if (!category) continue;\n    const locale = (row.Locale || row.locale || '').trim();\n    const weightRaw = (row.Weight || row.weight || '').toString().trim();\n    const weight = weightRaw ? Number(weightRaw) : undefined;\n    const replies = safeSplit(row.Reply || row.reply || '');\n    if (!replies.length) continue;\n    if (!out[category]) out[category] = {};\n    if (!out[category][locale]) out[category][locale] = [];\n    for (const text of replies) {\n      const entry = weight ? { text, weight } : { text };\n      out[category][locale].push(entry);\n    }\n  }\n  return out;\n}\n\nconst keywordsRows = $items('Google Sheets Keywords', 0).map((i) => i.json);\nconst repliesRows = $items('Google Sheets Replies', 0).map((i) => i.json);\n\nconst pageId = $env.CONFIG_PAGE_ID || '102450935821483';\nconst cache = {\n  meta: {\n    updatedAt: new Date().toISOString(),\n    source: 'sheet',\n    sheetId: $env.CONFIG_SHEET_ID || 'not-set',\n  },\n  data: {\n    pageOverrides: {\n      [pageId]: {\n        keywords: { th: collectKeywords(keywordsRows) },\n        replies: collectReplies(repliesRows),\n      },\n    },\n  },\n};\n\nconst cachePath =\n  $env.WORKFLOW3_CONFIG_CACHE_PATH ||\n  path.join(process.cwd(), '.n8n-dev/config-cache/keywords.json');\nfs.mkdirSync(path.dirname(cachePath), { recursive: true });\nfs.writeFileSync(cachePath, JSON.stringify(cache, null, 2), 'utf8');\n\nreturn [\n  {\n    json: {\n      ok: true,\n      cachePath,\n      updatedAt: cache.meta.updatedAt,\n      categories: Object.keys(cache.data.pageOverrides[pageId].replies || {}),\n    },\n  },\n];\n"
+      },
+      "id": "4",
+      "name": "Build Cache",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        336
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Keywords",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Replies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Keywords": {
+      "main": [
+        [
+          {
+            "node": "Build Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Replies": {
+      "main": [
+        [
+          {
+            "node": "Build Cache",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "e8507e21-8db4-4b5c-a045-15ac8bb110cb",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-12-01T10:56:31.510Z",
+      "updatedAt": "2025-12-01T10:56:31.510Z",
+      "role": "workflow:owner",
+      "workflowId": "ConfigSyncTemplate",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

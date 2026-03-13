@@ -1,0 +1,1635 @@
+{
+  "createdAt": "2025-11-22T02:45:09.052Z",
+  "updatedAt": "2026-01-30T06:41:50.000Z",
+  "id": "rZjkLEVp0IM9xKfh",
+  "name": "PAY",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "PAY-HISTORY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1504,
+        -272
+      ],
+      "id": "8be8aa6e-80cf-4217-bbee-92e7783dc2ee",
+      "name": "Webhook",
+      "webhookId": "398e073d-3a81-4159-a69d-e4c0001a345d"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Analyze this image and extract data",
+        "options": {
+          "systemMessage": "You are an expert Thai Accountant and OCR Specialist AI. Your task is to extract data from Thai bank transfer slips (GH Bank, KPlus, SCB, etc.) with 100% precision and classify the transaction.\n\n### CRITICAL INSTRUCTION: REFERENCE ID (ref_id)\n1. **L vs 1 Ambiguity:** The font used in bank slips often makes the lowercase letter \"l\" (India-Lima) and the number \"1\" look identical. You must analyze the visual context carefully.\n2. **Format:** The `ref_id` must be a single continuous string. **REMOVE all spaces and line breaks** immediately.\n\n### USER IDENTITY (The Owner)\nThe user is **\"Teerayut Yeerahem\"** (Thai: นาย ธีรยุทธ หยีราเหม).\nMatches include variations: \"Teerayut\", \"Theerayut\", \"ธีรยุทธ\", \"Mr. Teerayut\", \"Teerayut Y\".\n\n### CLASSIFICATION LOGIC (Strict Order)\nAnalyze `Sender` and `Receiver` names to determine `transaction_type`:\n\n1. **\"transfer\" (Internal Move):**\n   - IF `Sender` matches User Identity AND `Receiver` matches User Identity.\n   - (Meaning: Moving money between own accounts).\n\n2. **\"expense\" (Spending):**\n   - IF `Sender` matches User Identity AND `Receiver` is SOMEONE ELSE.\n\n3. **\"income\" (Receiving):**\n   - IF `Sender` is SOMEONE ELSE AND `Receiver` matches User Identity.\n\n4. **\"unknown\":** If neither matches or names are illegible.\n\n### DATA EXTRACTION RULES\n1. **Date:** Convert to ISO format **YYYY-MM-DD**.\n   - **Crucial:** Convert Buddhist Year to AD correctly (e.g., BE 2568 = AD 2025, BE 2569 = AD 2026).\n2. **Time:** Format as **HH:mm** (24-hour format).\n3. **Amount:** Numeric value only (remove commas, remove \"THB\").\n4. **Category:**\n   - If type is \"transfer\" -> \"Internal Move\".\n   - If type is \"expense\" -> Guess category based on Receiver (e.g., \"Food\", \"Shopping\", \"Utility\"). Default to \"Uncategorized\" if unsure.\n   - If type is \"income\" -> \"Revenue\".\n\n### OUTPUT FORMAT\nReturn **ONLY** a raw JSON object (no markdown code blocks, no explanation).\n\n{\n  \"transaction_data\": {\n    \"date\": \"YYYY-MM-DD\",\n    \"time\": \"HH:mm\",\n    \"amount\": Number,\n    \"sender_name\": \"String\",\n    \"sender_bank\": \"String\",\n    \"receiver_name\": \"String\",\n    \"receiver_bank\": \"String\",\n    \"ref_id\": \"String\",\n    \"transaction_type\": \"String\",\n    \"category\": \"String\"\n  }\n}",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        400
+      ],
+      "id": "6fe5f860-b3b7-4766-9b9c-160013a772a3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        592,
+        624
+      ],
+      "id": "61267499-1863-47ee-a357-825f737580c7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "faa0762e-6483-4684-9754-e84ce1bb0bf2",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        400
+      ],
+      "id": "283b34b1-4389-4ad1-828c-0b2c8b9fda6b",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        400
+      ],
+      "id": "bca842c1-f508-419e-86ac-e5b0fb1e3b4d",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $input.item.json.output || $input.item.json.text;\nconst cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();\n\ntry {\n  const data = JSON.parse(cleanJson);\n  const tx = data.transaction_data;\n\n  // normalize\n  tx.ref_id = String(tx.ref_id || '').trim();   // ❌ ไม่ต้อง toUpperCase\n\n  return tx;\n} catch (e) {\n  return { error: true, message: \"รูปแบบ JSON ผิดพลาด\" };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        400
+      ],
+      "id": "cf6b8e37-aef3-41fe-9adf-6f9eb0327aa1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $('Code in JavaScript').item.json.date }}",
+            "time": "={{ $('Code in JavaScript').item.json.time }}",
+            "amount": "={{ $('Code in JavaScript').item.json.amount }}",
+            "category": "={{ $('Code in JavaScript').item.json.category }}",
+            "sender_name": "={{ $('Code in JavaScript').item.json.sender_name }}",
+            "sender_bank": "={{ $('Code in JavaScript').item.json.sender_bank }}",
+            "receiver_name": "={{ $('Code in JavaScript').item.json.receiver_name }}",
+            "receiver_bank": "={{ $('Code in JavaScript').item.json.receiver_bank }}",
+            "ref_id": "={{ $('Code in JavaScript').item.json.ref_id }}",
+            "transaction_type (income/expense/transfer)": "={{ $('Code in JavaScript').item.json.transaction_type }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transaction_type (income/expense/transfer)",
+              "displayName": "transaction_type (income/expense/transfer)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_bank",
+              "displayName": "sender_bank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "receiver_name",
+              "displayName": "receiver_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "receiver_bank",
+              "displayName": "receiver_bank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ref_id",
+              "displayName": "ref_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2080,
+        576
+      ],
+      "id": "78b9b698-7ca6-4960-b6b2-1cbab2f49cfe",
+      "name": "Append row in sheet",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"บันทึกรายการสำเร็จ\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"✅ บันทึกสำเร็จ\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#1DB446\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"md\",\n              \"spacing\": \"sm\",\n              \"contents\": [\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"baseline\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"ประเภท\",\n                      \"color\": \"#aaaaaa\",\n                      \"size\": \"sm\",\n                      \"flex\": 1\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Append row in sheet').item.json.transaction_type || '-' }}\",\n                      \"wrap\": true,\n                      \"color\": \"#666666\",\n                      \"size\": \"sm\",\n                      \"flex\": 2\n                    }\n                  ]\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"baseline\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายการ\",\n                      \"color\": \"#aaaaaa\",\n                      \"size\": \"sm\",\n                      \"flex\": 1\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Append row in sheet').item.json.receiver_name || 'ไม่ระบุ' }}\",\n                      \"wrap\": true,\n                      \"color\": \"#666666\",\n                      \"size\": \"sm\",\n                      \"flex\": 2\n                    }\n                  ]\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"baseline\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"ยอดเงิน\",\n                      \"color\": \"#aaaaaa\",\n                      \"size\": \"sm\",\n                      \"flex\": 1\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Append row in sheet').item.json.amount }} บาท\",\n                      \"wrap\": true,\n                      \"color\": \"#333333\",\n                      \"size\": \"lg\",\n                      \"weight\": \"bold\",\n                      \"flex\": 2\n                    }\n                  ]\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2336,
+        576
+      ],
+      "id": "04d4a598-9f51-4cd2-babd-3fafb571dad6",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $json.date }}"
+            },
+            {
+              "lookupColumn": "time",
+              "lookupValue": "={{ $json.time }}"
+            },
+            {
+              "lookupColumn": "amount",
+              "lookupValue": "={{ $json.amount }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        400
+      ],
+      "id": "3f42e9e8-8255-4359-9ebe-598d5ae2a448",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d68ced39-8a95-437f-aa9e-6811ca74d120",
+              "leftValue": "={{ $json.ref_id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        400
+      ],
+      "id": "650fef6d-e18d-49d0-9277-907a32ca62ba",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').first().json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ สลิปนี้บันทึกไปแล้วครับ (Ref: {{ $('Code in JavaScript').first().json.transaction_data.ref_id }})\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1824,
+        384
+      ],
+      "id": "d9177044-d72b-409c-b5a8-52c974af2c08",
+      "name": "HTTP Request2",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        576
+      ],
+      "id": "4bb65bd4-b9d3-4f7d-9474-afb848d6f6e4",
+      "name": "Wait",
+      "webhookId": "c516407e-3a49-41ca-84e8-0d8a501c7331"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 23
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        768
+      ],
+      "id": "dae57c55-8523-4495-b77f-506376b199c9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -816,
+        768
+      ],
+      "id": "9ca290b6-efa1-4e2e-9e14-629d7581067b",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. รับข้อมูล\nconst rows = $input.all();\n\nlet totalMonthlyIncome = 0;  // รายรับทั้งเดือน\nlet totalMonthlyExpense = 0; // [เพิ่ม] รายจ่ายทั้งเดือน\nlet totalWeeklyExpense = 0;  // รายจ่าย 7 วัน\nlet countWeekly = 0;         // นับจำนวนรายการ 7 วัน\nlet catMap = {};             // หมวดหมู่รายจ่าย 7 วัน\n\n// 2. กำหนดเวลาปัจจุบัน\nconst today = new Date();\ntoday.setHours(23, 59, 59, 999);\n\n// 2.1 กำหนดช่วงเวลา \"สัปดาห์นี้\" (7 วันย้อนหลัง)\nconst sevenDaysAgo = new Date();\nsevenDaysAgo.setDate(today.getDate() - 7);\nsevenDaysAgo.setHours(0, 0, 0, 0);\n\n// 2.2 กำหนดช่วงเวลา \"เดือนนี้\" (วันที่ 1 ของเดือนปัจจุบัน)\nconst startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);\nstartOfMonth.setHours(0, 0, 0, 0);\n\n// 3. วนลูปเช็คข้อมูล\nfor (const item of rows) {\n  const row = item.json;\n  if (row.date) {\n    const rowDate = new Date(row.date);\n    const amount = parseFloat(row.amount) || 0;\n    \n    // เช็คประเภท (Income/Expense)\n    const typeRaw = row['transaction_type (income/expense/transfer)'] || row['type'] || row['transaction_type'] || \"\";\n    const type = typeRaw.toString().toLowerCase();\n    const category = row['category'] || 'อื่นๆ';\n\n    // --- Logic 1: ข้อมูลระดับ \"เดือนนี้\" (รายรับ + รายจ่าย) ---\n    if (rowDate >= startOfMonth && rowDate <= today) {\n      // 1.1 คิดรายรับ\n      if (type.includes('income') || type.includes('รายรับ')) {\n        totalMonthlyIncome += amount;\n      }\n      // 1.2 [เพิ่ม] คิดรายจ่ายทั้งเดือน\n      if (type.includes('expense') || type.includes('รายจ่าย')) {\n        totalMonthlyExpense += amount;\n      }\n    }\n\n    // --- Logic 2: ข้อมูลระดับ \"สัปดาห์นี้\" (7 วันย้อนหลัง) ---\n    if (rowDate >= sevenDaysAgo && rowDate <= today) {\n      if (type.includes('expense') || type.includes('รายจ่าย')) {\n        totalWeeklyExpense += amount;\n        \n        // เก็บยอดหมวดหมู่ (เฉพาะรายจ่าย week นี้)\n        if (catMap[category]) {\n          catMap[category] += amount;\n        } else {\n          catMap[category] = amount;\n        }\n        countWeekly++;\n      }\n    }\n  }\n}\n\n// 4. จัดอันดับหมวดหมู่ (Top 5 ของ Week นี้)\nconst sortedCats = Object.entries(catMap)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 5);\n\n// สร้างข้อความสรุป Top 5 (ใช้ \\\\n แทน \\n เพื่อไม่ให้ JSON พัง)\nlet topCatText = \"\";\nif (sortedCats.length > 0) {\n    topCatText = sortedCats.map((item, index) => {\n        const safeName = item[0].replace(/\"/g, '\\\\\"');\n        return `${index + 1}. ${safeName}: -${item[1].toLocaleString()} ฿`;\n    }).join(\"\\\\n\");\n} else {\n    topCatText = \"- ไม่มีรายจ่ายสัปดาห์นี้ -\";\n}\n\n// [แก้] คำนวณคงเหลือจริง (รายรับทั้งเดือน - รายจ่ายทั้งเดือน)\nconst netBalance = totalMonthlyIncome - totalMonthlyExpense;\n\n// 5. ส่งผลลัพธ์\nreturn {\n  week_range: sevenDaysAgo.toLocaleDateString('th-TH') + ' - ' + today.toLocaleDateString('th-TH'),\n  month_name: startOfMonth.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }),\n  \n  total_income: totalMonthlyIncome,\n  total_expense: totalWeeklyExpense,\n  net_balance: netBalance,\n  tx_count: countWeekly,\n\n  weekly_income_formatted: \"0\", \n  weekly_expense_formatted: totalWeeklyExpense.toLocaleString(),\n  \n  monthly_income_formatted: totalMonthlyIncome.toLocaleString(),\n  monthly_expense_formatted: totalMonthlyExpense.toLocaleString(), // [แก้] ใช้ตัวเลขรายจ่ายทั้งเดือนจริงๆ แล้ว\n  \n  balance_formatted: netBalance.toLocaleString(),\n  top_categories_text: topCatText\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        768
+      ],
+      "id": "5c6578db-6fb4-403e-9d8f-cd4abbd56986",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"U7eb0969b9040dc2ec9d4a19e89e347f4\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"📊 สรุปรายสัปดาห์\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"hero\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📊 สรุปรายสัปดาห์\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#ffffff\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $json.week_range }}\",\n              \"size\": \"sm\",\n              \"color\": \"#ffffff\",\n              \"margin\": \"md\"\n            }\n          ],\n          \"backgroundColor\": \"#8B5CF6\",\n          \"paddingAll\": \"20px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"สัปดาห์นี้ (7 วัน)\",\n              \"weight\": \"bold\",\n              \"size\": \"sm\",\n              \"color\": \"#8B5CF6\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💰 รายรับ\",\n                  \"size\": \"sm\",\n                  \"color\": \"#555555\",\n                  \"flex\": 0\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $json.weekly_income_formatted }}\",\n                  \"size\": \"sm\",\n                  \"color\": \"#10b981\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💸 รายจ่าย\",\n                  \"size\": \"sm\",\n                  \"color\": \"#555555\",\n                  \"flex\": 0\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $json.weekly_expense_formatted }}\",\n                  \"size\": \"sm\",\n                  \"color\": \"#ef4444\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"ยอดคงเหลือจริง ({{ $json.month_name }})\",\n              \"weight\": \"bold\",\n              \"size\": \"sm\",\n              \"color\": \"#8B5CF6\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💵 คงเหลือ\",\n                  \"size\": \"md\",\n                  \"color\": \"#111111\",\n                  \"flex\": 0,\n                  \"weight\": \"bold\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $json.balance_formatted }}\",\n                  \"size\": \"md\",\n                  \"color\": \"#8B5CF6\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"รายรับ ฿{{ $json.monthly_income_formatted }} - รายจ่าย ฿{{ $json.monthly_expense_formatted }}\",\n              \"size\": \"xxs\",\n              \"color\": \"#aaaaaa\",\n              \"align\": \"end\",\n              \"margin\": \"xs\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"🏆 Top 3 หมวดหมู่ (สัปดาห์นี้)\",\n                  \"weight\": \"bold\",\n                  \"size\": \"sm\",\n                  \"color\": \"#8B5CF6\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"{{ $json.top_categories_text }}\",\n                  \"size\": \"xs\",\n                  \"color\": \"#555555\",\n                  \"margin\": \"sm\",\n                  \"wrap\": true\n                }\n              ],\n              \"margin\": \"lg\"\n            }\n          ]\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📝 รายการสัปดาห์นี้: {{ $json.tx_count }} รายการ\",\n              \"size\": \"xs\",\n              \"color\": \"#aaaaaa\",\n              \"align\": \"center\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"✨ มีสัปดาห์ที่ดี!\",\n              \"size\": \"xs\",\n              \"color\": \"#aaaaaa\",\n              \"align\": \"center\",\n              \"margin\": \"sm\"\n            }\n          ]\n        }\n      },\n      \"quickReply\": {\n        \"items\": [\n          {\n            \"type\": \"action\",\n            \"action\": {\n              \"type\": \"message\",\n              \"label\": \"📅 สรุปวันนี้\",\n              \"text\": \"สรุปวันนี้\"\n            }\n          },\n          {\n            \"type\": \"action\",\n            \"action\": {\n              \"type\": \"message\",\n              \"label\": \"📅 สรุปเมื่อวาน\",\n              \"text\": \"สรุปเมื่อวาน\"\n            }\n          },\n          {\n            \"type\": \"action\",\n            \"action\": {\n              \"type\": \"message\",\n              \"label\": \"📊 สรุป 7 วัน\",\n              \"text\": \"สรุป 7 วัน\"\n            }\n          }\n        ]\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        768
+      ],
+      "id": "516a7d7c-72c1-4ebb-8371-503f8bfd4da9",
+      "name": "HTTP Request3",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "742fca07-264f-4c67-af8d-1cfccdf5a0a4",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "สรุปวันนี้",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        -384
+      ],
+      "id": "509c80fb-7bea-449a-94bf-a9b8d32b7ba0",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -656,
+        -624
+      ],
+      "id": "02b4c7eb-90d5-4014-ae8a-a000d1d00cf0",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// รับข้อมูล\nconst rows = $input.all();\n\nlet todayIncome = 0;\nlet todayExpense = 0;\nlet todayCount = 0;\nlet catMap = {};\n\n// กำหนดเวลาวันนี้\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\nconst endOfDay = new Date();\nendOfDay.setHours(23, 59, 59, 999);\n\n// วนลูปเช็คข้อมูล\nfor (const item of rows) {\n  const row = item.json;\n  if (row.date) {\n    const rowDate = new Date(row.date);\n    const amount = parseFloat(row.amount) || 0;\n    \n    const typeRaw = row['transaction_type (income/expense/transfer)'] || row['type'] || row['transaction_type'] || \"\";\n    const type = typeRaw.toString().toLowerCase();\n    const category = row['category'] || 'อื่นๆ';\n\n    // เฉพาะรายการวันนี้\n    if (rowDate >= today && rowDate <= endOfDay) {\n      todayCount++;\n      \n      if (type.includes('income') || type.includes('รายรับ')) {\n        todayIncome += amount;\n      }\n      if (type.includes('expense') || type.includes('รายจ่าย')) {\n        todayExpense += amount;\n        \n        if (catMap[category]) {\n          catMap[category] += amount;\n        } else {\n          catMap[category] = amount;\n        }\n      }\n    }\n  }\n}\n\n// จัดอันดับหมวดหมู่\nconst sortedCats = Object.entries(catMap)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 3);\n\nlet topCatText = '';\nif (sortedCats.length > 0) {\n  sortedCats.forEach((item, index) => {\n    topCatText += `${index + 1}. ${item[0]}: ฿${item[1].toLocaleString('th-TH')}\\n`;\n  });\n} else {\n  topCatText = '- ยังไม่มีรายการวันนี้ -';\n}\n\nconst balance = todayIncome - todayExpense;\n\nconst formatNum = (num) => {\n  return num.toLocaleString('th-TH', {minimumFractionDigits: 0, maximumFractionDigits: 2});\n};\n\nconst formatDate = (date) => {\n  return date.toLocaleDateString('th-TH', { day: '2-digit', month: 'long', year: 'numeric' });\n};\n\n// ⭐ สำคัญ: คืนค่าแบบอาร์เรย์พร้อม pairedItem\nreturn [\n  {\n    json: {\n      date: formatDate(today),\n      income: todayIncome,\n      expense: todayExpense,\n      balance: balance,\n      count: todayCount,\n      top_categories: topCatText.trim(),\n      income_formatted: formatNum(todayIncome),\n      expense_formatted: formatNum(todayExpense),\n      balance_formatted: formatNum(balance)\n    },\n    pairedItem: 0\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -624
+      ],
+      "id": "d1a8a5ad-e499-4998-92ad-556f65aacb70",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"📊 สรุปรายงานการเงินประจำวัน\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"mega\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"FINANCIAL REPORT\",\n              \"color\": \"#ffffffaa\",\n              \"weight\": \"bold\",\n              \"size\": \"xxs\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $('set1').item.json.date }}\",\n              \"color\": \"#ffffff\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"flex\": 1\n            }\n          ],\n          \"backgroundColor\": \"#27AE60\",\n          \"paddingAll\": \"20px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"ยอดคงเหลือสุทธิ (Net Balance)\",\n              \"color\": \"#8C8C8C\",\n              \"size\": \"xs\",\n              \"align\": \"center\",\n              \"weight\": \"bold\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $('set1').item.json.balance }}\",\n              \"weight\": \"bold\",\n              \"size\": \"4xl\",\n              \"align\": \"center\",\n              \"color\": \"#2c3e50\",\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"xl\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"margin\": \"xl\",\n              \"contents\": [\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายรับ\",\n                      \"size\": \"xs\",\n                      \"color\": \"#8C8C8C\"\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('set1').item.json.income }}\",\n                      \"size\": \"lg\",\n                      \"weight\": \"bold\",\n                      \"color\": \"#27AE60\"\n                    }\n                  ],\n                  \"alignItems\": \"center\"\n                },\n                {\n                  \"type\": \"separator\",\n                  \"color\": \"#E0E0E0\"\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายจ่าย\",\n                      \"size\": \"xs\",\n                      \"color\": \"#8C8C8C\"\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('set1').item.json.expense }}\",\n                      \"size\": \"lg\",\n                      \"weight\": \"bold\",\n                      \"color\": \"#EB5757\"\n                    }\n                  ],\n                  \"alignItems\": \"center\"\n                }\n              ]\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"xl\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"lg\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"📌 หมวดหมู่ยอดนิยม\",\n                  \"size\": \"sm\",\n                  \"weight\": \"bold\",\n                  \"color\": \"#333333\",\n                  \"margin\": \"sm\"\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"margin\": \"md\",\n                  \"backgroundColor\": \"#F8F9FA\",\n                  \"cornerRadius\": \"md\",\n                  \"paddingAll\": \"md\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ JSON.stringify($('set1').item.json.top_categories).slice(1, -1) }}\",\n                      \"size\": \"xs\",\n                      \"color\": \"#555555\",\n                      \"wrap\": true,\n                      \"lineSpacing\": \"4px\"\n                    }\n                  ]\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -624
+      ],
+      "id": "28c33c96-438d-42ef-b867-1a8da77771ac",
+      "name": "HTTP Request4",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0136b485-4002-4737-b823-022ebbe03aaa",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "สรุปเมื่อวาน",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -720,
+        -368
+      ],
+      "id": "9903d0f9-016c-4a46-b9b8-fd179b60f5e3",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -416,
+        -384
+      ],
+      "id": "4883e67c-660b-4a4f-9b00-d27abcd07ff1",
+      "name": "Get row(s) in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// รับข้อมูล\nconst rows = $input.all();\n\nlet yesterdayIncome = 0;\nlet yesterdayExpense = 0;\nlet yesterdayCount = 0;\nlet catMap = {};\n\n// กำหนดเวลาเมื่อวาน\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nyesterday.setHours(0, 0, 0, 0);\nconst endOfYesterday = new Date(yesterday);\nendOfYesterday.setHours(23, 59, 59, 999);\n\n// วนลูปเช็คข้อมูล\nfor (const item of rows) {\n  const row = item.json;\n  if (row.date) {\n    const rowDate = new Date(row.date);\n    const amount = parseFloat(row.amount) || 0;\n    \n    const typeRaw = row['transaction_type (income/expense/transfer)'] || row['type'] || row['transaction_type'] || \"\";\n    const type = typeRaw.toString().toLowerCase();\n    const category = row['category'] || 'อื่นๆ';\n\n    // เฉพาะรายการเมื่อวาน\n    if (rowDate >= yesterday && rowDate <= endOfYesterday) {\n      yesterdayCount++;\n      \n      if (type.includes('income') || type.includes('รายรับ')) {\n        yesterdayIncome += amount;\n      }\n      if (type.includes('expense') || type.includes('รายจ่าย')) {\n        yesterdayExpense += amount;\n        \n        if (catMap[category]) {\n          catMap[category] += amount;\n        } else {\n          catMap[category] = amount;\n        }\n      }\n    }\n  }\n}\n\n// จัดอันดับหมวดหมู่\nconst sortedCats = Object.entries(catMap)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 3);\n\nlet topCatText = '';\nif (sortedCats.length > 0) {\n  sortedCats.forEach((item, index) => {\n    topCatText += `${index + 1}. ${item[0]}: ฿${item[1].toLocaleString('th-TH')}\\n`;\n  });\n} else {\n  topCatText = '- ไม่มีรายการเมื่อวาน -';\n}\n\nconst balance = yesterdayIncome - yesterdayExpense;\n\nconst formatNum = (num) => {\n  return num.toLocaleString('th-TH', {minimumFractionDigits: 0, maximumFractionDigits: 2});\n};\n\nconst formatDate = (date) => {\n  return date.toLocaleDateString('th-TH', { day: '2-digit', month: 'long', year: 'numeric' });\n};\n\nreturn {\n  date: formatDate(yesterday),\n  income: yesterdayIncome,\n  expense: yesterdayExpense,\n  balance: balance,\n  count: yesterdayCount,\n  top_categories: topCatText.trim(),\n  income_formatted: formatNum(yesterdayIncome),\n  expense_formatted: formatNum(yesterdayExpense),\n  balance_formatted: formatNum(balance)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -384
+      ],
+      "id": "5790f64b-f6c7-4eb3-83eb-fa9f0e540bae",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "432a2823-a559-4a44-a3c8-7bf02ada8583",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "สรุป 7 วัน",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -544,
+        -32
+      ],
+      "id": "7fa979e9-9e58-45e9-8332-6f3d89558016",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -304,
+        -144
+      ],
+      "id": "12f73473-99df-44d2-84aa-d59399661d1d",
+      "name": "Get row(s) in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// รับข้อมูลจาก Sheet\nconst rows = $input.all();\n\nlet weeklyIncome = 0;\nlet weeklyExpense = 0;\nlet catMap = {};\nlet count = 0;\n\n// กำหนดช่วงเวลา (7 วันย้อนหลัง)\nconst today = new Date();\nconst sevenDaysAgo = new Date();\nsevenDaysAgo.setDate(today.getDate() - 7);\nsevenDaysAgo.setHours(0, 0, 0, 0);\n\n// วนลูปคำนวณ\nfor (const item of rows) {\n  const row = item.json;\n  if (row.date) {\n    const rowDate = new Date(row.date);\n    // แปลงค่าเงินเป็นตัวเลข\n    const amount = parseFloat(row.amount) || 0;\n    \n    // ตรวจสอบประเภทรายการ\n    const typeRaw = row['transaction_type (income/expense/transfer)'] || row['type'] || \"\";\n    const type = typeRaw.toString().toLowerCase();\n    const category = row['category'] || 'อื่นๆ';\n\n    // เงื่อนไข: ต้องเป็นรายการใน 7 วันล่าสุด\n    if (rowDate >= sevenDaysAgo && rowDate <= today) {\n      count++;\n      \n      if (type.includes('income') || type.includes('รายรับ')) {\n        weeklyIncome += amount;\n      }\n      else if (type.includes('expense') || type.includes('รายจ่าย')) {\n        weeklyExpense += amount;\n        // เก็บสถิติหมวดหมู่\n        if (catMap[category]) {\n          catMap[category] += amount;\n        } else {\n          catMap[category] = amount;\n        }\n      }\n    }\n  }\n}\n\n// จัดอันดับ Top 3 หมวดหมู่\nconst sortedCats = Object.entries(catMap)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 3);\n\nlet topCatText = '';\nif (sortedCats.length > 0) {\n  sortedCats.forEach((item, index) => {\n    topCatText += `${index + 1}. ${item[0]}: ฿${item[1].toLocaleString('th-TH')}\\n`;\n  });\n} else {\n  topCatText = '- ไม่มีรายการ -';\n}\n\n// คำนวณคงเหลือ\nconst balance = weeklyIncome - weeklyExpense;\n\n// ฟอร์แมตตัวเลขและวันที่\nconst formatNum = (num) => num.toLocaleString('th-TH', {minimumFractionDigits: 0, maximumFractionDigits: 2});\nconst formatDate = (d) => d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' });\nconst weekRange = `${formatDate(sevenDaysAgo)} - ${formatDate(today)}`;\n\n// ส่งค่าออกไป\nreturn {\n  week_range: weekRange,\n  weekly_income_formatted: formatNum(weeklyIncome),\n  weekly_expense_formatted: formatNum(weeklyExpense),\n  balance_formatted: formatNum(balance),\n  top_categories: topCatText.trim(),\n  count: count,\n  month_name: \"7 วันล่าสุด\" // ใช้แทนชื่อเดือนใน Template เดิม\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -144
+      ],
+      "id": "2744d8b9-1fb3-40e1-9305-f50e2fa22543",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69eafb91-cc9a-41c3-88c0-6de07fd0700f",
+              "name": "webhookUserId",
+              "value": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+              "type": "string"
+            },
+            {
+              "id": "84a6483b-ee6c-4f54-ae8a-9fe03f8cf02f",
+              "name": "date",
+              "value": "={{ $('Code in JavaScript2').first().json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "a4780242-a652-463d-a381-7275e9525d18",
+              "name": "income",
+              "value": "={{ $('Code in JavaScript2').first().json.income_formatted }}",
+              "type": "string"
+            },
+            {
+              "id": "d14aa5d8-532b-405f-8232-0387e5dc9e69",
+              "name": "expense",
+              "value": "={{ $('Code in JavaScript2').first().json.expense_formatted }}",
+              "type": "string"
+            },
+            {
+              "id": "726ea174-c217-4efe-9946-b6022bde8ced",
+              "name": "balance",
+              "value": "={{ $('Code in JavaScript2').first().json.balance_formatted }}",
+              "type": "string"
+            },
+            {
+              "id": "210653d7-1e7f-4f3c-b4c8-a9800b6e1079",
+              "name": "count",
+              "value": "={{ $('Code in JavaScript2').first().json.count }}",
+              "type": "string"
+            },
+            {
+              "id": "c9471938-cf99-4328-a4f7-ef18e93c7732",
+              "name": "top_categories",
+              "value": "={{ $('Code in JavaScript2').first().json.top_categories }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        -624
+      ],
+      "id": "ff85a5ed-41db-4064-9118-5a826ce0b001",
+      "name": "set1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').first().json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"📊 สรุปรายงานการเงิน (เมื่อวาน)\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"mega\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"YESTERDAY REPORT\",\n              \"color\": \"#ffffffaa\",\n              \"weight\": \"bold\",\n              \"size\": \"xxs\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $('Code in JavaScript3').first().json.date }}\",\n              \"color\": \"#ffffff\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"flex\": 1\n            }\n          ],\n          \"backgroundColor\": \"#2980b9\",\n          \"paddingAll\": \"20px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"ยอดคงเหลือสุทธิ (Net Balance)\",\n              \"color\": \"#8C8C8C\",\n              \"size\": \"xs\",\n              \"align\": \"center\",\n              \"weight\": \"bold\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $('Code in JavaScript3').first().json.balance_formatted }}\",\n              \"weight\": \"bold\",\n              \"size\": \"4xl\",\n              \"align\": \"center\",\n              \"color\": \"#2c3e50\",\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"xl\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"margin\": \"xl\",\n              \"contents\": [\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายรับ\",\n                      \"size\": \"xs\",\n                      \"color\": \"#8C8C8C\"\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Code in JavaScript3').first().json.income_formatted }}\",\n                      \"size\": \"lg\",\n                      \"weight\": \"bold\",\n                      \"color\": \"#27AE60\"\n                    }\n                  ],\n                  \"alignItems\": \"center\"\n                },\n                {\n                  \"type\": \"separator\",\n                  \"color\": \"#E0E0E0\"\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายจ่าย\",\n                      \"size\": \"xs\",\n                      \"color\": \"#8C8C8C\"\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Code in JavaScript3').first().json.expense_formatted }}\",\n                      \"size\": \"lg\",\n                      \"weight\": \"bold\",\n                      \"color\": \"#EB5757\"\n                    }\n                  ],\n                  \"alignItems\": \"center\"\n                }\n              ]\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"xl\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"lg\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"📌 หมวดหมู่ยอดนิยม\",\n                  \"size\": \"sm\",\n                  \"weight\": \"bold\",\n                  \"color\": \"#333333\",\n                  \"margin\": \"sm\"\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"margin\": \"md\",\n                  \"backgroundColor\": \"#F8F9FA\",\n                  \"cornerRadius\": \"md\",\n                  \"paddingAll\": \"md\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ JSON.stringify($('Code in JavaScript3').first().json.top_categories).slice(1, -1) }}\",\n                      \"size\": \"xs\",\n                      \"color\": \"#555555\",\n                      \"wrap\": true,\n                      \"lineSpacing\": \"4px\"\n                    }\n                  ]\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        -384
+      ],
+      "id": "93af0829-aec1-4095-b6c9-991a6c132155",
+      "name": "HTTP Request5",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').first().json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"📊 สรุปรายงาน 7 วันย้อนหลัง\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"mega\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"WEEKLY REPORT\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#ffffff\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"{{ $('Code in JavaScript4').first().json.week_range }}\",\n              \"size\": \"sm\",\n              \"color\": \"#ffffffcc\",\n              \"margin\": \"sm\"\n            }\n          ],\n          \"backgroundColor\": \"#8B5CF6\",\n          \"paddingAll\": \"20px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"ภาพรวม 7 วันล่าสุด\",\n              \"weight\": \"bold\",\n              \"size\": \"sm\",\n              \"color\": \"#8B5CF6\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💰 รายรับ\",\n                  \"size\": \"sm\",\n                  \"color\": \"#555555\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $('Code in JavaScript4').first().json.weekly_income_formatted }}\",\n                  \"size\": \"sm\",\n                  \"color\": \"#10b981\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💸 รายจ่าย\",\n                  \"size\": \"sm\",\n                  \"color\": \"#555555\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $('Code in JavaScript4').first().json.weekly_expense_formatted }}\",\n                  \"size\": \"sm\",\n                  \"color\": \"#ef4444\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"sm\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"horizontal\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"💵 คงเหลือสุทธิ\",\n                  \"size\": \"md\",\n                  \"color\": \"#111111\",\n                  \"weight\": \"bold\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"฿{{ $('Code in JavaScript4').first().json.balance_formatted }}\",\n                  \"size\": \"xl\",\n                  \"color\": \"#8B5CF6\",\n                  \"align\": \"end\",\n                  \"weight\": \"bold\"\n                }\n              ],\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"🏆 Top หมวดหมู่ (7 วัน)\",\n                  \"weight\": \"bold\",\n                  \"size\": \"sm\",\n                  \"color\": \"#8B5CF6\"\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"vertical\",\n                  \"margin\": \"md\",\n                  \"backgroundColor\": \"#F3E8FF\",\n                  \"cornerRadius\": \"md\",\n                  \"paddingAll\": \"md\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ JSON.stringify($('Code in JavaScript4').first().json.top_categories).slice(1, -1) }}\",\n                      \"size\": \"xs\",\n                      \"color\": \"#555555\",\n                      \"margin\": \"sm\",\n                      \"wrap\": true,\n                      \"lineSpacing\": \"4px\"\n                    }\n                  ]\n                }\n              ],\n              \"margin\": \"lg\"\n            }\n          ]\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📝 รายการทั้งหมด: {{ $('Code in JavaScript4').first().json.count }} รายการ\",\n              \"size\": \"xs\",\n              \"color\": \"#aaaaaa\",\n              \"align\": \"center\"\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -144
+      ],
+      "id": "03f0a6e5-299e-4aa0-81ee-06b3d39f2a2c",
+      "name": "HTTP Request6",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// รับข้อความที่ผู้ใช้พิมพ์มา\nconst text = $input.item.json.body.events[0].message.text || \"\";\n\n// แยกข้อความด้วย \"ช่องว่าง\" (Space)\n// ตัวอย่าง: \"ข้าวผัด 50\" -> [\"ข้าวผัด\", \"50\"]\nconst parts = text.trim().split(\" \");\n\n// ดึงตัวสุดท้ายมาเป็น \"ราคา\"\nconst amountRaw = parts.pop(); \nconst amount = parseFloat(amountRaw);\n\n// เอาส่วนที่เหลือมารวมกันเป็น \"ชื่อรายการ\"\nconst item = parts.join(\" \");\n\n// เช็คว่าเป็นตัวเลขจริงไหม? (ถ้าไม่ใช่ แสดงว่าพิมพ์ผิด)\nconst isValid = !isNaN(amount) && amount > 0 && item.length > 0;\n\n// เตรียมวันที่ปัจจุบัน\nconst now = new Date();\nconst dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD\nconst timeStr = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM\n\nreturn {\n  isValid: isValid,\n  item: item,      // ชื่อรายการ (เช่น ข้าวผัด)\n  amount: amount,  // ราคา (เช่น 50)\n  date: dateStr,\n  time: timeStr,\n  originalText: text\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        64
+      ],
+      "id": "05c3a149-d145-4c5a-a3c0-b614a5d75a76",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "57384124-d264-4985-8ff5-fcaf59b22973",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        240
+      ],
+      "id": "ed16144a-d7ab-4846-9fd9-d41f27da7744",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $('Code in JavaScript5').item.json.date }}",
+            "time": "={{ $('Code in JavaScript5').item.json.time }}",
+            "amount": "={{ $('Code in JavaScript5').item.json.amount }}",
+            "transaction_type (income/expense/transfer)": "expense",
+            "category": "={{ $json.item }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transaction_type (income/expense/transfer)",
+              "displayName": "transaction_type (income/expense/transfer)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sender_bank",
+              "displayName": "sender_bank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "receiver_name",
+              "displayName": "receiver_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "receiver_bank",
+              "displayName": "receiver_bank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ref_id",
+              "displayName": "ref_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        112
+      ],
+      "id": "31a697c8-c512-47fa-bc7a-27566a95c861",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').first().json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"✅ บันทึกรายการเรียบร้อย\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"kilo\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"image\",\n              \"url\": \"https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png\",\n              \"size\": \"xs\",\n              \"aspectMode\": \"fit\",\n              \"align\": \"center\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"บันทึกสำเร็จ!\",\n              \"weight\": \"bold\",\n              \"size\": \"lg\",\n              \"margin\": \"md\",\n              \"align\": \"center\",\n              \"color\": \"#1DB446\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"lg\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"lg\",\n              \"contents\": [\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"horizontal\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"รายการ\",\n                      \"size\": \"sm\",\n                      \"color\": \"#aaaaaa\",\n                      \"flex\": 2\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"{{ $('Code in JavaScript5').first().json.item }}\",\n                      \"size\": \"sm\",\n                      \"color\": \"#555555\",\n                      \"flex\": 4,\n                      \"weight\": \"bold\",\n                      \"align\": \"end\",\n                      \"wrap\": true\n                    }\n                  ]\n                },\n                {\n                  \"type\": \"box\",\n                  \"layout\": \"horizontal\",\n                  \"margin\": \"sm\",\n                  \"contents\": [\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"ราคา\",\n                      \"size\": \"sm\",\n                      \"color\": \"#aaaaaa\",\n                      \"flex\": 2\n                    },\n                    {\n                      \"type\": \"text\",\n                      \"text\": \"฿{{ $('Code in JavaScript5').first().json.amount }}\",\n                      \"size\": \"xl\",\n                      \"color\": \"#333333\",\n                      \"flex\": 4,\n                      \"weight\": \"bold\",\n                      \"align\": \"end\"\n                    }\n                  ]\n                }\n              ]\n            }\n          ],\n          \"paddingAll\": \"20px\"\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"บันทึกลง Google Sheets แล้ว\",\n              \"size\": \"xxs\",\n              \"color\": \"#bbbbbb\",\n              \"align\": \"center\"\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        112
+      ],
+      "id": "bbf93bfb-9167-441c-b76b-fed6818ac947",
+      "name": "HTTP Request8",
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4fcc532f-163f-4b2d-b4b2-d92282984e49",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1216,
+        -272
+      ],
+      "id": "5b726d51-e196-41c9-b5de-baeedb127156",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds",
+          "mode": "list",
+          "cachedResultName": "Pay History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ref_id",
+              "lookupValue": "={{ $('Code in JavaScript').item.json.ref_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1232,
+        192
+      ],
+      "id": "6c470c4f-5241-4682-81a0-13b64d06b323",
+      "name": "Get row(s) in sheet5",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "49cd97f3-bab8-4617-9755-254cd47ac78d",
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-22T02:45:09.078Z",
+      "updatedAt": "2025-11-22T02:45:09.078Z",
+      "role": "workflow:owner",
+      "workflowId": "rZjkLEVp0IM9xKfh",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

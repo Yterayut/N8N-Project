@@ -1,0 +1,237 @@
+{
+  "createdAt": "2025-10-14T16:12:24.428Z",
+  "updatedAt": "2025-11-23T07:51:05.000Z",
+  "id": "3YmkttJCIJ6M2NyJ",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9906b79a-6856-4d4d-93e8-ce4bed0b6e02"
+    },
+    {
+      "parameters": {},
+      "name": "Get Facebook Comments",
+      "type": "n8n-nodes-base.facebook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        0
+      ],
+      "id": "53e35166-88d6-499f-a6f0-22ad7e50c1a2",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"replied\"]}}",
+              "operation": "notEqual",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "Filter Unreplied Comments",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "2281e205-fc4d-48ca-a26b-1289a3268e16"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "=YOUR_GEMINI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contents",
+              "value": "=[{\"parts\":[{\"text\":\"ตอบคอมเมนต์ Facebook นี้อย่างเป็นมิตรและเป็นประโยชน์: {{$json[\"message\"]}}\"}]}]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Call Gemini API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        600,
+        0
+      ],
+      "id": "39114d94-80f3-4314-9bb8-1bb3a408a2b3",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "QKkNjsqY32vjLfOf",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract Gemini response\nconst response = $input.item.json.candidates[0].content.parts[0].text;\n\nreturn {\n  geminiResponse: response,\n  commentId: $input.item.json.commentId,\n  originalComment: $input.item.json.message,\n  commenterName: $input.item.json.from.name\n};"
+      },
+      "name": "Process Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "7eddf859-3ba5-4ab9-b781-d217fbceca65"
+    },
+    {
+      "parameters": {},
+      "name": "Reply to Comment",
+      "type": "n8n-nodes-base.facebook",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "997a1f3a-f30c-4c91-a460-de1120406504",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Sheet1",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "วันที่": "={{$now.toFormat('yyyy-MM-dd HH:mm:ss')}}",
+            "ชื่อผู้แสดงความคิดเห็น": "={{$json[\"commenterName\"]}}",
+            "คอมเมนต์": "={{$json[\"originalComment\"]}}",
+            "คำตอบจาก Bot": "={{$json[\"geminiResponse\"]}}",
+            "สถานะ": "ตอบแล้ว"
+          }
+        },
+        "options": {}
+      },
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "011f9e7c-c783-4594-948b-435d15acebbd"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "postId",
+              "value": "YOUR_FACEBOOK_POST_ID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ],
+      "id": "9969cf35-f7ae-4236-942c-ab51dc6f9b10"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Unreplied Comments": {
+      "main": [
+        [
+          {
+            "node": "Call Gemini API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Gemini API": {
+      "main": [
+        [
+          {
+            "node": "Process Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "3d92d748-01e0-4657-b383-decf03791139",
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-10-14T16:12:24.441Z",
+      "updatedAt": "2025-10-14T16:12:24.441Z",
+      "role": "workflow:owner",
+      "workflowId": "3YmkttJCIJ6M2NyJ",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

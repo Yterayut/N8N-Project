@@ -1,0 +1,1938 @@
+{
+  "createdAt": "2025-12-19T16:13:08.708Z",
+  "updatedAt": "2026-01-29T08:26:02.000Z",
+  "id": "hxeEVrQTHIkffnBt",
+  "name": "Bot Incident",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        -112
+      ],
+      "id": "f136d057-649b-41c2-895d-17a7bed238a3",
+      "name": "Webhook",
+      "webhookId": "7aad9fff-549f-442e-a3b4-514bb1880c0c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7cc114bb-a410-41e3-b6b8-55c45633f1ec",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "แจ้งเคส",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b83a272b-f425-4fb2-9178-34ddf9ec8b36",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        -112
+      ],
+      "id": "3cc1d5da-cf6d-45a5-8970-5e97a1c06452",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"📝 กรุณากรอกแบบฟอร์มแจ้งซ่อม\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"hero\": {\n          \"type\": \"image\",\n          \"url\": \"https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1000&auto=format&fit=crop\",\n          \"size\": \"full\",\n          \"aspectRatio\": \"20:13\",\n          \"aspectMode\": \"cover\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"IT Support Service\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#1DB446\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"ต้องการแจ้งปัญหาการใช้งาน หรือขออุปกรณ์เพิ่ม กรุณากดปุ่มด้านล่างเพื่อเปิดแบบฟอร์มครับ\",\n              \"margin\": \"md\",\n              \"size\": \"sm\",\n              \"color\": \"#666666\",\n              \"wrap\": true\n            }\n          ]\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"uri\",\n                \"label\": \"📝 เปิดฟอร์มแจ้งซ่อม\",\n                \"uri\": \"https://tally.so/r/obDoaN\"\n              },\n              \"color\": \"#1DB446\"\n            }\n          ],\n          \"flex\": 0\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        -208
+      ],
+      "id": "f7d2a7b3-2ea5-4f83-abeb-4e46160f3b5e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// เรียกใช้ Memory Global (ต้องมี $ นำหน้าครับ)\nconst sd = $getWorkflowStaticData('global');\n\n// ดึงข้อมูล Event จาก Node Webhook โดยตรง\nconst event = $('Webhook').first().json.body.events[0];\n\nconst userId = event.source.userId;\nconst groupId = event.source.groupId;\n\n// บันทึก State ลง Memory\nsd[userId] = {\n  step: 'WAIT_DETAIL',\n  groupId: groupId, \n  timestamp: new Date().getTime()\n};\n\nreturn [{ json: { status: \"State Saved\", userId: userId, step: \"WAIT_DETAIL\" } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -208
+      ],
+      "id": "8ed61142-735e-44b4-a2a4-b71722300d2a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// เรียกความจำ Global\nconst sd = $getWorkflowStaticData('global');\n\n// ดึงข้อมูลคนส่งล่าสุด\nconst event = $('Webhook').first().json.body.events[0];\nconst userId = event.source.userId;\n\n// ดึง State จาก Memory\nlet state = sd[userId];\n\n// ----------------------------------------------------\n// 🟢 ส่วนเสริมพิเศษ: ช่วยให้ Test ผ่าน (Mock Data)\n// ถ้า Memory ว่าง (เพราะเรากด Test แยก) ให้สมมติว่ามีสถานะอยู่เลย\nif (!state) {\n   state = { step: 'WAIT_DETAIL', groupId: event.source.groupId || 'GROUP-TEST' };\n}\n// ----------------------------------------------------\n\nif (state && state.step === 'WAIT_DETAIL') {\n  return [{\n    json: {\n      raw_message: event.message.text || \"มีรูปภาพแนบ\",\n      message_type: event.message.type,\n      message_id: event.message.id,\n      userId: userId,\n      groupId: state.groupId,\n      ticket_source: \"LINE\"\n    }\n  }];\n} else {\n  return [];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        32
+      ],
+      "id": "132e0080-a1df-4786-aee5-b4cf68588a84",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = ($json.raw_message || '').toLowerCase(); // แปลงเป็นตัวเล็กเพื่อง่ายต่อการเช็ค\n\n// 1. ตั้งค่า Default (ถ้าหาไม่เจอ ให้เป็น Incident P3 ไว้ก่อน)\nlet type = 'Incident';\nlet priority = 'P3';\nlet sla_minutes = 480; // 8 ชม.\n\n// 2. เช็คว่าเป็น REQUEST หรือไม่?\n// คำค้นหา: ขอ, request, เพิ่ม, ปรับ, แก้ไข, รายงาน, ข้อมูล, report\nconst requestKeywords = ['ขอ', 'request', 'เพิ่ม', 'ปรับ', 'แก้ไข', 'รายงาน', 'ข้อมูล', 'report'];\n\nif (requestKeywords.some(k => text.includes(k))) {\n  type = 'Request';\n  priority = 'P4';\n  sla_minutes = 1440; // 24 ชม.\n} \n\n// 3. ถ้าไม่ใช่ Request -> เช็คระดับความรุนแรงของ INCIDENT\nif (type === 'Incident') {\n  if (text.includes('ล่ม') || text.includes('ใช้งานไม่ได้ทั้งหมด') || text.includes('เข้าไม่ได้')) {\n    // P1: ระบบล่ม\n    priority = 'P1';\n    sla_minutes = 43;\n  } else if (text.includes('ทำงานไม่ได้') || text.includes('กระทบงานหลัก') || text.includes('error')) {\n    // P2: กระทบงานหลัก\n    priority = 'P2';\n    sla_minutes = 240; // 4 ชม.\n  } else if (text.includes('บางส่วน') || text.includes('บางเมนู')) {\n    // P3: กระทบบางส่วน\n    priority = 'P3';\n    sla_minutes = 480; // 8 ชม.\n  } else {\n    // P4: ไม่เร่งด่วน (Default Incident)\n    priority = 'P4';\n    sla_minutes = 1440; // 24 ชม.\n  }\n}\n\n// ส่งค่ากลับไป\nreturn [{\n  json: {\n    ...$json, // เอาข้อมูลเก่าไปด้วย (userId, message)\n    type: type,\n    priority: priority,\n    sla_minutes: sla_minutes\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        32
+      ],
+      "id": "dd8e4a79-790b-457f-b944-5b8def940a95",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงเวลาปัจจุบัน\nconst now = new Date();\n\n// สร้างส่วนประกอบของ Ticket ID (Format: OCM-YYMMDD-XXX)\nconst y = now.getFullYear().toString().slice(2); // เอาปี 2 ตัวท้าย (เช่น 25)\nconst m = String(now.getMonth() + 1).padStart(2, '0'); // เดือน\nconst d = String(now.getDate()).padStart(2, '0'); // วัน\nconst randomNum = Math.floor(Math.random() * 900 + 100); // สุ่มเลข 3 หลัก\n\nconst ticket_id = `OCM-${y}${m}${d}-${randomNum}`;\n\n// คำนวณ Due Date (เวลาปัจจุบัน + นาที SLA)\n// แปลง sla_minutes เป็นมิลลิวินาที ( * 60 * 1000)\nconst slaMinutes = $json.sla_minutes || 0;\nconst due_at = new Date(now.getTime() + slaMinutes * 60 * 1000);\n\n// ส่งค่ากลับไป\nreturn [{\n  json: {\n    ...$json, // เอาข้อมูลเก่าไปด้วย\n    ticket_id: ticket_id,\n    created_at: now.toISOString(),\n    due_at: due_at.toISOString(),\n    status: 'New'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        32
+      ],
+      "id": "6699da05-cc59-46ae-b88d-feaee3fd72dc",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "Subject": "={{ $json.raw_message }}",
+            "priority (P1/P2/P3)": "={{ $json.priority }}",
+            "type (Incident/Request)": "={{ $json.type }}",
+            "status": "={{ $json.status }}",
+            "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)": "={{ $json.sla_minutes }}",
+            "created_at ": "={{ $json.created_at }}",
+            "due_at (created_at + sla_minutes)": "={{ $json.due_at }}",
+            "channel (LINE/Email/etc. แล้วแต่คุณ)": "={{ $json.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer",
+              "displayName": "customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at ",
+              "displayName": "created_at ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority (P1/P2/P3)",
+              "displayName": "priority (P1/P2/P3)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type (Incident/Request)",
+              "displayName": "type (Incident/Request)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Root Cause",
+              "displayName": "Root Cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fix",
+              "displayName": "Fix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "incident_team_name",
+              "displayName": "incident_team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_phone",
+              "displayName": "incident_team_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "displayName": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "due_at (created_at + sla_minutes)",
+              "displayName": "due_at (created_at + sla_minutes)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_minutes (คำนวณตอน monitor)",
+              "displayName": "overdue_minutes (คำนวณตอน monitor)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_state (OnTrack / AtRisk / Overdue)",
+              "displayName": "sla_state (OnTrack / AtRisk / Overdue)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "displayName": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "displayName": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_closed_at",
+              "displayName": "notified_closed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "displayName": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image_Evidence",
+              "displayName": "Image_Evidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reporter_Name",
+              "displayName": "Reporter_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        32
+      ],
+      "id": "170688fe-a515-417c-a7fc-65f0a3090f0b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Webhook').item.json.body.events[0].source.userId }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"✅ รับแจ้งเคสเรียบร้อย\\n\\n🎫 Ticket ID: {{ $json.ticket_id }}\\n📌 Type: {{ $json['type (Incident/Request)'] }}\\n⚡ Priority: {{ $json['priority (P1/P2/P3)'] }}\\n⏱ SLA: {{ $json['sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)'] }} นาที\\n\\n📝 อาการ: {{ $json.Subject }}\\n\\nสถานะ: New (ทีมงานกำลังตรวจสอบครับ)\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        32
+      ],
+      "id": "20489ce7-5b0f-4b92-8aa2-870c9a4536b1",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// เรียกความจำ Global\nconst sd = $getWorkflowStaticData('global');\n\n// ดึง UserId จาก Webhook (ต้นทาง)\nconst userId = $('Webhook').item.json.body.events[0].source.userId;\n\n// ลบข้อมูลสถานะทิ้ง (จบงาน)\nif (userId && sd[userId]) {\n  delete sd[userId];\n}\n\nreturn [{ json: { status: \"State Cleared\", userId: userId, finished: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        32
+      ],
+      "id": "caff9968-45ce-49d7-9651-5d820b8a2f27",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        1056
+      ],
+      "id": "868e5b97-90a6-493a-8fec-eac7cd135818",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        1056
+      ],
+      "id": "e6f45c79-78ce-4bd5-b1b3-06bdd99096fb",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst returnData = [];\n\n// วนลูปเช็ค Ticket ทุกบรรทัด\nfor (const item of $input.all()) {\n    const data = item.json;\n    \n    // --- โซนจับคู่ชื่อคอลัมน์ (แก้ให้ตรงกับหัวตารางจริงของคุณ 100%) ---\n    const status = data['status']; \n    // ชื่อยาวๆ ของ due_at\n    const dueAtRaw = data['due_at (created_at + sla_minutes)']; \n    // ชื่อยาวๆ ของ notified overdue\n    const notifiedAt = data['notified_overdue_at (เวลาที่เคยแจ้งตก SLA)'];\n    // ชื่อยาวๆ ของ channel (ที่เก็บ userId/groupId)\n    // *สำคัญ: ถ้าใน Sheet คุณเก็บ ID ไว้ช่องอื่น ให้แก้ตรงนี้ครับ\n    // แต่จาก workflow เก่า เราเก็บลงช่อง channel หรือ line_to ลองเช็คดูครับ\n    // สมมติว่าเก็บใน channel ตามชื่อคอลัมน์ที่คุณให้มา:\n    const lineTo = data['channel (LINE/Email/etc. แล้วแต่คุณ)']; \n    // ------------------------------------------------\n\n    // 1. ถ้าปิดเคสแล้ว หรือไม่มีคนรับผิดชอบ (ไม่มี lineTo) ให้ข้ามไป\n    if (status === 'Resolved' || status === 'Closed') continue;\n    \n    // 2. แปลงวันที่ (ถ้าไม่มีวันที่ ให้ข้าม)\n    if (!dueAtRaw) continue;\n    const dueAt = new Date(dueAtRaw);\n    if (isNaN(dueAt.getTime())) continue;\n\n    // 3. คำนวณเวลาที่เกิน (นาที)\n    const diffMs = now - dueAt;\n    const overdueMinutes = Math.floor(diffMs / 60000);\n\n    // 4. เงื่อนไข: เกินเวลา (>0) และ ยังไม่เคยแจ้งเตือน (!notifiedAt)\n    // หมายเหตุ: เช็ค overdueMinutes > 0 คือเกินเวลาแล้ว\n    if (overdueMinutes > 0 && (!notifiedAt || notifiedAt.toString().trim() === '')) {\n        \n        // เตรียมข้อความ\n        const priority = data['priority (P1/P2/P3)'] || '-';\n        const type = data['type (Incident/Request)'] || '-';\n        const subject = data['Subject'] || '-';\n        \n        const msg = `🚨 SLA Ticket Overdue 🚨\\n\\n` +\n                    `Ticket ID: ${data['ticket_id']}\\n` +\n                    `Type: ${type}\\n` +\n                    `Priority: ${priority}\\n` +\n                    `Status: ${status}\\n\\n` +\n                    `⚠️ เกินกำหนดมาแล้ว: ${overdueMinutes} นาที\\n` +\n                    `อาการ: ${subject}`;\n\n        returnData.push({\n            json: {\n                ...data,\n                overdue_minutes: overdueMinutes,\n                message_text: msg,\n                line_to: lineTo, // ส่งค่านี้ไปให้ Node แจ้งเตือนใช้\n                // ใช้ค่า row_number ที่ติดมากับ Google Sheet Node\n                targetRow: data.row_number || (item.index + 2) \n            }\n        });\n    }\n}\n\nreturn returnData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1056
+      ],
+      "id": "33958764-074c-44d2-8360-851a424d4aaa",
+      "name": "Code (Calculated SLA Logic)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={{\n  {\n    \"to\": $json.line_to,\n    \"messages\": [\n      {\n        \"type\": \"text\",\n        \"text\": $json.message_text\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        1056
+      ],
+      "id": "c02f5346-c2d3-4776-9ecf-64b4d19eb0d9",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        1344
+      ],
+      "id": "35756c00-8ab1-4fff-8354-a65d99aa105d",
+      "name": "Schedule Trigger1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        1344
+      ],
+      "id": "74c0bea6-85e5-46c9-80fc-463ef31eb6d9",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const returnData = [];\n\n// วนลูปเช็ค Ticket ทุกบรรทัด\nfor (const item of $input.all()) {\n    const data = item.json;\n    \n    // --- โซนจับคู่ชื่อคอลัมน์ ---\n    const status = data['status']; \n    const notifiedClosed = data['notified_closed_at (เวลาที่เคยแจ้งปิดงานแล้ว)']; // *เช็คชื่อหัวตารางใน Sheet ให้ตรงนะครับ*\n    const lineTo = data['channel (LINE/Email/etc. แล้วแต่คุณ)'];\n    // ------------------------------------------------\n\n    // เงื่อนไข: \n    // 1. สถานะเป็น Resolved หรือ Closed\n    // 2. ยังไม่เคยแจ้งเตือน (!notifiedClosed)\n    // 3. (สำคัญ) ต้องมี User ID (lineTo) ด้วย ไม่งั้นส่งไม่ได้\n    if (\n        (status === 'Resolved' || status === 'Closed') && \n        (!notifiedClosed || notifiedClosed.toString().trim() === '') &&\n        lineTo // <--- เพิ่มบรรทัดนี้: ถ้าไม่มี ID ให้ข้าม\n    ) {\n        \n        const ticketId = data['ticket_id'];\n        const subject = data['Subject'] || '-';\n        const fixDetail = data['Fix'] || 'ตรวจสอบและแก้ไขเรียบร้อยแล้ว';\n        \n        const msg = `✅ ปิดเคสเรียบร้อย (Resolved)\\n\\n` +\n                    `Ticket ID: ${ticketId}\\n` +\n                    `อาการ: ${subject}\\n\\n` +\n                    `🛠️ การแก้ไข: ${fixDetail}\\n\\n` +\n                    `ขอบคุณที่ใช้บริการครับ 🙏`;\n\n        returnData.push({\n            json: {\n                ...data,\n                message_text: msg,\n                line_to: lineTo,\n                targetRow: data.row_number || (item.index + 2) \n            }\n        });\n    }\n}\n\nreturn returnData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        1344
+      ],
+      "id": "e9b3b62d-e6f6-430f-8cc2-b1792a5df3d6",
+      "name": "Code (คัดแยกเคสที่ปิดแล้ว)"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "notified_closed_at": "={{ $now }}",
+            "ticket_id": "={{ $('Code (คัดแยกเคสที่ปิดแล้ว)').item.json.ticket_id }}"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "customer",
+              "displayName": "customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at ",
+              "displayName": "created_at ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority (P1/P2/P3)",
+              "displayName": "priority (P1/P2/P3)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "type (Incident/Request)",
+              "displayName": "type (Incident/Request)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Root Cause",
+              "displayName": "Root Cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fix",
+              "displayName": "Fix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_name",
+              "displayName": "incident_team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_phone",
+              "displayName": "incident_team_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "displayName": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "due_at (created_at + sla_minutes)",
+              "displayName": "due_at (created_at + sla_minutes)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "overdue_minutes (คำนวณตอน monitor)",
+              "displayName": "overdue_minutes (คำนวณตอน monitor)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_state (OnTrack / AtRisk / Overdue)",
+              "displayName": "sla_state (OnTrack / AtRisk / Overdue)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "displayName": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "displayName": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_closed_at",
+              "displayName": "notified_closed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "displayName": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        1344
+      ],
+      "id": "07c5150d-63b5-463f-91d1-064873236ebe",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": $json.line_to,\n    \"messages\": [\n      {\n        \"type\": \"text\",\n        \"text\": $json.message_text\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        1344
+      ],
+      "id": "186665c2-4e2d-41c3-836b-34f0d0f1a4cb",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-form",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        352
+      ],
+      "id": "039718fa-b0b9-44fc-9e88-e87ec227c1f7",
+      "name": "Webhook Tally",
+      "webhookId": "15e47f77-521a-4f1a-834c-3e2b3646af6e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==========================================\n// ส่วนที่ 1: รับข้อมูลจาก Tally\n// ==========================================\nconst fields = $input.item.json.body.data.fields;\nconst result = {};\n\nfields.forEach(field => {\n  const key = field.label.trim();\n  if (field.type === 'DROPDOWN' || field.type === 'MULTIPLE_CHOICE') {\n    const selectedOption = field.options.find(opt => opt.id === field.value[0]);\n    result[key] = selectedOption ? selectedOption.text : '-';\n  } else if (field.type === 'FILE_UPLOAD') {\n    result[key] = (field.value && field.value.length > 0) ? field.value[0].url : null;\n  } else {\n    result[key] = field.value || '-';\n  }\n});\n\nconst reporter = result['ชื่อผู้แจ้ง'] || 'Unknown';\nlet issueType = result['ประเภทปัญหา'] || 'Incident';\nconst subject = result['รายละเอียด/อาการ'] || '-';\nconst imageUrl = result['รูปภาพประกอบ'];\n\n// ==========================================\n// ส่วนที่ 2: Logic วิเคราะห์ Priority & SLA\n// ==========================================\nconst text = subject.toLowerCase();\n\n// Keyword Check\nconst failureKeywords = ['ไม่ได้', 'not', 'error', 'fail', 'พัง', 'เสีย', 'ล่ม', 'เข้าไม่', 'bug', 'ผิดพลาด', 'ไม่ขึ้น', 'ไม่แสดง', 'cannot'];\nconst requestKeywords = ['ขอ', 'request', 'เพิ่ม', 'ปรับ', 'แก้ไข', 'install', 'ติดตั้ง', 'สร้าง', 'create', 'new user', 'access'];\n\nif (failureKeywords.some(k => text.includes(k))) {\n    issueType = 'Incident';\n} else if (requestKeywords.some(k => text.includes(k))) {\n    issueType = 'Request';\n}\n\n// Priority Calculation\nlet priority = 'P3';\nlet sla_minutes = 480; \n\nif (issueType === 'Request') {\n    priority = 'P4';\n    sla_minutes = 1440; // 24 ชม.\n} else {\n    if (text.includes('ล่ม') || text.includes('ใช้งานไม่ได้ทั้งหมด') || text.includes('เข้าไม่ได้') || text.includes('down') || text.includes('critical')) {\n        priority = 'P1';\n        sla_minutes = 60; \n    } else if (text.includes('ไม่ได้') || text.includes('error') || text.includes('fail') || text.includes('ไม่ขึ้น')) {\n        priority = 'P2';\n        sla_minutes = 240; // 4 ชม.\n    } else if (text.includes('บางส่วน') || text.includes('ช้า')) {\n        priority = 'P3';\n        sla_minutes = 480; \n    } else {\n        priority = 'P4';\n        sla_minutes = 1440; \n    }\n}\n\n// SLA Text Display\nlet slaText = \"\";\nif (sla_minutes >= 60) {\n    const hrs = Math.floor(sla_minutes / 60);\n    const mins = sla_minutes % 60;\n    slaText = mins === 0 ? `${hrs} ชั่วโมง` : `${hrs} ชม. ${mins} นาที`;\n} else {\n    slaText = `${sla_minutes} นาที`;\n}\n\n// ==========================================\n// ส่วนที่ 3: จัดการเวลา และข้อมูลเสริม (New Features ✨)\n// ==========================================\nconst now = new Date();\n\nfunction formatDateTime(dateObj) {\n    const d = String(dateObj.getDate()).padStart(2, '0');\n    const m = String(dateObj.getMonth() + 1).padStart(2, '0');\n    const y = dateObj.getFullYear();\n    const hr = String(dateObj.getHours()).padStart(2, '0');\n    const min = String(dateObj.getMinutes()).padStart(2, '0');\n    return `${d}/${m}/${y} ${hr}:${min}`;\n}\n\nconst createdTimeStr = formatDateTime(now);\nconst due_at = new Date(now.getTime() + sla_minutes * 60 * 1000);\nconst dueTimeStr = formatDateTime(due_at);\n\n// Ticket ID Generation\nconst y_id = now.getFullYear().toString().slice(2);\nconst m_id = String(now.getMonth() + 1).padStart(2, '0');\nconst d_id = String(now.getDate()).padStart(2, '0');\nconst randomNum = Math.floor(Math.random() * 900 + 100); \nconst ticketId = `OCM-${y_id}${m_id}${d_id}-${randomNum}`;\n\n// --- ข้อมูลใหม่ที่เพิ่มเข้ามา ---\nconst status = \"🆕 รับเรื่องแล้ว\"; // สถานะเริ่มต้น\nconst assignee = issueType === 'Incident' ? 'Team Infra' : 'Service Desk'; // สมมติคนรับผิดชอบตามประเภทงาน\n\n\n// ==========================================\n// ส่วนที่ 4: สร้าง Flex Message\n// ==========================================\nlet headerColor = \"#1DB446\"; \nlet headerText = \"New Request\";\n\nif (priority === 'P1') {\n    headerColor = \"#FF3333\"; headerText = \"🚨 Critical Incident (P1)\";\n} else if (priority === 'P2') {\n    headerColor = \"#FF9933\"; headerText = \"⚠️ High Priority Incident\";\n} else if (priority === 'P3') {\n    headerColor = \"#FFC107\"; headerText = \"🔸 Incident Report\";\n} else {\n    headerColor = \"#1DB446\"; headerText = issueType === 'Request' ? \"✅ New Service Request\" : \"🟢 Incident Report\";\n}\n\nconst flexContents = {\n  type: \"bubble\",\n  header: {\n    type: \"box\",\n    layout: \"vertical\",\n    contents: [],\n    backgroundColor: headerColor,\n    paddingTop: \"6px\" \n  },\n  body: {\n    type: \"box\",\n    layout: \"vertical\",\n    contents: [\n      {\n        type: \"text\",\n        text: headerText,\n        weight: \"bold\",\n        size: \"xl\",\n        color: headerColor\n      },\n      {\n        type: \"box\",\n        layout: \"vertical\",\n        margin: \"lg\",\n        spacing: \"sm\",\n        contents: [\n          // Row 1: Ticket\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"🎟️ Ticket:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: ticketId, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          // Row 2: ผู้แจ้ง\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"👤 ผู้แจ้ง:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: reporter, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          // Row 3: สถานะ (NEW ✨)\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"📊 สถานะ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: status, wrap: true, color: \"#1DB446\", size: \"sm\", flex: 5, weight: \"bold\" }\n            ]\n          },\n          // Row 4: ผู้ดูแล (NEW ✨)\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"🛠️ ผู้ดูแล:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: assignee, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          // Row 5: ประเภท\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"📌 ประเภท:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: `${issueType} (${priority})`, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          // Row 6: อาการ\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"📝 อาการ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: subject, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          \n          { type: \"separator\", margin: \"md\" }, \n\n          // Zone เวลา\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            margin: \"md\",\n            contents: [\n              { type: \"text\", text: \"🕒 แจ้งเมื่อ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: createdTimeStr, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }\n            ]\n          },\n          {\n            type: \"box\",\n            layout: \"baseline\",\n            spacing: \"sm\",\n            contents: [\n              { type: \"text\", text: \"🏁 เสร็จใน:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" },\n              { type: \"text\", text: dueTimeStr, wrap: true, color: \"#FF6B6B\", size: \"sm\", flex: 5, weight: \"bold\" }\n            ]\n          },\n          \n          { type: \"separator\", margin: \"md\" },\n\n          // Footer Note (NEW ✨)\n          {\n             type: \"text\",\n             text: \"💡 ต้องการติดตามงาน แจ้ง Ticket ID กับ Admin ได้เลยครับ\",\n             size: \"xs\",\n             color: \"#aaaaaa\",\n             wrap: true,\n             margin: \"md\",\n             align: \"center\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nif (imageUrl) {\n  flexContents.hero = {\n    type: \"image\",\n    url: imageUrl,\n    size: \"full\",\n    aspectRatio: \"20:13\",\n    aspectMode: \"cover\",\n    action: { type: \"uri\", uri: imageUrl }\n  };\n  flexContents.footer = {\n    type: \"box\",\n    layout: \"vertical\",\n    spacing: \"sm\",\n    contents: [\n      {\n        type: \"button\",\n        style: \"primary\",\n        height: \"sm\",\n        action: { type: \"uri\", label: \"🖼️ ดูรูปภาพเต็ม\", uri: imageUrl },\n        color: headerColor\n      }\n    ],\n    flex: 0\n  };\n}\n\n// ==========================================\n// ส่วนที่ 6: ส่งค่าออกไป\n// ==========================================\nreturn {\n  ticket_id: ticketId,\n  Reporter_Name: reporter,\n  type: issueType,\n  priority: priority,\n  Subject: subject,\n  status: status,      // ส่งไปลง Sheet ได้\n  assignee: assignee,  // ส่งไปลง Sheet ได้\n  sla_minutes: sla_minutes,\n  sla_display: slaText,\n  created_at: createdTimeStr,\n  due_date: due_at.toISOString(),\n  due_date_display: dueTimeStr,\n  Image_Evidence: imageUrl || '',\n  \n  line_payload: {\n    to: \"Cbba1dc5a915014d252c089f4bc9c9f4b\", \n    messages: [\n      {\n        type: \"flex\",\n        altText: `⚡ ${headerText}`,\n        contents: flexContents\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        352
+      ],
+      "id": "15498028-963b-4bba-8642-d35aab6a4890",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "Subject": "={{ $json.Subject }}",
+            "priority (P1/P2/P3)": "={{ $json.priority }}",
+            "type (Incident/Request)": "={{ $json.type }}",
+            "Reporter_Name": "={{ $json.Reporter_Name }}",
+            "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)": "={{ $json.priority == 'P1' ? 60 : ($json.priority == 'P2' ? 240 : 1440) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer",
+              "displayName": "customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at ",
+              "displayName": "created_at ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority (P1/P2/P3)",
+              "displayName": "priority (P1/P2/P3)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type (Incident/Request)",
+              "displayName": "type (Incident/Request)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Root Cause",
+              "displayName": "Root Cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fix",
+              "displayName": "Fix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_name",
+              "displayName": "incident_team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_phone",
+              "displayName": "incident_team_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "displayName": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "due_at (created_at + sla_minutes)",
+              "displayName": "due_at (created_at + sla_minutes)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "overdue_minutes (คำนวณตอน monitor)",
+              "displayName": "overdue_minutes (คำนวณตอน monitor)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_state (OnTrack / AtRisk / Overdue)",
+              "displayName": "sla_state (OnTrack / AtRisk / Overdue)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "displayName": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "displayName": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_closed_at",
+              "displayName": "notified_closed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "displayName": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image_Evidence",
+              "displayName": "Image_Evidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reporter_Name",
+              "displayName": "Reporter_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        352
+      ],
+      "id": "45313640-680b-4967-b0a6-4b270470dac0",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Code in JavaScript5').item.json.line_payload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        352
+      ],
+      "id": "5dcfcb2e-f56e-4a04-9a0e-180dff5b7825",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-form",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        624
+      ],
+      "id": "927e1130-16f2-4166-9c59-ba3d2954404c",
+      "name": "Webhook Tally1",
+      "webhookId": "15e47f77-521a-4f1a-834c-3e2b3646af6e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. แกะข้อมูลจาก Tally\nconst fields = $input.item.json.body.data.fields;\nconst result = {};\n\nfields.forEach(field => {\n  const key = field.label.trim();\n  if (field.type === 'DROPDOWN' || field.type === 'MULTIPLE_CHOICE') {\n    const selectedOption = field.options.find(opt => opt.id === field.value[0]);\n    result[key] = selectedOption ? selectedOption.text : '-';\n  } else if (field.type === 'FILE_UPLOAD') {\n    result[key] = (field.value && field.value.length > 0) ? field.value[0].url : null;\n  } else {\n    result[key] = field.value || '-';\n  }\n});\n\n// ส่งออกเฉพาะข้อมูลที่จำเป็นให้ AI วิเคราะห์\nreturn {\n  Reporter: result['ชื่อผู้แจ้ง'] || 'Unknown',\n  User_Selected_Type: result['ประเภทปัญหา'] || 'Incident', \n  Subject: result['รายละเอียด/อาการ'] || '-',\n  Image: result['รูปภาพประกอบ'] || null\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        624
+      ],
+      "id": "4dd0d3bc-fac3-492a-ab0e-f396fc27981c",
+      "name": "Code in JavaScript6",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU",
+          "mode": "list",
+          "cachedResultName": "OCM Incident",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18UW3Mm3oxuEUEwsKZsON7Qr4OS5HuE_tYtR_63H66QU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "Subject": "={{ $json.Subject }}",
+            "priority (P1/P2/P3)": "={{ $json.priority }}",
+            "type (Incident/Request)": "={{ $json.type }}",
+            "Reporter_Name": "={{ $json.Reporter_Name }}",
+            "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)": "={{ $json.priority == 'P1' ? 60 : ($json.priority == 'P2' ? 240 : 1440) }}",
+            "created_at ": "={{ $json.line_payload.messages[0].contents.body.contents[1].contents[6].contents[1].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer",
+              "displayName": "customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at ",
+              "displayName": "created_at ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority (P1/P2/P3)",
+              "displayName": "priority (P1/P2/P3)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type (Incident/Request)",
+              "displayName": "type (Incident/Request)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Root Cause",
+              "displayName": "Root Cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fix",
+              "displayName": "Fix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_name",
+              "displayName": "incident_team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "incident_team_phone",
+              "displayName": "incident_team_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "displayName": "sla_minutes (เช่น 240 สำหรับ 4 ชั่วโมง)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "due_at (created_at + sla_minutes)",
+              "displayName": "due_at (created_at + sla_minutes)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "overdue_minutes (คำนวณตอน monitor)",
+              "displayName": "overdue_minutes (คำนวณตอน monitor)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sla_state (OnTrack / AtRisk / Overdue)",
+              "displayName": "sla_state (OnTrack / AtRisk / Overdue)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "displayName": "notified_atrisk_at (เวลาที่เคยแจ้งเตือนใกล้ครบ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "displayName": "notified_overdue_at (เวลาที่เคยแจ้งตก SLA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notified_closed_at",
+              "displayName": "notified_closed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "displayName": "channel (LINE/Email/etc. แล้วแต่คุณ)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image_Evidence",
+              "displayName": "Image_Evidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reporter_Name",
+              "displayName": "Reporter_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        624
+      ],
+      "id": "4589df60-423f-40d7-8054-cbbb2b0c8797",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Code Build Message').item.json.line_payload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1312,
+        624
+      ],
+      "id": "a6ff469f-1f23-4380-974c-b716e716f5ba",
+      "name": "HTTP Request7",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "User Report: \"{{ $json.Subject }}\"\nUser Selected: \"{{ $json.User_Selected_Type }}\"",
+        "options": {
+          "systemMessage": "You are an expert in Carbon Footprint & Global Warming. You act as a support bot for \"Carbon Footprint Organization\" and \"Carbon Receipt\" services. Your job is to analyze the User Report and output strictly in JSON format.\n\nRULES:\n1. Analyze the 'Subject' to determine the real Issue Type.\n   - Incident: Mentions 'error', 'fail', 'broken', 'cannot', 'down', 'เสีย', 'ไม่ได้', 'ผิด', 'ไม่ตรง', 'diff'.\n   - Request: Mentions 'new', 'create', 'add', 'access', 'report', 'ขอ', 'เพิ่ม', 'สอบถาม', 'consult'.\n\n2. Determine Priority (P1-P4) based on Carbon Footprint Service impact:\n   - P1 (Critical): System down, cannot login, wide impact, or **\"Cannot issue Carbon Footprint Report\" (ออก Report ไม่ได้)**.\n   - P2 (High): Feature broken, error message, **\"Incorrect calculation/display\" (ค่าไม่ตรง/แสดงผลผิด)**, cannot save data.\n   - P3 (Medium): Minor issue, slow loading, visual bug, formatting issue.\n   - P4 (Low): General request, question, asking for permission/access.\n\n3. Summarize the issue in 1 short Thai sentence.\n4. Assign a team (Dev, Infra, Support).\n\nRESPONSE FORMAT:\nYou must output ONLY a raw JSON object (no markdown, no ```json code blocks).\n{\n  \"analyzed_type\": \"Incident\",\n  \"priority\": \"P2\",\n  \"summary\": \"สรุปอาการสั้นๆภาษาไทย\",\n  \"assignee\": \"Team Name\",\n  \"reason\": \"Explain why you chose this priority\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        624
+      ],
+      "id": "b8e8c6b0-4116-48ad-8b12-527d98f59097",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        832
+      ],
+      "id": "5c92daad-18e9-4801-9ca1-bc999e39a5bc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. รับค่าจาก Gemini (Clean JSON)\nconst aiResponse = $input.item.json.output || $input.item.json.text || \"{}\";\nconst cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();\nlet ai = {};\n\ntry {\n    ai = JSON.parse(cleanJson);\n} catch (e) {\n    ai = { analyzed_type: 'Incident', priority: 'P3', summary: 'AI Parse Error', assignee: 'IT Support' };\n}\n\n// 2. ดึงข้อมูลดิบจาก Node แรกสุด (เช็คชื่อ Node ให้ตรงนะครับ)\nconst raw = $('Code in JavaScript6').item.json; \n\n// 3. ตั้งค่าตัวแปร (ผสานพลัง AI + ข้อมูลเดิม)\nconst issueType = ai.analyzed_type || 'Incident';\nconst priority = ai.priority || 'P3';\nconst subject = ai.summary || raw.Subject; // ใช้สรุปจาก AI (ถ้ามี)\nconst assignee = ai.assignee || 'Service Desk'; // ทีมที่ AI เลือกให้\nconst reporter = raw.Reporter;\nconst imageUrl = raw.Image;\nconst status = \"🆕 รับเรื่องแล้ว\"; // Default Status\n\n// 4. คำนวณ SLA\nlet sla_minutes = 480;\nif (priority === 'P1') sla_minutes = 60;\nelse if (priority === 'P2') sla_minutes = 240;\nelse if (priority === 'P4') sla_minutes = 1440;\n\n// SLA Text Display\nlet slaText = \"\";\nif (sla_minutes >= 60) {\n    const hrs = Math.floor(sla_minutes / 60);\n    const mins = sla_minutes % 60;\n    slaText = mins === 0 ? `${hrs} ชั่วโมง` : `${hrs} ชม. ${mins} นาที`;\n} else {\n    slaText = `${sla_minutes} นาที`;\n}\n\n// 5. จัดการเวลา (Time Formatting) 🕒\nconst now = new Date();\nfunction formatDateTime(dateObj) {\n    const d = String(dateObj.getDate()).padStart(2, '0');\n    const m = String(dateObj.getMonth() + 1).padStart(2, '0');\n    const y = dateObj.getFullYear(); // +543 ถ้าอยากได้ พ.ศ.\n    const hr = String(dateObj.getHours()).padStart(2, '0');\n    const min = String(dateObj.getMinutes()).padStart(2, '0');\n    return `${d}/${m}/${y} ${hr}:${min}`;\n}\n\nconst createdTimeStr = formatDateTime(now);\nconst due_at = new Date(now.getTime() + sla_minutes * 60 * 1000);\nconst dueTimeStr = formatDateTime(due_at);\n\n// Ticket ID\nconst y_id = now.getFullYear().toString().slice(2);\nconst m_id = String(now.getMonth() + 1).padStart(2, '0');\nconst d_id = String(now.getDate()).padStart(2, '0');\nconst randomNum = Math.floor(Math.random() * 900 + 100);\nconst ticketId = `OCM-${y_id}${m_id}${d_id}-${randomNum}`;\n\n\n// 6. สร้าง Flex Message (Color Coding)\nlet headerColor = \"#1DB446\"; \nlet headerText = \"New Request\";\n\nif (priority === 'P1') { headerColor = \"#FF3333\"; headerText = \"🚨 Critical Incident (P1)\"; }\nelse if (priority === 'P2') { headerColor = \"#FF9933\"; headerText = \"⚠️ High Priority Incident\"; }\nelse if (priority === 'P3') { headerColor = \"#FFC107\"; headerText = \"🔸 Incident Report\"; }\nelse { headerColor = \"#1DB446\"; headerText = issueType === 'Request' ? \"✅ Service Request\" : \"🟢 Incident Report\"; }\n\nconst flexContents = {\n  type: \"bubble\",\n  header: { type: \"box\", layout: \"vertical\", contents: [], backgroundColor: headerColor, paddingTop: \"6px\" },\n  body: {\n    type: \"box\", layout: \"vertical\",\n    contents: [\n      { type: \"text\", text: headerText, weight: \"bold\", size: \"xl\", color: headerColor },\n      { type: \"box\", layout: \"vertical\", margin: \"lg\", spacing: \"sm\", contents: [\n          // Row 1: Ticket\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"🎟️ Ticket:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: ticketId, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          // Row 2: ผู้แจ้ง\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"👤 ผู้แจ้ง:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: reporter, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          // Row 3: สถานะ (กลับมาแล้ว!)\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"📊 สถานะ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: status, wrap: true, color: \"#1DB446\", size: \"sm\", flex: 5, weight: \"bold\" }] },\n          // Row 4: ทีมดูแล (จาก AI)\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"🛠️ ทีม:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: assignee, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          // Row 5: ประเภท\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"📌 ประเภท:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: `${issueType} (${priority})`, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          // Row 6: อาการ (ใช้สรุปจาก AI)\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"📝 อาการ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: subject, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          \n          { type: \"separator\", margin: \"md\" },\n\n          // Zone เวลา (กลับมาแล้ว!)\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", margin: \"md\", contents: [{ type: \"text\", text: \"🕒 แจ้งเมื่อ:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: createdTimeStr, wrap: true, color: \"#666666\", size: \"sm\", flex: 5 }] },\n          { type: \"box\", layout: \"baseline\", spacing: \"sm\", contents: [{ type: \"text\", text: \"🏁 เสร็จใน:\", color: \"#aaaaaa\", size: \"sm\", flex: 2, weight: \"bold\" }, { type: \"text\", text: dueTimeStr, wrap: true, color: \"#FF6B6B\", size: \"sm\", flex: 5, weight: \"bold\" }] },\n          \n          { type: \"separator\", margin: \"md\" },\n\n          // Footer Note (กลับมาแล้ว!)\n          { type: \"text\", text: \"💡 ต้องการติดตามงาน แจ้ง Ticket ID กับ Admin ได้เลยครับ\", size: \"xs\", color: \"#aaaaaa\", wrap: true, margin: \"md\", align: \"center\" }\n      ]}\n    ]\n  }\n};\n\nif (imageUrl) {\n    flexContents.hero = { type: \"image\", url: imageUrl, size: \"full\", aspectRatio: \"20:13\", aspectMode: \"cover\", action: { type: \"uri\", uri: imageUrl } };\n    flexContents.footer = { type: \"box\", layout: \"vertical\", spacing: \"sm\", contents: [{ type: \"button\", style: \"primary\", height: \"sm\", action: { type: \"uri\", label: \"🖼️ ดูรูปภาพเต็ม\", uri: imageUrl }, color: headerColor }], flex: 0 };\n}\n\n// 7. Return ข้อมูล\nreturn {\n    ticket_id: ticketId,\n    Reporter_Name: reporter,\n    type: issueType,\n    priority: priority,\n    Subject: subject,\n    status: status,\n    assignee: assignee,\n    sla_minutes: sla_minutes,\n    sla_display: slaText,\n    created_at: createdTimeStr,\n    due_date: due_at.toISOString(),\n    due_date_display: dueTimeStr,\n    Image_Evidence: imageUrl || '',\n    line_payload: {\n        to: \"Cbba1dc5a915014d252c089f4bc9c9f4b\", // Group ID เดิม\n        messages: [{ type: \"flex\", altText: `⚡ ${headerText}`, contents: flexContents }]\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        624
+      ],
+      "id": "c5a5edaa-6376-4eec-b667-c04a4a8005ca",
+      "name": "Code Build Message",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code (Calculated SLA Logic)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (Calculated SLA Logic)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code (คัดแยกเคสที่ปิดแล้ว)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (คัดแยกเคสที่ปิดแล้ว)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Tally": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Tally1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code Build Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Build Message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "global": {},
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "3f62ceb5-5e4d-4301-b10d-04f079debe9b",
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-12-19T16:13:08.737Z",
+      "updatedAt": "2025-12-19T16:13:08.737Z",
+      "role": "workflow:owner",
+      "workflowId": "hxeEVrQTHIkffnBt",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

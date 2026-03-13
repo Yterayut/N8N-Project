@@ -1,0 +1,271 @@
+{
+  "createdAt": "2025-11-24T04:56:04.753Z",
+  "updatedAt": "2025-12-22T15:59:10.000Z",
+  "id": "AMeuDnfZGY5tH9qo",
+  "name": "FB Auto Post",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6d4eda0f-ef57-4632-bf00-c0037bed8a16",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a Facebook post caption for today (Date: {{ $now.toFormat('dd MMMM yyyy') }}).\n\n**INSTRUCTIONS:**\n1. **Pick ONE theme** randomly from this list to keep content fresh:\n   - *Theme A (Product Focus):* Describe the crispiness, the smell, or the taste of the fried banana/cempedak.\n   - *Theme B (Motivation):* A morning greeting to start the day with energy (and a snack).\n   - *Theme C (Call to Action):* Direct invitation to stop by the market before work/school.\n   - *Theme D (Local Vibe):* Mentioning Satun/La-ngu atmosphere or weather.\n\n2. **Draft the Content:**\n   - Start with a catchy hook or greeting.\n   - Body: The content based on the picked theme.\n   - Closing: Invite them to the stall (Kamphaeng Market).\n\n3. **Requirements:**\n   - Language: Thai (Natural Facebook style).\n   - Length: Short and punchy.\n   - Include these Hashtags at the end: #จ๊ะศรีกล้วยทอด #กล้วยทอดละงู #ของหรอยสตูล #กล้วยทอดเจ้าเก่า #ตลาดกำแพง\n\n**Generate the caption now:**",
+        "options": {
+          "systemMessage": "You are the expert Social Media Manager and \"Admin\" of the Facebook Page named \"จ๊ะศรีกล้วยทอด\" (Ja Sri Fried Banana).\n\n**YOUR BRAND IDENTITY:**\n- **Product:** Legendary Fried Banana (Kluay Tod), Fried Cempedak (Jam-Pa-Da), and Fried Meatballs.\n- **Location:** Kamphaeng Municipality Market, La-ngu District, Satun Province, Thailand.\n- **Unique Selling Point (USP):** Original recipe (Jao Kao), Crispy outside & Soft inside, Famous in Satun, Fragrant and Oily (in a delicious way).\n- **Target Audience:** Locals in La-ngu, Satun people, and tourists passing through.\n\n**YOUR TONE OF VOICE:**\n- Friendly, Energetic, and Appetizing.\n- Use Thai language (informal, social media style).\n- Use \"Southern Thai Spirit\" (Sincerely friendly and welcoming).\n- Always use emojis to make the text pop 🍌✨🔥.\n\n**YOUR GOAL:**\n- Create a daily \"Good Morning\" post to engage followers.\n- Drive traffic to the stall at the market.\n- Make people hungry immediately upon reading.\n\n**RULES:**\n- Keep the caption concise (3-5 lines).\n- Always include the location context (La-ngu / Satun) occasionally.\n- Do not repeat the exact same phrase every day. Be creative!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ce948b50-61b6-4332-9323-82e7ba40d05b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "632161c9-667c-4a43-aa44-49782e1883c5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "'1Qkw588PYR3InLweMFSTeNCK0DvpsFar6' in parents and trashed = false",
+        "returnAll": true,
+        "filter": {},
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        560,
+        0
+      ],
+      "id": "74a3de17-1a2a-46e8-8977-7e91f8faf049",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "IYyt3qEQVk3xfjcF",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. รับรายการไฟล์ทั้งหมดจาก Node ก่อนหน้า\nconst allFiles = $input.all();\n\n// 2. สุ่มเลือกมา 1 ไฟล์\nconst randomIndex = Math.floor(Math.random() * allFiles.length);\nconst randomFile = allFiles[randomIndex].json;\n\n// 3. ส่งข้อมูลไฟล์ที่สุ่มได้ออกไป (ID, Name, WebContentLink)\nreturn {\n  fileId: randomFile.id,\n  fileName: randomFile.name,\n  // สร้าง Link รูปภาพสำหรับ Facebook (ต้องเป็น webContentLink หรือ webViewLink)\n  imageUrl: randomFile.webContentLink || randomFile.webViewLink\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "d235cbdb-a165-4e76-86dd-275d3b03cde2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v19.0",
+        "node": "=me",
+        "edge": "photos",
+        "sendBinaryData": true,
+        "binaryPropertyName": "=data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $('AI Agent').first().json.output }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "160387d9-97a2-4e72-8868-f31bf57ec657",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "juocq2XpwPiNoTWd",
+          "name": "Facebook Graph account_จ๊ะศรีกล้วยทอด"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.fileId }}?alt=media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "be2f91c9-185b-4d39-94ea-ecf0d3ac286b",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8dRnZKoEjxP2RuXD",
+          "name": "Header Auth account"
+        },
+        "httpQueryAuth": {
+          "id": "QKkNjsqY32vjLfOf",
+          "name": "Query Auth account"
+        },
+        "googleDriveOAuth2Api": {
+          "id": "IYyt3qEQVk3xfjcF",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f88dacea-eb3a-4177-a138-86ff9c57d92a",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-24T04:56:04.769Z",
+      "updatedAt": "2025-11-24T04:56:04.769Z",
+      "role": "workflow:owner",
+      "workflowId": "AMeuDnfZGY5tH9qo",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

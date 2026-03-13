@@ -1,0 +1,713 @@
+{
+  "createdAt": "2025-12-04T05:56:10.008Z",
+  "updatedAt": "2025-12-22T15:59:02.000Z",
+  "id": "uu2QxpouAXPc6D8v",
+  "name": "Salat",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 13,
+              "triggerAtMinute": 22
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0479f085-152e-404d-88da-cd5539b01775",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g",
+          "mode": "list",
+          "cachedResultName": "เวลาละหมาด",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a9be19cd-f2d8-45c5-a085-bbd1196bf39f",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://api.aladhan.com/v1/timings/{{$now.toFormat('dd-MM-yyyy')}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{$json.latitude}}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{$json.longitude}}"
+            },
+            {
+              "name": "method",
+              "value": "(Muslim World League)"
+            },
+            {
+              "name": "school",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "0cae9d1c-9e29-48dd-b6a1-17e2a518bf8f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ตรวจสอบข้อมูล\nif (!items.length || !items[0].json.data) return [];\n\nconst timings = items[0].json.data.timings;\nconst dateReadable = items[0].json.data.date.readable;\n\n// --- ส่วนที่แก้ไข: ดึง User ID และ Address จาก Sheet ---\nlet userId = 'unknown';\nlet address = 'ไม่ระบุสถานที่'; // ค่าเริ่มต้นถ้าหาไม่เจอ\n\ntry {\n    // ดึงข้อมูลจาก Node \"Get row(s) in sheet\"\n    const sheetData = $('Get row(s) in sheet').first().json;\n    \n    // เอาค่า userId\n    if (sheetData.userId) {\n        userId = sheetData.userId;\n    }\n    \n    // เอาค่า address (เพิ่มส่วนนี้)\n    if (sheetData.address) {\n        address = sheetData.address;\n    }\n} catch(e) {\n    // กันเหนียว: ถ้าหาไม่เจอ ให้ลองดึงจาก item แรก\n    userId = items[0].json.userId || 'unknown';\n}\n// ------------------------------------------------\n\n// เพิ่มบรรทัด address ลงในข้อความ\nconst msg = `📅 ตารางละหมาดประจำวันที่ ${dateReadable}\n📍 พิกัด: ${address}\n\n🌌 ฟัจร์: ${timings.Fajr}\n🌞 ดุฮฺริ: ${timings.Dhuhr}\n🌤️ อัสริ: ${timings.Asr}\n🌅 มัฆริบ: ${timings.Maghrib}\n🌙 อิชา: ${timings.Isha}\n\n(ระบบจะแจ้งเตือนก่อนเข้าเวลา 15 นาที)`;\n\nreturn [{\n    json: {\n        userId: userId,\n        message: msg\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -208
+      ],
+      "id": "1064ca71-663f-4895-bee9-ee8c8cf958f1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{$json.userId}}",
+        "messages": {
+          "values": [
+            {
+              "altText": "flex",
+              "flexJson": "={\n  \"type\": \"bubble\",\n  \"size\": \"giga\",\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"contents\": [\n          {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"📅\",\n                \"size\": \"xxl\",\n                \"align\": \"center\"\n              }\n            ],\n            \"width\": \"50px\",\n            \"justifyContent\": \"center\"\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"ตารางละหมาดประจำวันที่\",\n                \"size\": \"sm\",\n                \"color\": \"#ffffff\",\n                \"weight\": \"bold\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"04 Dec 2025\",\n                \"size\": \"xl\",\n                \"color\": \"#ffffff\",\n                \"weight\": \"bold\",\n                \"margin\": \"xs\"\n              }\n            ],\n            \"flex\": 1\n          }\n        ],\n        \"backgroundColor\": \"#1a73e8\",\n        \"paddingAll\": \"20px\",\n        \"spacing\": \"md\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"contents\": [\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"📍\",\n                \"size\": \"lg\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"Benchakitti Park, Thanon Ratchadaphisek, Khwaeng Khlong Toei, Khet Khlong Toei, Krung Thep Maha Nakhon 10110, Thailand\",\n                \"size\": \"xs\",\n                \"color\": \"#666666\",\n                \"wrap\": true,\n                \"flex\": 1,\n                \"margin\": \"sm\"\n              }\n            ],\n            \"spacing\": \"sm\",\n            \"alignItems\": \"flex-start\"\n          }\n        ],\n        \"paddingAll\": \"18px\",\n        \"backgroundColor\": \"#f5f5f5\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"contents\": [\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🌙\",\n                \"size\": \"xl\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"ฟัจร์\",\n                    \"size\": \"md\",\n                    \"color\": \"#333333\",\n                    \"weight\": \"bold\"\n                  }\n                ],\n                \"flex\": 1,\n                \"justifyContent\": \"center\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"05:24\",\n                \"size\": \"xxl\",\n                \"color\": \"#1a73e8\",\n                \"weight\": \"bold\",\n                \"align\": \"end\",\n                \"flex\": 0\n              }\n            ],\n            \"spacing\": \"md\",\n            \"paddingAll\": \"15px\"\n          },\n          {\n            \"type\": \"separator\",\n            \"color\": \"#e0e0e0\"\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"☀️\",\n                \"size\": \"xl\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"ดูฮร์\",\n                    \"size\": \"md\",\n                    \"color\": \"#333333\",\n                    \"weight\": \"bold\"\n                  }\n                ],\n                \"flex\": 1,\n                \"justifyContent\": \"center\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"12:08\",\n                \"size\": \"xxl\",\n                \"color\": \"#1a73e8\",\n                \"weight\": \"bold\",\n                \"align\": \"end\",\n                \"flex\": 0\n              }\n            ],\n            \"spacing\": \"md\",\n            \"paddingAll\": \"15px\"\n          },\n          {\n            \"type\": \"separator\",\n            \"color\": \"#e0e0e0\"\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🌤️\",\n                \"size\": \"xl\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"อัสร์\",\n                    \"size\": \"md\",\n                    \"color\": \"#333333\",\n                    \"weight\": \"bold\"\n                  }\n                ],\n                \"flex\": 1,\n                \"justifyContent\": \"center\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"15:24\",\n                \"size\": \"xxl\",\n                \"color\": \"#1a73e8\",\n                \"weight\": \"bold\",\n                \"align\": \"end\",\n                \"flex\": 0\n              }\n            ],\n            \"spacing\": \"md\",\n            \"paddingAll\": \"15px\"\n          },\n          {\n            \"type\": \"separator\",\n            \"color\": \"#e0e0e0\"\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🌅\",\n                \"size\": \"xl\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"มัฆริบ\",\n                    \"size\": \"md\",\n                    \"color\": \"#333333\",\n                    \"weight\": \"bold\"\n                  }\n                ],\n                \"flex\": 1,\n                \"justifyContent\": \"center\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"17:49\",\n                \"size\": \"xxl\",\n                \"color\": \"#1a73e8\",\n                \"weight\": \"bold\",\n                \"align\": \"end\",\n                \"flex\": 0\n              }\n            ],\n            \"spacing\": \"md\",\n            \"paddingAll\": \"15px\"\n          },\n          {\n            \"type\": \"separator\",\n            \"color\": \"#e0e0e0\"\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🌙\",\n                \"size\": \"xl\",\n                \"flex\": 0\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"อิชา\",\n                    \"size\": \"md\",\n                    \"color\": \"#333333\",\n                    \"weight\": \"bold\"\n                  }\n                ],\n                \"flex\": 1,\n                \"justifyContent\": \"center\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"18:51\",\n                \"size\": \"xxl\",\n                \"color\": \"#1a73e8\",\n                \"weight\": \"bold\",\n                \"align\": \"end\",\n                \"flex\": 0\n              }\n            ],\n            \"spacing\": \"md\",\n            \"paddingAll\": \"15px\"\n          }\n        ],\n        \"margin\": \"lg\",\n        \"backgroundColor\": \"#ffffff\",\n        \"cornerRadius\": \"md\",\n        \"borderWidth\": \"1px\",\n        \"borderColor\": \"#e0e0e0\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"(ระบบจะแจ้งเตือนก่อนเข้าเวลา 15 นาที)\",\n            \"size\": \"xs\",\n            \"color\": \"#999999\",\n            \"align\": \"center\",\n            \"wrap\": true\n          }\n        ],\n        \"paddingAll\": \"15px\",\n        \"paddingTop\": \"10px\"\n      }\n    ],\n    \"paddingAll\": \"0px\",\n    \"spacing\": \"none\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"separator\",\n        \"color\": \"#e0e0e0\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"contents\": [\n          {\n            \"type\": \"button\",\n            \"action\": {\n              \"type\": \"uri\",\n              \"label\": \"📍 ดูแผนที่\",\n              \"uri\": \"https://maps.google.com/\"\n            },\n            \"style\": \"secondary\",\n            \"height\": \"sm\",\n            \"flex\": 1\n          },\n          {\n            \"type\": \"button\",\n            \"action\": {\n              \"type\": \"message\",\n              \"label\": \"🔔 ตั้งเตือน\",\n              \"text\": \"ตั้งเตือนละหมาด\"\n            },\n            \"style\": \"primary\",\n            \"height\": \"sm\",\n            \"color\": \"#1a73e8\",\n            \"flex\": 1\n          }\n        ],\n        \"spacing\": \"sm\",\n        \"margin\": \"md\"\n      }\n    ],\n    \"paddingAll\": \"15px\",\n    \"backgroundColor\": \"#ffffff\"\n  },\n  \"styles\": {\n    \"body\": {\n      \"backgroundColor\": \"#f9f9f9\"\n    },\n    \"footer\": {\n      \"backgroundColor\": \"#ffffff\"\n    }\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -208
+      ],
+      "id": "9f73fb0c-bc13-464f-9663-8d54434622c5",
+      "name": "Line Messaging",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "oIgD7NyCOlsiDiID",
+          "name": "Line Messaging account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = [];\nconst ALERT_BEFORE_MINUTES = 15; \n\n// ดึง User ID และ Address\nlet userId = 'unknown';\nlet address = 'ไม่ระบุสถานที่'; \ntry {\n    const sheetData = $('Get row(s) in sheet').first().json;\n    if (sheetData.userId) userId = sheetData.userId;\n    if (sheetData.address) address = sheetData.address;\n} catch(e) {}\n\n// วนลูปสร้างรายการแจ้งเตือน\nfor (const item of items) {\n    if (!item.json.data) continue;\n    const timings = item.json.data.timings;\n    \n    // รายชื่อเวลาละหมาด\n    const prayers = [\n        { name: 'ฟัจร์ (Fajr)', time: timings.Fajr },\n        { name: 'ดุฮฺริ (Dhuhr)', time: timings.Dhuhr },\n        { name: 'อัสริ (Asr)', time: timings.Asr },\n        { name: 'มัฆริบ (Maghrib)', time: timings.Maghrib },\n        { name: 'อิชา (Isha)', time: timings.Isha }\n    ];\n\n    // --- แก้ไข: สร้างเวลาปัจจุบัน และ วันที่ แบบระบุ Timezone ไทย ---\n    const now = new Date();\n    \n    // แปลงเวลาปัจจุบันให้เป็น String วันที่ของไทย (YYYY-MM-DD)\n    // เพื่อป้องกันปัญหารันตอนตี 3 แล้วได้วันที่เมื่อวาน\n    const thDateString = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }); // format: 2025-12-04\n    \n    prayers.forEach(p => {\n        // เอาเวลา (HH:mm) มาต่อกับวันที่ไทย และระบุ Offset +07:00 บังคับ\n        // เช่น \"2025-12-04T17:49:00+07:00\"\n        const timeStr = p.time.split(' ')[0]; // ตัด (WIB) ออก\n        const isoString = `${thDateString}T${timeStr}:00+07:00`;\n        \n        const prayerDate = new Date(isoString); // ได้เวลาที่ถูกต้องแน่นอน 100%\n\n        // คำนวณเวลาแจ้งเตือน (ถอยหลัง 15 นาที)\n        const alertTime = new Date(prayerDate.getTime() - (ALERT_BEFORE_MINUTES * 60000));\n\n        // Logic: ถ้าเวลาแจ้งเตือน ยังมาไม่ถึง (ในอนาคต) -> ให้สร้าง Task\n        if (alertTime > now) {\n            allItems.push({\n                json: {\n                    userId: userId,\n                    address: address,\n                    message: `🔔 อีก ${ALERT_BEFORE_MINUTES} นาที จะเข้าเวลา ${p.name} (${p.time}) เตรียมตัวได้เลยครับ`,\n                    scheduledTime: alertTime.toISOString()\n                }\n            });\n        }\n    });\n}\n\nreturn allItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        128
+      ],
+      "id": "dd93f158-83f8-46ad-80d3-9a060753b870",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{$json.scheduledTime}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        208
+      ],
+      "id": "e48b75dc-21b8-4830-b163-f3cf54aea902",
+      "name": "Wait",
+      "webhookId": "ce951b38-b18c-48de-b832-8f8a2087b0fd"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{$json.userId}}",
+        "messages": {
+          "values": [
+            {
+              "altText": "แจ้งเตือนเวลาละหมาด",
+              "flexJson": "={\n  \"type\": \"bubble\",\n  \"size\": \"kilo\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"⏳ ใกล้เข้าเวลาละหมาด\",\n        \"color\": \"#ffffff\",\n        \"weight\": \"bold\",\n        \"size\": \"md\"\n      }\n    ],\n    \"backgroundColor\": \"#ff9900\",\n    \"paddingAll\": \"15px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"{{$json.message}}\",\n        \"wrap\": true,\n        \"weight\": \"bold\",\n        \"size\": \"md\",\n        \"color\": \"#333333\"\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"lg\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"margin\": \"lg\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"📍\",\n            \"size\": \"xs\",\n            \"flex\": 1,\n            \"color\": \"#aaaaaa\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"{{$json.address}}\",\n            \"size\": \"xs\",\n            \"color\": \"#aaaaaa\",\n            \"wrap\": true,\n            \"flex\": 9\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "8dc17e37-1375-40d2-a9c8-c041352428a3",
+      "name": "Line Messaging1",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "oIgD7NyCOlsiDiID",
+          "name": "Line Messaging account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "salat",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        -592
+      ],
+      "id": "b0d6391c-3b56-49d7-9540-edda333da245",
+      "name": "Webhook",
+      "webhookId": "cb4eff66-677b-4d5d-91dc-c75f11d873fb"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- แก้ไขบรรทัดนี้ ---\n// เพิ่ม .body เข้าไป เพราะข้อมูลจริงมันซ่อนอยู่ใน body\nconst events = items[0].json.body.events; \n// ------------------\n\nif (events && events[0] && events[0].type === 'message' && events[0].message.type === 'location') {\n    const msg = events[0].message;\n    const source = events[0].source;\n    return [{\n        json: {\n            userId: source.userId,\n            latitude: msg.latitude,\n            longitude: msg.longitude,\n            address: msg.address\n        }\n    }];\n}\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -592
+      ],
+      "id": "1eb49a41-e6e5-4e8f-974e-278d557f22a3",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g",
+          "mode": "list",
+          "cachedResultName": "เวลาละหมาด",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BAW1kfytclyFSCdPW4-rgpFp2kchyfJVxXwBbq2Ll0g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userId": "={{$json.userId}}",
+            "latitude": "={{$json.latitude}}",
+            "longitude": "={{$json.longitude}}",
+            "address": "={{ $json.address }}"
+          },
+          "matchingColumns": [
+            "userId"
+          ],
+          "schema": [
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "latitude",
+              "displayName": "latitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "longitude",
+              "displayName": "longitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -592
+      ],
+      "id": "9316b4a2-c0a1-4928-aabc-2396ef5b19e3",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "replyToken": "={{$node[\"Webhook\"].json.body.events[0].replyToken}}",
+        "messages": {
+          "values": [
+            {
+              "altText": "บันทึกพิกัดเรียบร้อย!",
+              "flexJson": "={\n  \"type\": \"bubble\",\n  \"size\": \"giga\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"✓\",\n            \"color\": \"#ffffff\",\n            \"weight\": \"bold\",\n            \"size\": \"xl\",\n            \"flex\": 0\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"บันทึกพิกัดสำเร็จ\",\n            \"color\": \"#ffffff\",\n            \"weight\": \"bold\",\n            \"size\": \"lg\",\n            \"margin\": \"md\"\n          }\n        ],\n        \"alignItems\": \"center\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"อัปเดตตารางเวลาสำหรับพื้นที่นี้แล้ว\",\n        \"color\": \"#ffffffcc\",\n        \"size\": \"xs\",\n        \"margin\": \"md\"\n      }\n    ],\n    \"backgroundColor\": \"#06c755\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📍 สถานที่ใหม่:\",\n        \"size\": \"xs\",\n        \"color\": \"#aaaaaa\",\n        \"weight\": \"bold\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"{{$json.address}}\",\n        \"size\": \"sm\",\n        \"color\": \"#333333\",\n        \"wrap\": true,\n        \"margin\": \"sm\"\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"lg\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": [\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\"type\": \"text\", \"text\": \"🌌 ฟัจร์\", \"size\": \"sm\", \"color\": \"#555555\", \"flex\": 5},\n              {\"type\": \"text\", \"text\": \"{{$json.fajr}}\", \"size\": \"sm\", \"color\": \"#111111\", \"weight\": \"bold\", \"align\": \"end\", \"flex\": 5}\n            ]\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\"type\": \"text\", \"text\": \"🌞 ดุฮฺริ\", \"size\": \"sm\", \"color\": \"#555555\", \"flex\": 5},\n              {\"type\": \"text\", \"text\": \"{{$json.dhuhr}}\", \"size\": \"sm\", \"color\": \"#111111\", \"weight\": \"bold\", \"align\": \"end\", \"flex\": 5}\n            ]\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\"type\": \"text\", \"text\": \"🌤️ อัสริ\", \"size\": \"sm\", \"color\": \"#555555\", \"flex\": 5},\n              {\"type\": \"text\", \"text\": \"{{$json.asr}}\", \"size\": \"sm\", \"color\": \"#111111\", \"weight\": \"bold\", \"align\": \"end\", \"flex\": 5}\n            ]\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\"type\": \"text\", \"text\": \"🌅 มัฆริบ\", \"size\": \"sm\", \"color\": \"#555555\", \"flex\": 5},\n              {\"type\": \"text\", \"text\": \"{{$json.maghrib}}\", \"size\": \"sm\", \"color\": \"#111111\", \"weight\": \"bold\", \"align\": \"end\", \"flex\": 5}\n            ]\n          },\n          {\n            \"type\": \"box\",\n            \"layout\": \"horizontal\",\n            \"contents\": [\n              {\"type\": \"text\", \"text\": \"🌙 อิชา\", \"size\": \"sm\", \"color\": \"#555555\", \"flex\": 5},\n              {\"type\": \"text\", \"text\": \"{{$json.isha}}\", \"size\": \"sm\", \"color\": \"#111111\", \"weight\": \"bold\", \"align\": \"end\", \"flex\": 5}\n            ]\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -592
+      ],
+      "id": "6db8b4f5-a96e-45af-8790-bba9f09e24a7",
+      "name": "Line Messaging2",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "oIgD7NyCOlsiDiID",
+          "name": "Line Messaging account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        16
+      ],
+      "id": "2e38381b-9c8f-4677-a67a-639b53743baa",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "=http://api.aladhan.com/v1/timings/{{$now.toFormat('dd-MM-yyyy')}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.longitude }}"
+            },
+            {
+              "name": "method",
+              "value": "1"
+            },
+            {
+              "name": "school",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        -592
+      ],
+      "id": "73e6a06a-06ad-4af6-880a-45d42e5e7595",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ตรวจสอบข้อมูลจาก API\nif (!items.length || !items[0].json.data) return [];\n\nconst timings = items[0].json.data.timings;\nconst dateReadable = items[0].json.data.date.readable;\n\n// --- ดึงข้อมูลการเช็คอินล่าสุด (แบบปลอดภัย) ---\nlet checkInData = { userId: 'unknown', address: 'ไม่ระบุสถานที่' };\n\ntry {\n    // พยายามดึงจาก Node ชื่อนี้ (ต้องเช็คชื่อให้ตรงเป๊ะ!)\n    checkInData = $('Code in JavaScript2').first().json;\n} catch (error) {\n    // ถ้าหาไม่เจอ ให้ลองดึงจาก Input ปกติเผื่อฟลุ๊ค\n    if (items[0].json.userId) checkInData.userId = items[0].json.userId;\n    if (items[0].json.address) checkInData.address = items[0].json.address;\n}\n// ------------------------------------------------\n\nreturn [{\n    json: {\n        userId: checkInData.userId,\n        address: checkInData.address,\n        date: dateReadable,\n        fajr: timings.Fajr.split(' ')[0],\n        dhuhr: timings.Dhuhr.split(' ')[0],\n        asr: timings.Asr.split(' ')[0],\n        maghrib: timings.Maghrib.split(' ')[0],\n        isha: timings.Isha.split(' ')[0]\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -592
+      ],
+      "id": "93aa35da-095f-41b7-9496-9942f704e938",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = [];\nconst ALERT_BEFORE_MINUTES = 15; \n\n// --- 1. ดึงข้อมูล User และ Address (แบบปลอดภัย - กัน Error) ---\nlet userId = 'unknown';\nlet address = 'ไม่ระบุสถานที่';\n\ntry {\n    // พยายามดึงจาก Node ชื่อนี้ (ต้องเช็คชื่อให้ตรงเป๊ะ!)\n    const checkInData = $('Code in JavaScript2').first().json;\n    if (checkInData.userId) userId = checkInData.userId;\n    if (checkInData.address) address = checkInData.address;\n} catch(e) {\n    // ถ้าหาไม่เจอ ให้ข้ามไปทำงานต่อได้เลย (ไม่ Error จน Flow หยุด)\n    console.log(\"หาข้อมูลเก่าไม่เจอ ใช้ค่า Default แทน\");\n}\n// ----------------------------------------------------------------\n\n// 2. วนลูปคำนวณเวลาแจ้งเตือน (Logic เดิม)\nfor (const item of items) {\n    if (!item.json.data) continue;\n    const timings = item.json.data.timings;\n    \n    const prayers = [\n        { name: 'ฟัจร์ (Fajr)', time: timings.Fajr },\n        { name: 'ดุฮฺริ (Dhuhr)', time: timings.Dhuhr },\n        { name: 'อัสริ (Asr)', time: timings.Asr },\n        { name: 'มัฆริบ (Maghrib)', time: timings.Maghrib },\n        { name: 'อิชา (Isha)', time: timings.Isha }\n    ];\n\n    const now = new Date();\n    // บังคับใช้ Timezone ไทย\n    const thDateString = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });\n\n    prayers.forEach(p => {\n        const timeStr = p.time.split(' ')[0];\n        // สร้างเวลาละหมาดโดยระบุ Offset +07:00 ชัดเจน\n        const isoString = `${thDateString}T${timeStr}:00+07:00`;\n        const prayerDate = new Date(isoString);\n\n        // คำนวณเวลาแจ้งเตือน (ถอยหลัง 15 นาที)\n        const alertTime = new Date(prayerDate.getTime() - (ALERT_BEFORE_MINUTES * 60000));\n\n        // Logic: สร้าง Task เฉพาะเวลาที่ \"ยังมาไม่ถึง\" (Future only)\n        if (alertTime > now) {\n            allItems.push({\n                json: {\n                    userId: userId,\n                    address: address, \n                    message: `🔔 (เวลาใหม่) อีก ${ALERT_BEFORE_MINUTES} นาที จะเข้าเวลา ${p.name} (${p.time}) เตรียมตัวได้เลยครับ`,\n                    scheduledTime: alertTime.toISOString()\n                }\n            });\n        }\n    });\n}\n\nreturn allItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -1056
+      ],
+      "id": "e8982fc6-90e6-4f52-8c0a-fab0b6c93bf0",
+      "name": "Calculate New Alerts"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1072,
+        -1056
+      ],
+      "id": "e4ac375a-f4f6-476f-8b96-7c49de5566fd",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{$json.scheduledTime}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        -896
+      ],
+      "id": "31854e7a-d903-4504-b92d-27a5ea837cd7",
+      "name": "Wait1",
+      "webhookId": "735441a7-a1dd-4e76-9bac-91f9d85766fd"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{$json.userId}}",
+        "messages": {
+          "values": [
+            {
+              "altText": "แจ้งเตือนก่อนละหมาด(เวลาใหม่)",
+              "flexJson": "={\n  \"type\": \"bubble\",\n  \"size\": \"kilo\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"⏳ ใกล้เข้าเวลาละหมาด\",\n        \"color\": \"#ffffff\",\n        \"weight\": \"bold\",\n        \"size\": \"md\"\n      }\n    ],\n    \"backgroundColor\": \"#ff9900\",\n    \"paddingAll\": \"15px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"{{$json.message}}\",\n        \"wrap\": true,\n        \"weight\": \"bold\",\n        \"size\": \"md\",\n        \"color\": \"#333333\"\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"lg\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"margin\": \"lg\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"📍\",\n            \"size\": \"xs\",\n            \"flex\": 1,\n            \"color\": \"#aaaaaa\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"{{$json.address}}\",\n            \"size\": \"xs\",\n            \"color\": \"#aaaaaa\",\n            \"wrap\": true,\n            \"flex\": 9\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        -1072
+      ],
+      "id": "8d57e495-dc71-4051-a9bf-a2ff73cd8a03",
+      "name": "Line Messaging3",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "oIgD7NyCOlsiDiID",
+          "name": "Line Messaging account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Calculate New Alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate New Alerts": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging3": {
+      "main": [
+        []
+      ]
+    },
+    "Line Messaging1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Bangkok",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "643ba6db-2dd5-4625-befb-cebad897a021",
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-12-04T05:56:10.024Z",
+      "updatedAt": "2025-12-04T05:56:10.024Z",
+      "role": "workflow:owner",
+      "workflowId": "uu2QxpouAXPc6D8v",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

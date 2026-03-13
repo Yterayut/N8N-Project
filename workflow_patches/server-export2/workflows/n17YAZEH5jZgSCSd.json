@@ -1,0 +1,608 @@
+{
+  "createdAt": "2025-11-24T19:43:26.156Z",
+  "updatedAt": "2025-11-24T19:43:26.156Z",
+  "id": "n17YAZEH5jZgSCSd",
+  "name": "OCM-Chat-BOT copy",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "68d7506f-f355-41d4-b8b6-ea6a9800fd90",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac1067ba-916b-4fd5-8232-8d879fa97f72",
+      "name": "Webhook",
+      "webhookId": "68d7506f-f355-41d4-b8b6-ea6a9800fd90",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E",
+          "mode": "list",
+          "cachedResultName": "ฐานข้อมูลลูกค้า One Climate",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 115898618,
+          "mode": "list",
+          "cachedResultName": "Database-cus",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E/edit#gid=115898618"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        0
+      ],
+      "id": "c1c437dc-bf91-4308-b5ac-d4dd32d58ce7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "=คุณคือผู้ช่วยวิเคราะห์คำถามสำหรับค้นหาข้อมูลลูกค้า หน้าที่ของคุณคือแยกแยะว่า user ต้องการค้นหาด้วยคีย์เวิร์ดอะไร และต้องไปหาในคอลัมน์ไหน\n\n**รายชื่อทีมงานและผู้ดูแล (Knowledge Base):**\nTelesales, ตูน, ออม OCM, INET MS, เอริน, บีม SLP, พะแพง SLP, หวาย SLP, ออม SLP, หยก NLP, ซีครีม NLP, ยิ้ม NLP, กช NLP, บิมบิม NLP, โนเบล ELP, คิน ELP, ปอนด์ ELP, ป๊อป ELP, ฟ้าใส ELP, กิ๊ฟท์ ELP, มด NLP, ครีมเบอรี่ NLP, อิคลาส NLP, INET, แบม ELP\n\n**กฎการวิเคราะห์ (Mapping):**\n\n1. ถ้าถาม **Tax ID** หรือ เลขผู้เสียภาษี:\n   ให้ตอบ JSON: { \"search_col\": \"TAX-ID\", \"value\": \"ตัวเลขที่ถาม\" }\n\n2. ถ้าถาม **ชื่อบริษัท** หรือ ร้านค้า:\n   ให้ตอบ JSON: { \"search_col\": \"บริษัท\", \"value\": \"ชื่อบริษัท\" }\n\n3. ถ้าถาม **Stage** หรือ สถานะ:\n   ให้ตอบ JSON: { \"search_col\": \"Stage\", \"value\": \"ชื่อ Stage\" }\n\n4. ถ้าถาม **ชื่อคนติดต่อ** (Contact Person) ที่ **ไม่อยู่** ในรายชื่อทีมงานด้านบน:\n   ให้ตอบ JSON: { \"search_col\": \"ติดต่อ\", \"value\": \"ชื่อคน\" }\n\n5. ถ้าถาม **เบอร์โทรศัพท์**:\n   ให้ตอบ JSON: { \"search_col\": \"tel\", \"value\": \"ตัวเลขเบอร์โทร (ตัดขีดและเว้นวรรคออก)\" }\n\n6. ถ้าถาม **อีเมล**:\n   ให้ตอบ JSON: { \"search_col\": \"อีเมล์\", \"value\": \"อีเมล\" }\n\n7. ถ้าถาม **ชื่อทีมงาน** หรือชื่อที่ปรากฏใน **Knowledge Base** ด้านบน:\n   ให้ตอบ JSON: { \"search_col\": \"ทีมติตต่อ\", \"value\": \"ชื่อที่ user พิมพ์มา\" }\n\nกรณีไม่แน่ใจหรือไม่ตรงเงื่อนไข: ให้ตอบ { \"search_col\": \"error\", \"value\": \"\" }\n\n**คำเตือน:**\n- ตอบเฉพาะ JSON เท่านั้น ห้ามมีคำอธิบายอื่น\n- ห้ามใช้ Markdown code blocks (```json)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "fedafec9-f5ae-474b-aa03-0375f6635e01",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "311f8109-24f7-4500-ab62-fa305ec7977a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"สรุปคำตอบให้หน่อย\"",
+        "options": {
+          "systemMessage": "=คุณคือ CRM Assistant หน้าที่คือสรุปข้อมูลลูกค้า\nข้อมูลที่พบ: {{ JSON.stringify($input.all()) }}\nคำถาม: '{{ $('Webhook').item.json.body.events[0].message.text }}'\n\nจงตอบกลับด้วยข้อความและรูปแบบนี้เท่านั้น:\n\nนี่คือข้อมูลสรุปของลูกค้าค่ะ\n\n🏢 บริษัท: [ชื่อบริษัท]\n🆔 เลขประจำตัวผู้เสียภาษี:\n[Tax ID]\n\n👤 ผู้ติดต่อ: [ชื่อผู้ติดต่อ]\n📞 เบอร์โทร: [เบอร์โทร]\n📧 อีเมล์: [อีเมล]\n🚦 สถานะ: [Stage]\n📝 หมายเหตุ:\n[Remark / รายละเอียด]\n\n**กฎการแสดงผล:**\n1. **ห้าม** ตัดข้อมูลทิ้ง ให้แสดงรายละเอียดครบถ้วน (โดยเฉพาะหมายเหตุ)\n2. ถ้าหัวข้อไหน **ไม่มีข้อมูล** ให้ตัดบรรทัดนั้นทิ้งไปเลย\n3. ใช้ Emoji ตามที่กำหนดให้เท่านั้น (🆔, 🏢, 👤, 📞, 📧, 🚦, 📝)\n4. ไม่ต้องมีคำลงท้ายอื่นเพิ่มเติม"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "43c53293-5104-4b02-8849-56bbb049c423",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงค่าจาก AI Agent ตัวแรก (ต้องระบุชื่อ Node ให้เป๊ะ)\n// สั่งให้ไปหยิบ json จาก Node ที่ชื่อ \"AI Agent\"\nconst aiNode = $(\"AI Agent\").first(); \nconst aiOutput = aiNode.json.output || aiNode.json.text || \"\";\n\nlet cleanText = aiOutput.replace(/```json/g, '').replace(/```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(cleanText);\n} catch (e) {\n  data = { search_col: \"error\", value: \"\" };\n}\n\n// 2. เตรียมคำค้นหา (ตัดช่องว่างออก)\nconst searchCol = data.search_col;\n// เช็คว่ามี value ไหม ป้องกัน error\nlet searchValue = data.value ? data.value.toString().toLowerCase().trim() : \"\";\n\n// ถ้าหาชื่อคน/ทีม ให้ตัดเว้นวรรคออกเพื่อให้หาง่ายขึ้น\nif (['ทีมติตต่อ', 'ติดต่อ'].includes(searchCol)) {\n    searchValue = searchValue.replace(/\\s/g, '');\n}\n\n// 3. กรองข้อมูล (Filter)\n// $input.all() ในที่นี้คือข้อมูลจาก Excel (เพราะเราต่อ Node ตามหลัง Sheet)\nconst allRows = $input.all();\nconst foundRows = allRows.filter(row => {\n    // ป้องกัน error กรณีบางแถวไม่มีข้อมูล json\n    if (!row.json) return false;\n\n    let cellValue = row.json[searchCol];\n    if (!cellValue) return false;\n\n    cellValue = cellValue.toString().toLowerCase();\n\n    // ถ้าหาชื่อคน/ทีม -> ตัดเว้นวรรคใน Excel ออกด้วยก่อนเทียบ\n    if (['ทีมติตต่อ', 'ติดต่อ'].includes(searchCol)) {\n        cellValue = cellValue.replace(/\\s/g, '');\n    }\n    // ถ้าหาเบอร์ -> ตัดขีด/วรรค\n    else if (['เบอร์โทร', 'tel'].includes(searchCol)) {\n        cellValue = cellValue.replace(/[^0-9]/g, '');\n    }\n\n    // ค้นหาแบบ \"ประกอบด้วย\" (Contains)\n    return cellValue.includes(searchValue);\n});\n\nreturn foundRows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        0
+      ],
+      "id": "68322454-37ce-4b6e-a8c4-b2a098bc2468",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        224
+      ],
+      "id": "1c944f01-6b81-484b-bf78-b71f3188fc84",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('Webhook').item.json.body.events[0].replyToken,\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      // ดึงคำตอบจาก AI Agent ตัวที่ 2 (ที่ชื่อ AI Agent1)\n      \"text\": $('AI Agent1').item.json.output || \"ขออภัย ระบบขัดข้องชั่วคราว\"\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1984,
+        0
+      ],
+      "id": "d9d54b6d-3ce9-49fb-bae2-073df744a227",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "685f3c9b-aed8-4bf4-8393-ad5e86a0f9f7",
+      "name": "Limit",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        304
+      ],
+      "id": "0251a499-5a35-4dbe-b454-8a1087361a55",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1d4722e8-32de-4724-8866-ebea714844c1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        576
+      ],
+      "id": "a95ded6a-a476-4284-9d6a-95101f9b0bbe",
+      "name": "Webhook1",
+      "webhookId": "1d4722e8-32de-4724-8866-ebea714844c1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E",
+          "mode": "list",
+          "cachedResultName": "ฐานข้อมูลลูกค้า One Climate",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 115898618,
+          "mode": "list",
+          "cachedResultName": "Database-cus",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dZ-9m2W0Db18DiFpl77bglKkbziz8nR_rfsjSb_Tn5E/edit#gid=115898618"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        576
+      ],
+      "id": "df2c9b82-92a4-400b-829e-d9b2370eeb3b",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mbHVpStNSdk4RYCB",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "=คุณคือผู้ช่วยวิเคราะห์คำถามสำหรับค้นหาข้อมูลลูกค้า หน้าที่ของคุณคือแยกแยะว่า user ต้องการค้นหาด้วยคีย์เวิร์ดอะไร และต้องไปหาในคอลัมน์ไหน\n\n**รายชื่อทีมงานและผู้ดูแล (Knowledge Base):**\nTelesales, ตูน, ออม OCM, INET MS, เอริน, บีม SLP, พะแพง SLP, หวาย SLP, ออม SLP, หยก NLP, ซีครีม NLP, ยิ้ม NLP, กช NLP, บิมบิม NLP, โนเบล ELP, คิน ELP, ปอนด์ ELP, ป๊อป ELP, ฟ้าใส ELP, กิ๊ฟท์ ELP, มด NLP, ครีมเบอรี่ NLP, อิคลาส NLP, INET, แบม ELP\n\n**กฎการวิเคราะห์ (Mapping):**\n\n1. ถ้าถาม **Tax ID** หรือ เลขผู้เสียภาษี:\n   ให้ตอบ JSON: { \"search_col\": \"TAX-ID\", \"value\": \"ตัวเลขที่ถาม\" }\n\n2. ถ้าถาม **ชื่อบริษัท** หรือ ร้านค้า:\n   ให้ตอบ JSON: { \"search_col\": \"บริษัท\", \"value\": \"ชื่อบริษัท\" }\n\n3. ถ้าถาม **Stage** หรือ สถานะ:\n   ให้ตอบ JSON: { \"search_col\": \"Stage\", \"value\": \"ชื่อ Stage\" }\n\n4. ถ้าถาม **ชื่อคนติดต่อ** (Contact Person) ที่ **ไม่อยู่** ในรายชื่อทีมงานด้านบน:\n   ให้ตอบ JSON: { \"search_col\": \"ติดต่อ\", \"value\": \"ชื่อคน\" }\n\n5. ถ้าถาม **เบอร์โทรศัพท์**:\n   ให้ตอบ JSON: { \"search_col\": \"tel\", \"value\": \"ตัวเลขเบอร์โทร (ตัดขีดและเว้นวรรคออก)\" }\n\n6. ถ้าถาม **อีเมล**:\n   ให้ตอบ JSON: { \"search_col\": \"อีเมล์\", \"value\": \"อีเมล\" }\n\n7. ถ้าถาม **ชื่อทีมงาน** หรือชื่อที่ปรากฏใน **Knowledge Base** ด้านบน:\n   ให้ตอบ JSON: { \"search_col\": \"ทีมติตต่อ\", \"value\": \"ชื่อที่ user พิมพ์มา\" }\n\nกรณีไม่แน่ใจหรือไม่ตรงเงื่อนไข: ให้ตอบ { \"search_col\": \"error\", \"value\": \"\" }\n\n**คำเตือน:**\n- ตอบเฉพาะ JSON เท่านั้น ห้ามมีคำอธิบายอื่น\n- ห้ามใช้ Markdown code blocks (```json)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        576
+      ],
+      "id": "d7caf353-fa25-4f33-9e02-c8492f97b495",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        256,
+        784
+      ],
+      "id": "cda77cb7-a1e8-4f51-a430-1fabbbb593f0",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CbGoH9rsrDQALnBQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงค่าจาก AI Agent ตัวแรก (ต้องระบุชื่อ Node ให้เป๊ะ)\n// สั่งให้ไปหยิบ json จาก Node ที่ชื่อ \"AI Agent\"\nconst aiNode = $(\"AI Agent2\").first(); \nconst aiOutput = aiNode.json.output || aiNode.json.text || \"\";\n\nlet cleanText = aiOutput.replace(/```json/g, '').replace(/```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(cleanText);\n} catch (e) {\n  data = { search_col: \"error\", value: \"\" };\n}\n\n// 2. เตรียมคำค้นหา (ตัดช่องว่างออก)\nconst searchCol = data.search_col;\n// เช็คว่ามี value ไหม ป้องกัน error\nlet searchValue = data.value ? data.value.toString().toLowerCase().trim() : \"\";\n\n// ถ้าหาชื่อคน/ทีม ให้ตัดเว้นวรรคออกเพื่อให้หาง่ายขึ้น\nif (['ทีมติตต่อ', 'ติดต่อ'].includes(searchCol)) {\n    searchValue = searchValue.replace(/\\s/g, '');\n}\n\n// 3. กรองข้อมูล (Filter)\n// $input.all() ในที่นี้คือข้อมูลจาก Excel (เพราะเราต่อ Node ตามหลัง Sheet)\nconst allRows = $input.all();\nconst foundRows = allRows.filter(row => {\n    // ป้องกัน error กรณีบางแถวไม่มีข้อมูล json\n    if (!row.json) return false;\n\n    let cellValue = row.json[searchCol];\n    if (!cellValue) return false;\n\n    cellValue = cellValue.toString().toLowerCase();\n\n    // ถ้าหาชื่อคน/ทีม -> ตัดเว้นวรรคใน Excel ออกด้วยก่อนเทียบ\n    if (['ทีมติตต่อ', 'ติดต่อ'].includes(searchCol)) {\n        cellValue = cellValue.replace(/\\s/g, '');\n    }\n    // ถ้าหาเบอร์ -> ตัดขีด/วรรค\n    else if (['เบอร์โทร', 'tel'].includes(searchCol)) {\n        cellValue = cellValue.replace(/[^0-9]/g, '');\n    }\n\n    // ค้นหาแบบ \"ประกอบด้วย\" (Contains)\n    return cellValue.includes(searchValue);\n});\n\nreturn foundRows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        576
+      ],
+      "id": "360fdc02-50b0-442f-8248-bc27b3bf9b5c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer u3fpecOrFd6CtrcAKy/8Uh0jqxg+Om/rNdQZIv+b0uChZ/vhS7UNlS31iUbGGCjTjgQjE42NrM95N+TG7kqlPiq1YSHwgXWmBrlhWXSsDTCO7SkBTiMisWt+uYZVcPidCLJo4iHNr+YhTkcR7Im8/wdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1952,
+        576
+      ],
+      "id": "f9cf1574-81e5-4eaa-a911-fe63f65e33c8",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        576
+      ],
+      "id": "7a8a11ed-19c4-4591-b66c-bc441e5ba382",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.events[0].source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        880
+      ],
+      "id": "abe399e3-0697-4c01-bfe7-7b980233e208",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==========================================\n// ส่วนตั้งค่า (CONFIGURATION)\n// ==========================================\n\n// 1. รายชื่อผู้มีสิทธิ์ใช้งาน (Whitelist User IDs)\nconst ALLOWED_USERS = [\n    \"U226d26484e6f2c7b4a9bc2f54a2d0cbb\", // <-- USER ID ของคุณ (แก้ไขแล้ว)\n    \"U39ad8f7118178f72fa5a8dde0b1c59xx\"  // <-- เพิ่ม ID เพื่อนร่วมทีมตรงนี้\n];\n\n// ดึงข้อมูลพื้นฐานจาก Webhook\n// **ต้องเช็คชื่อ Node Webhook ให้ตรง (ในที่นี้คือ Webhook1)**\nconst webhookData = $('Webhook1').item.json.body.events[0]; \nconst replyToken = webhookData.replyToken;\nconst currentUserId = webhookData.source.userId;\n\n// ==========================================\n// FEATURE 1: ระบบความปลอดภัย (SECURITY CHECK)\n// ==========================================\nif (!ALLOWED_USERS.includes(currentUserId)) {\n    return {\n        \"replyToken\": replyToken,\n        \"messages\": [{\n            \"type\": \"flex\",\n            \"altText\": \"Access Denied\",\n            \"contents\": {\n                \"type\": \"bubble\",\n                \"styles\": { \"body\": { \"backgroundColor\": \"#333333\" } },\n                \"body\": {\n                    \"type\": \"box\",\n                    \"layout\": \"vertical\",\n                    \"contents\": [\n                        { \"type\": \"text\", \"text\": \"🔒 Access Denied\", \"weight\": \"bold\", \"size\": \"lg\", \"color\": \"#FF5555\", \"align\": \"center\" },\n                        { \"type\": \"text\", \"text\": \"คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้\\nกรุณาติดต่อ Admin เพื่อลงทะเบียน\", \"size\": \"xs\", \"color\": \"#CCCCCC\", \"align\": \"center\", \"margin\": \"md\", \"wrap\": true }\n                    ]\n                }\n            }\n        }]\n    };\n}\n\n// ==========================================\n// PREPARE DATA & NULL CHECK\n// ==========================================\nconst items = $input.all();\n\n// ฟังก์ชันช่วยเช็คค่า (ถ้าไม่มีข้อมูล ให้ข้าม หรือแสดงขีด)\nconst has = (val) => val && val.toString().trim() !== \"\" && val.toString().trim() !== \"-\";\nconst check = (val) => has(val) ? val.toString() : \"-\";\n\n\n// ==========================================\n// FEATURE 2: แจ้งเตือนเมื่อไม่พบข้อมูล (NOT FOUND)\n// ==========================================\nif (items.length === 0 || !items[0].json) {\n    return {\n        \"replyToken\": replyToken,\n        \"messages\": [{\n            \"type\": \"flex\",\n            \"altText\": \"ไม่พบข้อมูล\",\n            \"contents\": {\n                \"type\": \"bubble\",\n                \"styles\": { \"body\": { \"backgroundColor\": \"#FFF5F5\" } }, \n                \"body\": {\n                    \"type\": \"box\",\n                    \"layout\": \"vertical\",\n                    \"contents\": [\n                        { \"type\": \"text\", \"text\": \"❌ ไม่พบข้อมูล\", \"weight\": \"bold\", \"size\": \"lg\", \"color\": \"#D32F2F\", \"align\": \"center\" },\n                        { \"type\": \"text\", \"text\": \"ไม่พบรายชื่อหรือเบอร์โทรนี้ในระบบ\\nลองค้นหาด้วยคำอื่นดูนะครับ\", \"size\": \"xs\", \"color\": \"#666666\", \"align\": \"center\", \"margin\": \"md\", \"wrap\": true }\n                    ]\n                }\n            }\n        }]\n    };\n}\n\n// ==========================================\n// FEATURE 3: สร้างการ์ดแบบสไลด์ (CAROUSEL)\n// ==========================================\nconst bubbles = [];\n\n// วนลูปสร้างการ์ดทีละใบ\nitems.forEach(item => {\n    const customer = item.json;\n\n    // สร้างส่วนเนื้อหา (Body Rows)\n    let bodyContents = [];\n    \n    // ** THE COMPACT FIX: margin เป็น \"sm\" **\n    const addRow = (label, value) => {\n        if (has(value)) {\n            bodyContents.push({\n                \"type\": \"box\", \"layout\": \"baseline\", \"margin\": \"sm\", // FIX: ลดพื้นที่ว่าง\n                \"contents\": [\n                    { \"type\": \"text\", \"text\": label, \"color\": \"#aaaaaa\", \"size\": \"sm\", \"flex\": 2 },\n                    { \"type\": \"text\", \"text\": value.toString(), \"wrap\": true, \"color\": \"#666666\", \"size\": \"sm\", \"flex\": 4 }\n                ]\n            });\n        }\n    };\n\n    const company = check(customer['บริษัท']);\n    const taxId = customer['TAX-ID'];\n    const contact = check(customer['ติดต่อ']);\n    const phone = customer['เบอร์โทร'] || customer['tel'];\n    const email = check(customer['อีเมล์']);\n    const stage = check(customer['Stage']);\n    const note = customer['Remark'] || customer['รายละเอียด'] || customer['Note'];\n\n    if (has(taxId)) addRow(\"🆔 Tax ID\", taxId);\n    addRow(\"👤 ผู้ติดต่อ\", contact);\n    addRow(\"📞 เบอร์โทร\", phone);\n    addRow(\"📧 อีเมล\", email);\n    addRow(\"🚦 สถานะ\", stage);\n\n    // หมายเหตุ\n    if (has(note)) {\n        bodyContents.push(\n            { \"type\": \"separator\", \"margin\": \"lg\" },\n            { \"type\": \"text\", \"text\": \"📝 หมายเหตุ:\", \"margin\": \"md\", \"weight\": \"bold\", \"size\": \"xs\", \"color\": \"#333333\" },\n            { \"type\": \"text\", \"text\": note.toString(), \"wrap\": true, \"size\": \"xs\", \"color\": \"#888888\", \"margin\": \"sm\" }\n        );\n    }\n\n    // ปุ่มโทรออก (Footer)\n    let footerContents = [];\n    if (has(phone)) {\n        let cleanPhone = phone.toString().replace(/[^0-9]/g, '');\n        footerContents.push({\n            \"type\": \"button\", \"style\": \"primary\", \"color\": \"#1DB446\", \"height\": \"sm\",\n            \"action\": { \"type\": \"uri\", \"label\": \"📞 โทรออก\", \"uri\": `tel:${cleanPhone}` }\n        });\n    }\n\n    // ประกอบร่าง Bubble 1 ใบ\n    bubbles.push({\n        \"type\": \"bubble\",\n       \n        \"header\": {\n            \"type\": \"box\", \"layout\": \"vertical\", \"backgroundColor\": \"#f7f7f7\",\n            \"contents\": [\n                { \"type\": \"text\", \"text\": \"CRM RESULT\", \"color\": \"#1DB446\", \"weight\": \"bold\", \"size\": \"xxs\" },\n                { \"type\": \"text\", \"text\": company, \"weight\": \"bold\", \"size\": \"lg\", \"margin\": \"sm\", \"wrap\": true } \n            ]\n        },\n        // ** THE COMPACT FIX: เพิ่ม spacing: \"sm\" ที่ Body **\n        \"body\": { \"type\": \"box\", \"layout\": \"vertical\", \"spacing\": \"sm\", \"contents\": bodyContents }, \n        \"footer\": { \"type\": \"box\", \"layout\": \"vertical\", \"contents\": footerContents }\n    });\n});\n\n// ==========================================\n// ส่งผลลัพธ์ (RETURN JSON)\n// ==========================================\nreturn {\n    \"replyToken\": replyToken,\n    \"messages\": [{\n        \"type\": \"flex\",\n        \"altText\": `พบข้อมูลลูกค้า ${bubbles.length} รายการ`,\n        \"contents\": {\n            \"type\": \"carousel\", \n            \"contents\": bubbles\n        }\n    }]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        576
+      ],
+      "id": "27d66c78-3843-422c-ab5f-4931e88879ea",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ce17f3e6-04e8-4f3a-a0ca-a4336ac5393b",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-11-24T19:43:26.170Z",
+      "updatedAt": "2025-11-24T19:43:26.170Z",
+      "role": "workflow:owner",
+      "workflowId": "n17YAZEH5jZgSCSd",
+      "projectId": "jeD6fV4Q5Q6oH8GK",
+      "project": {
+        "createdAt": "2025-10-14T15:42:22.954Z",
+        "updatedAt": "2025-10-14T15:44:01.658Z",
+        "id": "jeD6fV4Q5Q6oH8GK",
+        "name": "Teerayut Yeerahem <yterayut@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
