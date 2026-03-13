@@ -1,0 +1,61 @@
+{
+  "ground_truth_version": "1.0",
+  "generated_by": "GG/Gemini",
+  "generated_at": "2026-03-13T14:53:29",
+  "source_file": "nexgen_actual.pdf",
+  "requires_human_review": false,
+  "confidence": "high",
+  "fields": {
+    "doc_type": "invoice",
+    "invoice_number": "INV-IBILL20221213-0005",
+    "invoice_date": "2022-12-13",
+    "vendor_name": "บริษัท วัน อิเล็กทรอนิกส์ บิลลิ่ง จำกัด",
+    "vendor_tax_id": "0105561072420",
+    "vendor_address": "1768 อาคารไทยซัมมิท ทาวเวอร์ ชั้น 16 ถนนเพชรบุรีตัดใหม่ แขวงบางกะปิ เขตห้วยขวาง กรุงเทพมหานคร 10310",
+    "buyer_name": "อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน)",
+    "buyer_tax_id": "0107544000094",
+    "subtotal": 50145.0,
+    "vat_rate": "7%",
+    "vat_amount": 3510.15,
+    "total_amount": 53655.15,
+    "currency": "THB",
+    "payment_method": null,
+    "line_items": [
+      {
+        "description": "เก้าอี้พนักงานโปรแกรมเมอร์",
+        "quantity": 1,
+        "unit_price": 4000.0,
+        "amount": 4000.0
+      },
+      {
+        "description": "Ergonomic Desk โต๊ะทำงาน",
+        "quantity": 1,
+        "unit_price": 12900.0,
+        "amount": 12900.0
+      },
+      {
+        "description": "Lenovo ThinkBook 15 G2 ARE",
+        "quantity": 1,
+        "unit_price": 23245.0,
+        "amount": 23245.0
+      },
+      {
+        "description": "MA",
+        "quantity": 1,
+        "unit_price": 10000.0,
+        "amount": 10000.0
+      }
+    ]
+  },
+  "extraction_notes": "All fields were extracted clearly from the provided image. The document type is listed as 'ใบแจ้งหนี้ / Invoice'. Payment method section was empty.",
+  "human_review_required_fields": []
+}
+
+---
+
+## Approval Status *(CC fills)*
+- [ ] Approved → implemented in T0xx
+- [ ] Rejected → reason:
+- [ ] Pending review
+
+*Generated: 2026-03-13T14:53:29 by GG*

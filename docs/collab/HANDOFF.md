@@ -115,10 +115,12 @@ _(none)_
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
+| T054 | OCR Coverage Matrix + PDCA Training Loop Hardening (spec ready for CC review at `docs/collab/tasks/T054-ocr-coverage-pdca-loop-hardening.md`) | CC (Review) | T052A/T052B/T052D/T052E |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| nexgen-gg-groundtruth | GG ground truth generated for nexgen/INET bill (`/tmp/nexgen_actual.pdf`, real PDF decoded from training exec 161139). GG confirms: vendor=บจว.วัน อิเล็กทรอนิกส์ บิลลิ่ง, vendor_tax_id=0105561072420, buyer=อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน), buyer_tax_id=0107544000094, total=53655.15, 4 line items. Saved to `docs/gg/proposals/2026-03-13-groundtruth-nexgen_actual.json`. Training loop already ran: example `ex_1773338904205_234d` (active=true, active_for_prompt=true). INET (0105561072420) confirmed in VENDOR_MAP all 3 workflows (layout_family=inet_nexgen_v1). Issues: 1st example layout_id=ptt_or_fuel_v1 (wrong, 2nd example has correct inet_nexgen_v1). Address note: GG vendor_address=ชั้น 16, training uses customer address=ชั้นที่ 10-12 (both correct for different fields). | CC | 2026-03-13 | DONE |
 | health-kpi-analysis | KPI 94% diagnosed: 8-case sample + legitimate 50% SCG Prawet (6 real diffs confirmed). OCR system health check: all workflows healthy, 0 errors since 2026-03-07. Renamed `up1n75qEhbsXswii` back to `ocr-invoice-processor` (was mistakenly `ocr-training`). Non-OCR issues found: POC/PAY OAuth expired (Yut action needed), OCM-Chat-BOT typeValidation chronic. | CC | 2026-03-12 | DONE |
 | fix-examples-api-reject | Fixed `ocr-examples-api` reject flow: added `active_for_prompt` to GSheets Update node schema + value mapping in workflow `LzYmwkdRfOxbCrwB`. Previously reject only set `active=False` but `active_for_prompt` stayed True. Now both fields updated atomically. | CC | 2026-03-08 | PASS |
 | gg-curation-review | GG Curation Report 2026-02-25 reviewed: all 4 recommendations already implemented — `tc_1772008956515_cov52h` (lazy labeling) already excluded, 3 high-quality PTT cases kept. No new actions needed. Report closed. | CC | 2026-03-08 | DONE |
@@ -322,6 +324,7 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-12 01:54 | sync | all | auto-sync |
 | 2026-03-08 21:52 | sync | all | auto-sync |
 | 2026-03-08 21:22 | sync | all | auto-sync |
 | 2026-03-07 21:43 | sync | all | auto-sync |
