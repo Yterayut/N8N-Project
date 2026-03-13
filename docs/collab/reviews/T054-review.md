@@ -151,8 +151,8 @@ Remaining limits:
 
 ## Merge Approval *(CC fills หลัง Codex implement)*
 
-- [ ] Codex response addresses all issues raised
-- [ ] Merged to stable + synced
-- [ ] No further action required
+- [x] Codex response addresses all issues raised
+- [x] Merged to stable + synced
+- [ ] No further action required — Remaining: create `OCR_COVERAGE_REGISTRY` sheet tab + nexgen E2E
 
-**Date merged:**
+**Date merged:** 2026-03-14
