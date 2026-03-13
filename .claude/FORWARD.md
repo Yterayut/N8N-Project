@@ -1,26 +1,27 @@
-## Last Checkpoint — 2026-03-13 BKK (session 2)
+## Last Checkpoint — 2026-03-13 BKK (session 3)
 
 ### Git State
 - Branch: `stable`
-- Last commit: `58bca3d fix(ocr): normalize invoice_date_th from ISO to DD/MM/YYYY format`
+- Last commit: `7935d0c chore(handoff): date-decimal-fixes complete + 4 bad examples rejected`
 
 ### Status
-- ✅ GG ground truth for nexgen/INET bill complete — `docs/gg/proposals/2026-03-13-groundtruth-nexgen_actual.json`
-- ✅ INET (0105561072420) in VENDOR_MAP all 3 workflows — layout=inet_nexgen_v1, vendor_code=inet
-- ✅ Training examples active: `ex_1773338904205_234d` (active=true, active_for_prompt=true) + 1 more
-- ✅ Date normalization fix deployed — `normalizeDateTh()` in Code(Normalize+Validate), format hint in repair prompt
-- ⚠️ 1st nexgen example has wrong layout_id=ptt_or_fuel_v1 (should be inet_nexgen_v1) — minor
-- ⚠️ T054 spec pending CC review — key action needed
+- ✅ Date normalization fix deployed — `normalizeDateTh()` in Code(Normalize+Validate)
+- ✅ Decimal fix deployed — `round3()` for unit_price/quantity/amount
+- ✅ 4 bad examples rejected (from Yut's 0% accuracy test)
+- ✅ `Code (Build Request)` strengthened — explicit no-copy rule for invoice_number/invoice_date_th/total_amount
+- ✅ 2 stale Caltex examples updated — `invoice_date_th` from "2025-01-25" → "25/01/2568"
+- ⚠️ KM log metadata bug: vendor_code/layout_id/doc_type = "unknown" in top-level — not fixed
+- ⚠️ T054 spec pending CC review
 - ⚠️ POC + PAY Google OAuth expired — Yut ต้อง reconnect ใน n8n UI
-- ⚠️ KM log metadata bug: vendor_code/layout_id/doc_type = "unknown" in top-level (ocr_bills has correct values) — not fixed yet
+- ⚠️ First nexgen example layout_id=ptt_or_fuel_v1 (wrong, should be inet_nexgen_v1) — minor
 
 ### Key Context
-- Date fix root cause: repair step (second Gemini call) converted Thai year 2568→2025 but kept ISO format "2025-01-25" → normalizeDateTh() converts any YYYY-MM-DD → DD/MM/YYYY
-- Caltex admin feedback case `1773393283437-4e524126ae3f3`: 75% accuracy → main issue was invoice_date_th format (now fixed)
-- T054 spec at `docs/collab/tasks/T054-ocr-coverage-pdca-loop-hardening.md` — authored by Codex 2026-03-13
+- Invoice contamination root cause: few-shot examples contain real `invoice_number` values in gold_json → Gemini copies them. Fix: stronger prompt rule + correct example dates
+- 2 Caltex examples still had ISO date "2025-01-25" in gold_json (pre-date-fix artifacts) — now corrected
+- Test suggestion: send Caltex bill `S1731125012511010003` via admin feedback again to verify 100%
 
 ### Next Actions
-1. Test: send Caltex bill again → verify invoice_date_th now outputs "25/01/2025" (DD/MM/YYYY)
+1. Test: send same Caltex bill (the 75% one) again → verify invoice_number extracted correctly from document
 2. CC review T054 spec → assign Codex to implement
 3. Fix KM log metadata bug: Code(Prepare KM Log Payload) in `ztJ8oCBHREUPPry6` reads vendor_code from diff result instead of ocr_bills[0]
 4. Optionally: fix 1st nexgen example layout_id via examples-api reject+recreate

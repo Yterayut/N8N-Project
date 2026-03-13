@@ -120,6 +120,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| invoice-contamination-fix | Fixed few-shot example contamination causing Gemini to copy `invoice_number` from training examples to new bills. (1) Patched `Code (Build Request)` in `up1n75qEhbsXswii`: replaced weak "Do not copy unrelated values" with explicit rule "CRITICAL: Do NOT copy invoice_number, invoice_date_th, total_amount, or any field values from examples — Every field value MUST be extracted from the actual document image". (2) Updated 2 stale Caltex examples (`ex_1772244664476_2682`, `ex_1772236024817_ee46`) gold_json: `invoice_date_th` corrected from `"2025-01-25"` (ISO) → `"25/01/2568"` (DD/MM/YYYY Thai year) via examples-api update action. Root cause: few-shot prompt included real `invoice_number` values from example gold_json, Gemini copied them verbatim to new bills instead of reading from document. | CC | 2026-03-13 | DONE |
 | date-decimal-fixes | (1) `normalizeDateTh()` added to `Code (Normalize+Validate)` in `up1n75qEhbsXswii` — converts any YYYY-MM-DD (Thai or Gregorian year) → DD/MM/YYYY before validation. Root cause: repair step (second Gemini call) converted Thai year 2568→2025 but kept ISO format "2025-01-25". Also added format hint to `Code (Build Re-ask Request)` repair prompt. (2) `round3()` added — unit_price/quantity/amount in `normalizeListDetail` now use 3 decimal places. Verified: Caltex test `25/01/2568` ✅, qty=44.100 ✅. Rejected 4 bad examples (ex_1773395675962_e851 + 3 others) from 0% accuracy run. | CC | 2026-03-13 | DONE |
 | nexgen-gg-groundtruth | GG ground truth generated for nexgen/INET bill (`/tmp/nexgen_actual.pdf`, real PDF decoded from training exec 161139). GG confirms: vendor=บจว.วัน อิเล็กทรอนิกส์ บิลลิ่ง, vendor_tax_id=0105561072420, buyer=อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน), buyer_tax_id=0107544000094, total=53655.15, 4 line items. Saved to `docs/gg/proposals/2026-03-13-groundtruth-nexgen_actual.json`. Training loop already ran: example `ex_1773338904205_234d` (active=true, active_for_prompt=true). INET (0105561072420) confirmed in VENDOR_MAP all 3 workflows (layout_family=inet_nexgen_v1). Issues: 1st example layout_id=ptt_or_fuel_v1 (wrong, 2nd example has correct inet_nexgen_v1). Address note: GG vendor_address=ชั้น 16, training uses customer address=ชั้นที่ 10-12 (both correct for different fields). | CC | 2026-03-13 | DONE |
 | health-kpi-analysis | KPI 94% diagnosed: 8-case sample + legitimate 50% SCG Prawet (6 real diffs confirmed). OCR system health check: all workflows healthy, 0 errors since 2026-03-07. Renamed `up1n75qEhbsXswii` back to `ocr-invoice-processor` (was mistakenly `ocr-training`). Non-OCR issues found: POC/PAY OAuth expired (Yut action needed), OCM-Chat-BOT typeValidation chronic. | CC | 2026-03-12 | DONE |
@@ -325,6 +326,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-13 17:09 | sync | all | auto-sync |
+| 2026-03-13 17:09 | sync | all | auto-sync |
 | 2026-03-13 17:03 | sync | all | auto-sync |
 | 2026-03-13 16:42 | sync | all | auto-sync |
 | 2026-03-13 14:58 | sync | all | auto-sync |
