@@ -106,7 +106,9 @@ Claude review → merge → sync all
 _(none)_
 
 ### In Progress (Codex)
-_(none)_
+| ID | Task | Notes |
+|----|------|-------|
+| T054 | OCR Coverage Matrix + PDCA Training Loop Hardening | CC review APPROVED WITH CONDITIONS (`docs/collab/reviews/T054-review.md`). Implement Phase 1→5: Coverage Registry → OCR Inference → Telegram Parser → Admin Feedback+KM-log fix → KPI. |
 
 ### Pending (Codex)
 _(none)_
@@ -115,7 +117,6 @@ _(none)_
 | ID | Task | Owner | Depends on |
 |----|------|-------|-----------|
 | T030 | Supabase migration (proposal ready) | — | Deferred |
-| T054 | OCR Coverage Matrix + PDCA Training Loop Hardening (spec ready for CC review at `docs/collab/tasks/T054-ocr-coverage-pdca-loop-hardening.md`) | CC (Review) | T052A/T052B/T052D/T052E |
 
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
@@ -326,6 +327,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-13 23:47 | sync | all | auto-sync |
+| 2026-03-13 23:44 | sync | all | auto-sync |
 | 2026-03-13 19:35 | sync | all | auto-sync |
 | 2026-03-13 17:09 | sync | all | auto-sync |
 | 2026-03-13 17:09 | sync | all | auto-sync |
