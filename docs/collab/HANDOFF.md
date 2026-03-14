@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T055 | Fixed `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) duplicate Telegram notification. Root cause: `OCR_COVERAGE_REGISTRY` GSheets node was connected to `Code node: Aggregate KPI` at **input[0]** — same as `OCR_FEEDBACK` → n8n ran Code node twice → Telegram sent msg_id `1659`+`1660` on exec `162051`. Fix: changed connection from input[0] → **input[1]** via REST PATCH. n8n now waits for both inputs before running Code node once. Verified: connection `OCR_COVERAGE_REGISTRY → Code [input 1]` confirmed in workflow. Duplicate started 2026-03-14 00:26 BKK (when Codex T054 added OCR_COVERAGE_REGISTRY as parallel branch). Prior execs 160282–161234 sent 1 message each ✅. | CC | 2026-03-14 | DONE |
 | save-prediction-401-fix | Fixed `HTTP Save Prediction` node in `up1n75qEhbsXswii`: added `x-api-key: $env.OCR_FEEDBACK_API_KEY` header (was missing → 401 UNAUTHORIZED on every OCR run). Verified exec `162004`: 0 401 errors ✅. | CC | 2026-03-14 | DONE |
 | nexgen-example-fix | Fixed 1st nexgen example (`ex_1773338904205_234d`): `doc_type: other→nexgen`, `layout_id: ptt_or_fuel_v1→inet_nexgen_v1`. Also patched `ocr-examples-api` (`LzYmwkdRfOxbCrwB`) GSheets Update node to include `layout_id` + `doc_type` in column mapping (was missing → update action silently skipped those fields). Verified via examples-api read after 65s cache TTL. | CC | 2026-03-14 | DONE |
 | T054 | OCR Coverage Matrix + PDCA Training Loop Hardening — **COMPLETE**. (Codex) Patched 5 live workflows. (CC post-fix 2026-03-14) (1) Created `OCR_COVERAGE_REGISTRY` tab in OCM-INFRA spreadsheet (sheetId 1781006429) with 12 vendor rows — all status=learning, thresholds 5/10/98/99; gg-data-gateway now reads real sheet instead of fallback. (2) Fixed `Code (Document Classifier)` in `up1n75qEhbsXswii`: nexgen filename/text hint branch now sets `vendorCode='inet'` + `layoutId='inet_nexgen_v1'` (was only setting `docType='nexgen'`). Root cause of `few_shot_count=0`: classifier detected nexgen via filename but left vendor_code empty → two-pass selector had empty wantedVendor → 0 matches. Post-fix exec `161956`: `few_shot_count=1`, `retrieval_mode=strict`, `coverage_status=learning`, `customer_name=อินเทอร์เน็ตประเทศไทย จำกัด (มหาชน)`, `address` filled, `decision=auto_pass` ✅. T1 (nexgen happy-path) PASSED. nowThai ✅. Remaining: Yut reconnect POC+PAY OAuth; 1st nexgen example layout_id fix (minor). | CC+Codex | 2026-03-14 | PASS ✅ |
@@ -328,6 +329,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-14 01:58 | sync | all | auto-sync |
+| 2026-03-14 01:58 | sync | all | auto-sync |
 | 2026-03-14 01:53 | sync | all | auto-sync |
 | 2026-03-14 01:53 | sync | all | auto-sync |
 | 2026-03-14 01:51 | sync | all | auto-sync |
