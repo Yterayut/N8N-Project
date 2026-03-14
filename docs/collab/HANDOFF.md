@@ -119,6 +119,7 @@ _(none)_
 ### Recently Completed
 | ID | Task | Owner | Date | Score |
 |----|------|-------|------|-------|
+| T056 | **Siam Gas 0% + SCG Prawet 50% accuracy investigation + fix.** (1) Siam Gas TRAIN_CASE `tc_1773395681636_rsdbgh` (row 62) → **excluded** — confirmed Caltex bill mislabeled as Siam Gas (actual PDF vendor_tax_id=0105564172883 Caltex, not 0107548000650 Siam Gas). OCR was correct; TRAIN_CASE label was wrong. Siam Gas already has active example `ex_1772429820891_1d75` (siam_gas_v1). (2) SCG Prawet: GG ground truth from 3-bill PDF, bill[2] Tax Invoice `TI0000016809001207`, total=1600, GASOHOL 95, vendor=0135553012766. Created OCR_EXAMPLE `ex_1773484873069_07e2` (layout_id=scg_prawet_fuel_v1, active_for_prompt=True, CC approved). | CC | 2026-03-14 | DONE |
 | T055 | Fixed `ocr-kpi-report` (`yCqvdl3vrHGgiBMt`) duplicate Telegram notification. Root cause: `OCR_COVERAGE_REGISTRY` GSheets node was connected to `Code node: Aggregate KPI` at **input[0]** — same as `OCR_FEEDBACK` → n8n ran Code node twice → Telegram sent msg_id `1659`+`1660` on exec `162051`. Fix: changed connection from input[0] → **input[1]** via REST PATCH. n8n now waits for both inputs before running Code node once. Verified: connection `OCR_COVERAGE_REGISTRY → Code [input 1]` confirmed in workflow. Duplicate started 2026-03-14 00:26 BKK (when Codex T054 added OCR_COVERAGE_REGISTRY as parallel branch). Prior execs 160282–161234 sent 1 message each ✅. | CC | 2026-03-14 | DONE |
 | save-prediction-401-fix | Fixed `HTTP Save Prediction` node in `up1n75qEhbsXswii`: added `x-api-key: $env.OCR_FEEDBACK_API_KEY` header (was missing → 401 UNAUTHORIZED on every OCR run). Verified exec `162004`: 0 401 errors ✅. | CC | 2026-03-14 | DONE |
 | nexgen-example-fix | Fixed 1st nexgen example (`ex_1773338904205_234d`): `doc_type: other→nexgen`, `layout_id: ptt_or_fuel_v1→inet_nexgen_v1`. Also patched `ocr-examples-api` (`LzYmwkdRfOxbCrwB`) GSheets Update node to include `layout_id` + `doc_type` in column mapping (was missing → update action silently skipped those fields). Verified via examples-api read after 65s cache TTL. | CC | 2026-03-14 | DONE |
@@ -329,6 +330,8 @@ VPN หลุด / disconnect → ไม่เป็นไร → SSH ใหม�
 
 
 | Date | Direction | By | Notes |
+| 2026-03-14 17:17 | sync | all | auto-sync |
+| 2026-03-14 17:17 | sync | all | auto-sync |
 | 2026-03-14 01:58 | sync | all | auto-sync |
 | 2026-03-14 01:58 | sync | all | auto-sync |
 | 2026-03-14 01:53 | sync | all | auto-sync |
