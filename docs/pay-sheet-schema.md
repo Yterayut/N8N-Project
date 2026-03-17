@@ -1,51 +1,81 @@
-# PAY Sheet Schema
+# PAY Canonical Sheet Schema
 
-ใช้กับ Google Sheet `Sheet1` ของระบบ PAY หลัง canonical migration
+## วัตถุประสงค์
+เอกสารนี้ประกาศ canonical schema ของ `Sheet1` สำหรับระบบ PAY
 
-## Columns
+authoritative source:
+- `apps-script/pay-finance/Code.js`
+- constant `CANONICAL_HEADERS`
 
-| Column | Name | Type | Required | Description |
-|---|---|---|---|---|
-| A | `date` | `yyyy-MM-dd` ใน write path, แสดงผลเป็น `dd/MM/yyyy` | yes | วันที่ทำรายการ |
-| B | `time` | `HH:mm` | yes | เวลา |
-| C | `type` | `income \| expense \| transfer` | yes | ประเภทธุรกรรมแบบ canonical |
-| D | `amount` | number | yes | จำนวนเงินมากกว่า `0` |
-| E | `category` | string | yes | หมวดหมู่แบบ normalized |
-| F | `sender_name` | string | no | ชื่อผู้โอน/ผู้จ่าย |
-| G | `sender_bank` | string | no | ธนาคารต้นทาง |
-| H | `receiver_name` | string | no | ชื่อผู้รับ |
-| I | `receiver_bank` | string | no | ธนาคารปลายทาง |
-| J | `ref_id` | string | no | reference id จากสลิป |
-| K | `execution_id` | string | no | execution id จาก n8n |
-| L | `status` | string | yes | ปัจจุบันใช้ `active` เป็นหลัก |
-| M | `transaction_id` | uuid string | yes | primary identifier สำหรับ mutation |
-| N | `source` | string | yes | เช่น `n8n`, `webapp`, `migration` |
-| O | `created_at` | ISO-like datetime | yes | เวลาสร้าง row |
-| P | `updated_at` | ISO-like datetime | yes | เวลาแก้ไขล่าสุด |
-| Q | `note` | string | no | หมายเหตุจาก web app หรือ source อื่น |
+## Canonical Columns
 
-## Write Rules
+| ลำดับ | column | ความหมาย |
+|---|---|---|
+| 1 | `date` | วันที่ธุรกรรม |
+| 2 | `time` | เวลา |
+| 3 | `type` | `income` / `expense` / `transfer` |
+| 4 | `amount` | จำนวนเงิน |
+| 5 | `category` | หมวด canonical หลัง classify |
+| 6 | `sender_name` | ชื่อผู้ส่ง |
+| 7 | `sender_bank` | ธนาคารผู้ส่ง |
+| 8 | `receiver_name` | ชื่อผู้รับ |
+| 9 | `receiver_bank` | ธนาคารผู้รับ |
+| 10 | `ref_id` | external reference / slip reference |
+| 11 | `execution_id` | execution id จาก integration |
+| 12 | `status` | `active` / `inactive` / `deleted` / `archived` |
+| 13 | `transaction_id` | id หลักของ transaction |
+| 14 | `source` | แหล่งที่มา เช่น `n8n`, `webapp`, `mobile_app` |
+| 15 | `created_at` | เวลาสร้าง canonical row |
+| 16 | `updated_at` | เวลาอัปเดตล่าสุด |
+| 17 | `note` | หมายเหตุ |
+| 18 | `request_id` | request trace id |
+| 19 | `last_writer` | writer ล่าสุดที่เขียน row นี้ |
+| 20 | `schema_version` | schema version ตอนเขียน |
+| 21 | `classification_version` | classification rules version ตอนเขียน |
+| 22 | `reconciliation_status` | สถานะ reconciliation เช่น `canonical` |
 
-- ทุก write path ต้องเรียก `ensureCanonicalSchema_()` ก่อน
-- ทุก transaction ใหม่ต้องมี `transaction_id`
-- `type` ต้องอยู่ในชุด `income`, `expense`, `transfer` เท่านั้น
-- `amount` ต้องมากกว่า `0`
-- `category` ต้องผ่าน normalization ก่อนเขียน
-- `source` ต้องระบุทุกครั้ง
+## Canonical Rules
 
-## Identity Rules
+### Required minimum for slip ingestion
+- `date`
+- `time`
+- `type`
+- `amount`
 
-- ใช้ `transaction_id` เป็น identity หลัก
-- `rowIndex` ใช้ได้เฉพาะ fallback ตอน map ไปยัง row ปัจจุบันใน sheet
-- delete/update/category update ต้อง resolve `transaction_id -> rowIndex` ก่อน mutate
+### Required minimum for stable traceability
+- `transaction_id`
+- `source`
+- `status`
+- `created_at`
+- `updated_at`
 
-## Migration
+### Required minimum for provenance
+- `request_id`
+- `last_writer`
+- `schema_version`
+- `classification_version`
+- `reconciliation_status`
 
-- ใช้ `migrateSheetSchema()` เพื่อเติมคอลัมน์ที่ขาด
-- migration จะ backfill:
-  - `status`
-  - `transaction_id`
-  - `source`
-  - `created_at`
-  - `updated_at`
-  - normalized `type/category`
+## Notes
+
+### `transaction_id`
+- เป็น primary business identifier ของระบบ
+- ห้ามอิง row index เป็น identity หลัก
+
+### `request_id`
+- ใช้ trace request ข้าม layer
+- เช่น n8n execution หรือ consumer request
+
+### `last_writer`
+- ใช้ตอบว่า row นี้ถูกเขียนล่าสุดโดย flow ไหน
+
+### `schema_version` / `classification_version`
+- ใช้ตอบว่า row นี้ถูกสร้าง/ซ่อมภายใต้กติกาชุดไหน
+
+## Maintenance
+- ถ้าเพิ่ม/ลบ/เปลี่ยนคอลัมน์ ต้องแก้:
+  - `apps-script/pay-finance/Code.js`
+  - `docs/source-of-truth.md`
+  - `docs/environments.md`
+  - `docs/pay-release-manifest.md`
+  - `docs/pay-smoke-test-checklist.md` ถ้ากระทบ contract

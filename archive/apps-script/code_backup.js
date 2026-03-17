@@ -1,3 +1,13 @@
+// WARNING:
+// This file is a legacy snapshot / backup reference.
+// It is NOT the runtime source of truth for PAY production behavior.
+// Canonical Apps Script source lives under:
+//   apps-script/pay-finance/Code.js
+// Before using this file for recovery or comparison, verify against:
+//   - deployed Apps Script
+//   - canonical Sheet schema
+//   - n8n live workflow/runtime
+//
 // กำหนดค่าคงที่
 const SPREADSHEET_ID = '1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds';
 const SHEET_NAME = 'Sheet1';

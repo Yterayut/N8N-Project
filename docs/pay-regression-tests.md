@@ -1,5 +1,8 @@
 # PAY Regression Tests
 
+สำหรับ smoke test หลัง deploy หรือหลัง patch production flow ให้ยึด checklist หลักที่:
+- `docs/pay-smoke-test-checklist.md`
+
 ## Scope
 
 ครอบคลุมเส้นหลัก:

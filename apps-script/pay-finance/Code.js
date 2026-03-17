@@ -2,6 +2,9 @@
 
 const SPREADSHEET_ID = '1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds';
 const SHEET_NAME = 'Sheet1';
+const PAY_SCHEMA_VERSION = '2026-03-17.v1';
+const PAY_CLASSIFICATION_VERSION = '2026-03-17.v1';
+const PAY_RECONCILIATION_STATUS_DEFAULT = 'canonical';
 const CANONICAL_HEADERS = [
   'date',
   'time',
@@ -19,7 +22,12 @@ const CANONICAL_HEADERS = [
   'source',
   'created_at',
   'updated_at',
-  'note'
+  'note',
+  'request_id',
+  'last_writer',
+  'schema_version',
+  'classification_version',
+  'reconciliation_status'
 ];
 const API_SECRET_PROPERTY_KEYS = ['PAY_API_SHARED_SECRET', 'API_SHARED_SECRET'];
 const OWNER_ALIASES_PROPERTY_KEYS = ['PAY_OWNER_ALIASES', 'OWNER_ALIASES'];
@@ -48,14 +56,40 @@ const DEFAULT_CLASSIFICATION_CONFIG = {
 function doGet(e) {
   // API Endpoint Router
   if (e.parameter.endpoint) {
-    if (!isRestGetApiEnabled_()) {
+    const endpoint = e.parameter.endpoint;
+    const allowWithoutRestToggle = endpoint === 'ingestSlip' || endpoint === 'findByRefId' || endpoint === 'migrateSheetSchema' || endpoint === 'migrateSchema';
+    if (!allowWithoutRestToggle && !isRestGetApiEnabled_()) {
       return jsonResponse_(makeApiResponse_('validation_error', null, 'REST GET API disabled'));
     }
     let result;
-    const endpoint = e.parameter.endpoint;
     
     try {
       switch (endpoint) {
+        case 'ingestSlip':
+          const auth = verifyApiAuth_(e.parameter, e);
+          if (!auth.ok) {
+            result = makeApiResponse_('unauthorized', null, auth.error);
+            break;
+          }
+          result = handleN8nTransaction(e.parameter);
+          break;
+        case 'findByRefId':
+          const debugAuth = verifyApiAuth_(e.parameter, e);
+          if (!debugAuth.ok) {
+            result = makeApiResponse_('unauthorized', null, debugAuth.error);
+            break;
+          }
+          result = makeApiResponse_('ok', findByRefId(e.parameter.ref_id || e.parameter.refId));
+          break;
+        case 'migrateSchema':
+        case 'migrateSheetSchema':
+          const migrationAuth = verifyApiAuth_(e.parameter, e);
+          if (!migrationAuth.ok) {
+            result = makeApiResponse_('unauthorized', null, migrationAuth.error);
+            break;
+          }
+          result = migrateSheetSchema();
+          break;
         case 'dashboard':
           const month = e.parameter.month || new Date().getMonth() + 1;
           const year = e.parameter.year || new Date().getFullYear();
@@ -227,7 +261,11 @@ function addTransaction(data) {
       rowIndex: rowIndex,
       transactionId: normalized.transactionId,
       source: normalized.source,
-      category: normalized.category
+      category: normalized.category,
+      requestId: normalized.requestId,
+      lastWriter: normalized.lastWriter,
+      schemaVersion: normalized.schemaVersion,
+      classificationVersion: normalized.classificationVersion
     });
     return makeApiResponse_('ok', {
       rowIndex: rowIndex,
@@ -258,7 +296,13 @@ function handleN8nTransaction(data) {
       return makeApiResponse_('duplicate', {
         rowIndex: duplicate.rowIndex,
         transaction_id: duplicate.transactionId || '',
-        duplicate: true
+        duplicate: true,
+        matched_row_index: duplicate.rowIndex,
+        matched_transaction_id: duplicate.transactionId || '',
+        matched_ref_id: duplicate.refId || '',
+        matched_status: duplicate.status || '',
+        matched_created_at: duplicate.createdAt || '',
+        matched_reason: duplicate.reason || ''
       }, duplicate.message);
     }
 
@@ -274,7 +318,11 @@ function handleN8nTransaction(data) {
       amount: payload.amount,
       category: payload.category,
       source: payload.source,
-      status: 'ok'
+      status: 'ok',
+      requestId: payload.requestId,
+      lastWriter: payload.lastWriter,
+      schemaVersion: payload.schemaVersion,
+      classificationVersion: payload.classificationVersion
     });
 
     return makeApiResponse_('ok', {
@@ -556,11 +604,33 @@ function jsonResponse_(result) {
 function makeApiResponse_(status, data, error, extra) {
   const response = Object.assign({
     success: status === 'ok',
-    status: status
+    status: status,
+    error_code: String(status || 'unknown').toUpperCase()
   }, extra || {});
   if (data !== undefined && data !== null) response.data = data;
   if (error) response.error = error;
   return response;
+}
+
+function normalizeStatus_(value) {
+  const raw = cleanCell(value || '').toLowerCase();
+  if (!raw) return 'active';
+  if (raw === 'active') return 'active';
+  if (raw === 'inactive') return 'inactive';
+  if (raw === 'deleted') return 'deleted';
+  if (raw === 'archived') return 'archived';
+  return 'active';
+}
+
+function buildProvenanceFields_(data, fallbackWriter) {
+  const payload = data || {};
+  return {
+    requestId: cleanCell(payload.requestId || payload.request_id || ''),
+    lastWriter: cleanCell(payload.lastWriter || payload.last_writer || fallbackWriter || payload.source || 'system'),
+    schemaVersion: cleanCell(payload.schemaVersion || payload.schema_version || PAY_SCHEMA_VERSION),
+    classificationVersion: cleanCell(payload.classificationVersion || payload.classification_version || PAY_CLASSIFICATION_VERSION),
+    reconciliationStatus: cleanCell(payload.reconciliationStatus || payload.reconciliation_status || PAY_RECONCILIATION_STATUS_DEFAULT)
+  };
 }
 
 function parsePostBody_(e) {
@@ -746,12 +816,17 @@ function rowToCanonicalRecord_(row) {
     receiverBank: cleanCell(row[8]),
     refId: cleanCell(row[9]),
     executionId: cleanCell(row[10]),
-    status: cleanCell(row[11] || 'active'),
+    status: normalizeStatus_(row[11] || 'active'),
     transactionId: cleanCell(row[12]),
     source: cleanCell(row[13] || 'webapp'),
     createdAt: cleanCell(row[14]),
     updatedAt: cleanCell(row[15]),
-    note: cleanCell(row[16])
+    note: cleanCell(row[16]),
+    requestId: cleanCell(row[17]),
+    lastWriter: cleanCell(row[18]),
+    schemaVersion: cleanCell(row[19]),
+    classificationVersion: cleanCell(row[20]),
+    reconciliationStatus: cleanCell(row[21])
   };
 }
 
@@ -821,6 +896,7 @@ function validateSlipTransaction_(payload) {
 
 function normalizeManualTransactionPayload_(data) {
   const now = nowIso_();
+  const provenance = buildProvenanceFields_(data, 'webapp');
   return {
     date: normalizeIncomingDate(data.date),
     time: normalizeIncomingTime(data.time),
@@ -833,12 +909,17 @@ function normalizeManualTransactionPayload_(data) {
     receiverBank: cleanCell(data.receiverBank || data.receiver_bank),
     refId: normalizeRefId_(data.refId || data.ref_id),
     executionId: cleanCell(data.executionId || data.execution_id),
-    status: cleanCell(data.status || 'active'),
+    status: normalizeStatus_(data.status || 'active'),
     transactionId: cleanCell(data.transactionId || data.transaction_id) || generateTransactionId_(),
     source: cleanCell(data.source || 'webapp'),
     createdAt: cleanCell(data.createdAt || data.created_at) || now,
     updatedAt: now,
-    note: cleanCell(data.note || '')
+    note: cleanCell(data.note || ''),
+    requestId: provenance.requestId,
+    lastWriter: provenance.lastWriter,
+    schemaVersion: provenance.schemaVersion,
+    classificationVersion: provenance.classificationVersion,
+    reconciliationStatus: provenance.reconciliationStatus
   };
 }
 
@@ -858,7 +939,10 @@ function logApi(action, payload) {
         error: payload && payload.error ? payload.error : '',
         requestId: payload && payload.requestId ? payload.requestId : '',
         refId: payload && payload.refId ? payload.refId : '',
-        executionId: payload && payload.executionId ? payload.executionId : ''
+        executionId: payload && payload.executionId ? payload.executionId : '',
+        lastWriter: payload && payload.lastWriter ? payload.lastWriter : '',
+        schemaVersion: payload && payload.schemaVersion ? payload.schemaVersion : '',
+        classificationVersion: payload && payload.classificationVersion ? payload.classificationVersion : ''
       })
     ];
     sheet.appendRow(row);
@@ -870,6 +954,7 @@ function logApi(action, payload) {
 function normalizeIncomingSlipPayload(data) {
   const payload = data || {};
   const now = nowIso_();
+  const provenance = buildProvenanceFields_(payload, 'n8n');
   const normalized = {
     date: normalizeIncomingDate(
       payload.date || payload.txDate || payload.transactionDate || payload.slip_date
@@ -888,12 +973,17 @@ function normalizeIncomingSlipPayload(data) {
     receiverBank: cleanCell(payload.receiver_bank || payload.receiverBank),
     refId: normalizeRefId_(payload.ref_id || payload.refId || payload.reference || payload.reference_id),
     executionId: cleanCell(payload.execution_id || payload.executionId),
-    status: cleanCell(payload.status || 'active'),
+    status: normalizeStatus_(payload.status || 'active'),
     transactionId: cleanCell(payload.transaction_id || payload.transactionId) || generateTransactionId_(),
     source: cleanCell(payload.source || 'n8n'),
     createdAt: cleanCell(payload.created_at || payload.createdAt) || now,
     updatedAt: now,
-    note: cleanCell(payload.note || '')
+    note: cleanCell(payload.note || ''),
+    requestId: provenance.requestId,
+    lastWriter: provenance.lastWriter,
+    schemaVersion: provenance.schemaVersion,
+    classificationVersion: provenance.classificationVersion,
+    reconciliationStatus: provenance.reconciliationStatus
   };
   const classified = classifyTransactionRecord(normalized);
   normalized.type = classified.type;
@@ -920,15 +1010,17 @@ function findDuplicateSlip(sheet, payload) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const existingRefId = normalizeRefId_(row[9]);
-    const existingExecutionId = cleanCell(row[10]);
-    const existingTransactionId = cleanCell(row[12]);
+    const record = rowToCanonicalRecord_(row);
+    if (record.status !== 'active') continue;
+    const existingRefId = normalizeRefId_(record.refId);
+    const existingExecutionId = cleanCell(record.executionId);
+    const existingTransactionId = cleanCell(record.transactionId);
     const existingFingerprints = buildDuplicateFingerprints_({
-      date: row[0],
-      time: row[1],
-      amount: row[3],
-      receiverName: row[7],
-      receiverBank: row[8]
+      date: record.date,
+      time: record.time,
+      amount: record.amount,
+      receiverName: record.receiverName,
+      receiverBank: record.receiverBank
     });
     const rowIndex = i + 2;
 
@@ -936,6 +1028,10 @@ function findDuplicateSlip(sheet, payload) {
       return {
         rowIndex: rowIndex,
         transactionId: existingTransactionId,
+        refId: existingRefId,
+        status: record.status,
+        createdAt: record.createdAt,
+        reason: 'ref_id',
         message: `⚠️ สลิปนี้บันทึกไปแล้วครับ (Ref: ${refId})`
       };
     }
@@ -944,6 +1040,10 @@ function findDuplicateSlip(sheet, payload) {
       return {
         rowIndex: rowIndex,
         transactionId: existingTransactionId,
+        refId: existingRefId,
+        status: record.status,
+        createdAt: record.createdAt,
+        reason: 'execution_id',
         message: `⚠️ รายการนี้ถูกประมวลผลแล้วครับ (Execution: ${executionId})`
       };
     }
@@ -952,6 +1052,10 @@ function findDuplicateSlip(sheet, payload) {
       return {
         rowIndex: rowIndex,
         transactionId: existingTransactionId,
+        refId: existingRefId,
+        status: record.status,
+        createdAt: record.createdAt,
+        reason: 'fingerprint',
         message: '⚠️ ตรวจพบรายการซ้ำจากวันที่ เวลา จำนวนเงิน และผู้รับ',
         confidence: 'weak'
       };
@@ -984,6 +1088,11 @@ function buildSlipRow(sheet, payload) {
   if (width >= 15) row[14] = payload.createdAt || nowIso_();
   if (width >= 16) row[15] = payload.updatedAt || nowIso_();
   if (width >= 17) row[16] = payload.note || '';
+  if (width >= 18) row[17] = payload.requestId || '';
+  if (width >= 19) row[18] = payload.lastWriter || payload.source || 'system';
+  if (width >= 20) row[19] = payload.schemaVersion || PAY_SCHEMA_VERSION;
+  if (width >= 21) row[20] = payload.classificationVersion || PAY_CLASSIFICATION_VERSION;
+  if (width >= 22) row[21] = payload.reconciliationStatus || PAY_RECONCILIATION_STATUS_DEFAULT;
   return row;
 }
 
@@ -1026,6 +1135,11 @@ function migrateSheetSchema() {
       if (!cleanCell(row[13])) { row[13] = cleanCell(row[9] || row[10]) ? 'n8n' : 'webapp'; changed = true; }
       if (!cleanCell(row[14])) { row[14] = nowIso_(); changed = true; }
       row[15] = nowIso_();
+      if (!cleanCell(row[17])) { row[17] = cleanCell(row[10]) || ''; changed = true; }
+      if (!cleanCell(row[18])) { row[18] = cleanCell(row[13]) || 'migration'; changed = true; }
+      if (!cleanCell(row[19])) { row[19] = PAY_SCHEMA_VERSION; changed = true; }
+      if (!cleanCell(row[20])) { row[20] = PAY_CLASSIFICATION_VERSION; changed = true; }
+      if (!cleanCell(row[21])) { row[21] = PAY_RECONCILIATION_STATUS_DEFAULT; changed = true; }
       const classified = classifyTransactionRecord({
         type: row[2],
         amount: row[3],
@@ -1088,6 +1202,55 @@ function looksLikeSlipPayload(data) {
     data.transaction_type ||
     data.transactionType
   );
+}
+
+function findByRefId(refId) {
+  const targetRefId = normalizeRefId_(refId);
+  if (!targetRefId) return { success: false, error: 'ref_id is required' };
+
+  const sheet = getMainSheet_();
+  if (!sheet) return { success: false, error: 'Sheet not found' };
+  ensureCanonicalSchema_(sheet);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return { success: true, ref_id: targetRefId, count: 0, matches: [] };
+  }
+
+  const width = Math.max(sheet.getLastColumn(), CANONICAL_HEADERS.length);
+  const values = sheet.getRange(2, 1, lastRow - 1, width).getValues();
+  const matches = [];
+  for (let i = 0; i < values.length; i++) {
+    const record = rowToCanonicalRecord_(values[i]);
+    if (normalizeRefId_(record.refId) !== targetRefId) continue;
+    matches.push({
+      rowIndex: i + 2,
+      date: record.date,
+      time: record.time,
+      type: record.type,
+      amount: record.amount,
+      category: record.category,
+      status: record.status,
+      transaction_id: record.transactionId,
+      source: record.source,
+      created_at: record.createdAt,
+      updated_at: record.updatedAt,
+      sender_name: record.senderName,
+      receiver_name: record.receiverName,
+      receiver_bank: record.receiverBank,
+      request_id: record.requestId,
+      last_writer: record.lastWriter,
+      schema_version: record.schemaVersion,
+      classification_version: record.classificationVersion,
+      reconciliation_status: record.reconciliationStatus
+    });
+  }
+
+  return {
+    success: true,
+    ref_id: targetRefId,
+    count: matches.length,
+    matches: matches
+  };
 }
 
 function classifyTransactionRecord(record) {

@@ -1,3 +1,12 @@
+// WARNING:
+// This file is a legacy PAY Apps Script snapshot kept for comparison only.
+// It is NOT the canonical runtime source of truth.
+// Canonical Apps Script source lives at:
+//   apps-script/pay-finance/Code.js
+// Before using this file for restore/debug, verify against:
+//   - n8n live workflow/runtime
+//   - deployed Apps Script URL in docs/environments.md
+//   - canonical sheet schema and docs/source-of-truth.md
 // This script is now an API for the mobile app and also serves the web app.
 
 const SPREADSHEET_ID = '1ptHPEg2d_19vbecMjzZga2ETJu3ARfuS6LLomYhyIds';
