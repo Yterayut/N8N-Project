@@ -170,7 +170,8 @@ function doPost(e) {
           requestData.transactionId ||
           requestData.rowIndex ||
           (requestData.data && (requestData.data.transaction_id || requestData.data.transactionId || requestData.data.rowIndex)),
-          requestData.category || (requestData.data && requestData.data.category)
+          requestData.category || (requestData.data && requestData.data.category),
+          requestData
         );
         break;
       case 'addCategory':
@@ -395,12 +396,13 @@ function deleteTransactionByRow(rowIndex) {
 /**
  * Updates category for a specific row.
  */
-function updateCategory(target, category) {
+function updateCategory(target, category, requestData) {
   try {
     const sheet = getMainSheet_();
     if (!sheet) {
       return makeApiResponse_('internal_error', null, 'Sheet not found');
     }
+    ensureCanonicalSchema_(sheet);
     const resolved = resolveTransactionTarget_(sheet, target);
     if (!resolved.ok) return makeApiResponse_('validation_error', null, resolved.error);
     const idx = resolved.rowIndex;
@@ -413,20 +415,38 @@ function updateCategory(target, category) {
     Logger.log(`updateCategory rowIndex=${idx} category=${cleanCategory}`);
     const width = Math.max(sheet.getLastColumn(), CANONICAL_HEADERS.length);
     const existingRow = sheet.getRange(idx, 1, 1, width).getValues()[0];
-    sheet.getRange(idx, 5).setValue(cleanCategory); // Column E: Category
-    if (width >= 16) {
-      sheet.getRange(idx, 16).setValue(nowIso_());
+    const existingUpdatedAt = cleanCell(existingRow[15]);
+    const expectedUpdatedAt = cleanCell(
+      (requestData && (requestData.expected_updated_at || requestData.expectedUpdatedAt)) ||
+      (requestData && requestData.data && (requestData.data.expected_updated_at || requestData.data.expectedUpdatedAt)) ||
+      ''
+    );
+    if (expectedUpdatedAt && existingUpdatedAt && expectedUpdatedAt !== existingUpdatedAt) {
+      return makeApiResponse_('validation_error', null, 'Transaction has changed since it was opened', {
+        error_code: 'CONFLICT_VERSION'
+      });
     }
+    const now = nowIso_();
+    const provenance = buildProvenanceFields_(requestData || {}, 'mobile_app');
+    sheet.getRange(idx, 5).setValue(cleanCategory); // Column E: Category
+    sheet.getRange(idx, 16).setValue(now);
+    sheet.getRange(idx, 18).setValue(provenance.requestId);
+    sheet.getRange(idx, 19).setValue(provenance.lastWriter);
+    sheet.getRange(idx, 20).setValue(provenance.schemaVersion);
+    sheet.getRange(idx, 21).setValue(provenance.classificationVersion);
+    sheet.getRange(idx, 22).setValue(provenance.reconciliationStatus);
     logApi('updateCategory', {
       status: 'ok',
       rowIndex: idx,
       category: cleanCategory,
-      transactionId: cleanCell(existingRow[12])
+      transactionId: cleanCell(existingRow[12]),
+      requestId: provenance.requestId
     });
     return makeApiResponse_('ok', {
       rowIndex: idx,
       transaction_id: cleanCell(existingRow[12]),
       category: cleanCategory,
+      updated_at: now,
       message: 'Category updated.'
     });
   } catch (error) {
